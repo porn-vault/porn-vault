@@ -46,7 +46,7 @@ export default {
     setSearchParam(state: RootState, { key, value }: { key: string, value: any }) {
       Vue.set(state.search, key, value);
     },
-    
+
     set(state: RootState, items: Actor[]) {
       state.items = items;
     },
@@ -120,6 +120,7 @@ export default {
       if (_index >= 0) {
         let actor = state.items[_index] as Actor;
         actor.name = settings.name || actor.name;
+        actor.aliases = settings.aliases || actor.aliases;
         actor.customFields = settings.customFields || actor.customFields;
         Vue.set(state.items, _index, actor);
       }

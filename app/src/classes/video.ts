@@ -19,6 +19,8 @@ export default class Video {
   customFields: CustomFieldValue = {};
   collection: string | null = null;
   watches: number[] = []; // Array of timestamps of watches
+  duration: number = 0;
+  dimensions: { width: number, height: number } = { width: 0, height: 0 };
 
   static create(file: File | { name: string, path: string, size: number }): Video {
     let video = new Video();

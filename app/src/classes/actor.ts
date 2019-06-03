@@ -6,6 +6,7 @@ import { CustomFieldValue } from './common';
 export default class Actor {
   id: string = hash();
   name: string = "";
+  aliases: string[] = [];
   addedOn: number = +new Date();
   thumbnails: string[] = [];
   favorite: boolean = false;

@@ -137,6 +137,16 @@
               <v-text-field single-line v-model="editing.name" label="Enter name"></v-text-field>
             </v-flex>
 
+            <v-flex xs12>
+              <v-combobox
+                v-model="editing.aliases"
+                label="Actor alias names"
+                multiple
+                chips
+                clearable
+              ></v-combobox>
+            </v-flex>
+
             <v-flex xs12 v-for="field in $store.state.globals.customFields" :key="field.name">
               <CustomField :field="field" :value="getFieldValue(field.name)" v-on:change="setFieldValue"/>
             </v-flex>
@@ -157,7 +167,7 @@
         </v-toolbar>
         <v-container>
           <v-combobox
-            v-model="chosenLabels"
+            v-model="editing.chosenLabels"
             :items="$store.getters['videos/getLabels']"
             label="Add or choose labels"
             multiple
@@ -201,10 +211,12 @@ export default Vue.extend({
 
       editing: {
         name: "",
-        customFields: {} as CustomFieldValue
+        aliases: [],
+        customFields: {} as CustomFieldValue,
+        chosenLabels: [] as string[]
       },
 
-      chosenLabels: [] as string[]
+      
     };
   },
   methods: {
@@ -219,7 +231,8 @@ export default Vue.extend({
         id: this.actor.id,
         settings: {
           name: toTitleCase(this.editing.name),
-          customFields: JSON.parse(JSON.stringify(this.editing.customFields))
+          customFields: JSON.parse(JSON.stringify(this.editing.customFields)),
+          aliases: this.editing.aliases.map((label: string) => toTitleCase(label)),
         }
       });
       this.editDialog = false;
@@ -227,17 +240,19 @@ export default Vue.extend({
     saveLabels() {
       this.$store.commit("actors/setLabels", {
         id: this.actor.id,
-        labels: this.chosenLabels.map((label: string) => toTitleCase(label))
+        labels: this.editing.chosenLabels.map((label: string) => toTitleCase(label)),
+        
       });
       this.labelDialog = false;
     },
     openLabelDialog() {
       this.labelDialog = true;
-      this.chosenLabels = this.actor.labels;
+      this.editing.chosenLabels = this.actor.labels;
     },
     openEditDialog() {
       this.editDialog = true;
       this.editing.name = this.actor.name;
+      this.editing.aliases = this.actor.aliases;
       this.editing.customFields = JSON.parse(
         JSON.stringify(this.actor.customFields)
       );

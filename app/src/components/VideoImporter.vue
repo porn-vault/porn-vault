@@ -34,7 +34,7 @@
 <script lang="ts">
 import Vue from "vue";
 import asyncPool from "tiny-async-pool";
-import ffmpeg from "fluent-ffmpeg";
+import ffmpeg, { FfprobeData } from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
 import Video from "@/classes/video";
@@ -161,20 +161,26 @@ export default Vue.extend({
             video.customFields[field] = null;
           });
 
-          let duration = (await new Promise((resolve, reject) => {
+          let metadata = (await new Promise((resolve, reject) => {
             ffmpeg.ffprobe(video.path, (err, metadata) => {
               if (err) return reject(err);
-              resolve(metadata.format.duration);
+              resolve(metadata);
             });
-          })) as number;
+          })) as FfprobeData;
 
           let amount = Math.max(
             1,
             Math.floor(
-              duration /
+              metadata.format.duration /
                 this.$store.state.globals.settings.thumbnailsOnImportInterval
             )
           );
+
+          video.duration = metadata.format.duration;
+          video.dimensions = {
+            width: metadata.streams[0].width,
+            height: metadata.streams[0].height
+          }
 
           console.log(`Generating ${amount} thumbnails...`);
 

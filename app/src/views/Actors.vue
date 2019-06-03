@@ -329,7 +329,7 @@ export default Vue.extend({
           distance: 100,
           maxPatternLength: 32,
           minMatchCharLength: 1,
-          keys: ["name", "labels"]
+          keys: ["name", "labels", "aliases"],
         };
         var fuse = new Fuse(actors, options); // "list" is the item array
         actors = fuse.search(this.search);
