@@ -1,9 +1,9 @@
 <template>
   <v-app :dark="$store.getters['globals/darkMode']">
     <v-toolbar style="-webkit-app-region: drag;" dark color="primary" :flat="flatToolbar" app>
-      <v-btn flat to="/">
+      <!-- <v-btn flat to="/">
         <span class="mr-2">Home</span>
-      </v-btn>
+      </v-btn> -->
       <v-btn flat to="/videos">
         <span class="mr-2">Videos</span>
       </v-btn>
@@ -16,17 +16,6 @@
       <v-btn flat to="/settings">
         <span class="mr-2">Settings</span>
       </v-btn>
-      <!-- <v-spacer></v-spacer>
-      <v-btn icon flat @click="minimize">
-        <v-icon>minimize</v-icon>
-      </v-btn>
-      <v-btn icon flat @click="maximize">
-        <v-icon>launch</v-icon>
-      </v-btn>-->
-      <!-- TODO: hide app to app tray -->
-      <!-- <v-btn icon flat @click="minimize">
-        <v-icon>close</v-icon>
-      </v-btn>-->
     </v-toolbar>
 
     <v-content>
@@ -94,6 +83,9 @@ export default {
 </script>
 
 <style lang="scss">
+.clickable {
+  cursor: pointer;
+}
 /* width */
 ::-webkit-scrollbar {
   width: 12px;

@@ -295,13 +295,23 @@
               </v-autocomplete>
             </v-flex>
 
-            <v-flex xs12 v-for="field in $store.state.globals.customFields" :key="field.name">
-              <CustomField
-                :field="field"
-                :value="getFieldValue(field.name)"
-                v-on:change="setFieldValue"
-              />
+            <v-flex xs12>
+              <v-btn flat @click="editing.showCustomFields = !editing.showCustomFields">
+                {{ editing.showCustomFields ? 'Hide custom data fields' : 'Show custom data fields'}}
+              </v-btn>
             </v-flex>
+
+            <v-container fluid v-if="editing.showCustomFields">
+              <v-layout row wrap>
+                <v-flex xs12 v-for="field in $store.state.globals.customFields" :key="field.name">
+                  <CustomField
+                    :field="field"
+                    :value="getFieldValue(field.name)"
+                    v-on:change="setFieldValue"
+                  />
+                </v-flex>
+              </v-layout>
+            </v-container>
           </v-layout>
         </v-container>
         <v-card-actions>
@@ -408,6 +418,8 @@ export default Vue.extend({
       labelDialog: false,
 
       editing: {
+        showCustomFields: false,
+        
         name: "",
         actors: [] as string[],
         customFields: {} as CustomFieldValue,

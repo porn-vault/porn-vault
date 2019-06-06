@@ -12,7 +12,9 @@
           <v-list-tile-title>{{ field.name }}</v-list-tile-title>
           <v-list-tile-sub-title>
             {{ fields.types.find(t => t.value == field.type).name }}
-            <span v-if="field.type > 2">{{ "- " + field.values.join(", ") }}</span>
+            <span
+              v-if="field.type > 2"
+            >{{ "- " + field.values.join(", ") }}</span>
           </v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
@@ -36,14 +38,22 @@
       label="Preset values"
     ></v-combobox>
     <v-btn @click="createField">Create data field</v-btn>
+
+    <div class="mt-5">
+      <v-btn flat :loading="backupLoader" @click="exportBackup">create backup</v-btn>
+    </div>
   </v-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import CustomField, { CustomFieldType } from "@/classes/custom_field";
-import { toTitleCase } from '../util/string';
-import { exportToDisk } from '@/util/library';
+import { toTitleCase } from "../util/string";
+import { exportToDisk } from "@/util/library";
+import { ncp } from "ncp";
+import path from "path";
+import fs from "fs";
+import rimraf from "rimraf";
 
 // Turn enum into array
 function toArray(enumme: any) {
@@ -55,6 +65,8 @@ function toArray(enumme: any) {
 export default Vue.extend({
   data() {
     return {
+      backupLoader: false,
+
       fields: {
         name: "",
         chosenType: 0,
@@ -97,10 +109,31 @@ export default Vue.extend({
     }
   },
   methods: {
+    exportBackup() {
+      const cwd = process.cwd();
+      const libraryPath = path.resolve(cwd, "library/");
+
+      if (fs.existsSync(libraryPath)) {
+        const backupPath = path.resolve(cwd, "backup/");
+        this.backupLoader = true;
+
+        if (fs.existsSync(backupPath)) {
+          rimraf.sync(backupPath);
+          console.log("Deleted old backup");
+        }
+
+        ncp(libraryPath, backupPath, err => {
+          console.log("Backup saved.");
+          this.backupLoader = false;
+        });
+      }
+    },
     createField() {
       let field = CustomField.create(
         toTitleCase(this.fields.name),
-        this.fields.chosenType > 2 ? this.fields.values.map((v: string) => toTitleCase(v)) : null,
+        this.fields.chosenType > 2
+          ? this.fields.values.map((v: string) => toTitleCase(v))
+          : null,
         this.fields.chosenType
       );
 

@@ -16,6 +16,8 @@
     "core-js": "^2.6.5",
     "fluent-ffmpeg": "^2.1.2",
     "fuse.js": "^3.4.4",
+    "ncp": "^2.0.0",
+    "rimraf": "^2.6.3",
     "tiny-async-pool": "^1.0.4",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
@@ -24,6 +26,8 @@
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "^2.1.9",
+    "@types/ncp": "^2.0.1",
+    "@types/rimraf": "^2.0.2",
     "@types/tiny-async-pool": "^1.0.0",
     "@vue/cli-plugin-babel": "^3.8.0",
     "@vue/cli-plugin-typescript": "^3.8.0",

@@ -2,6 +2,7 @@
 node_modules
 /dist
 library/
+backup/
 
 # local env files
 .env.local
