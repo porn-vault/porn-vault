@@ -149,10 +149,10 @@
             <v-carousel-item v-for="(item,i) in thumbnails" :key="i" :src="item">
               <div class="topbar">
                 <v-spacer></v-spacer>
-                <v-btn class="thumb-btn mr-2" @click="setCoverIndex(i)" icon small>
+                <v-btn class="thumb-btn mr-2" @click="setCoverIndex(i)" icon>
                   <v-icon>mdi-image</v-icon>
                 </v-btn>
-                <v-btn class="thumb-btn" @click="removeThumbnail(i)" icon small>
+                <v-btn class="thumb-btn" @click="removeThumbnail(i)" icon>
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
               </div>
@@ -162,7 +162,7 @@
       </v-layout>
     </v-container>
 
-    <v-dialog v-model="labelDialog" max-width="600px">
+    <v-dialog v-model="labelDialog" max-width="300px">
       <v-card>
         <v-toolbar dark :color="$store.getters['globals/primaryColor']">
           <v-toolbar-title>Edit labels</v-toolbar-title>

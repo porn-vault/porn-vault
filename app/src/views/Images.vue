@@ -364,7 +364,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="labelDialog" max-width="600px">
+    <v-dialog v-model="labelDialog" max-width="300px">
       <v-card>
         <v-toolbar dark :color="$store.getters['globals/primaryColor']">
           <v-toolbar-title>Edit labels</v-toolbar-title>

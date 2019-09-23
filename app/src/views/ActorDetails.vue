@@ -101,7 +101,7 @@
           <v-checkbox v-model="cycle" label="Auto-cycle images"></v-checkbox>
           <v-carousel :cycle="cycle" hide-delimiters>
             <v-carousel-item v-for="(item,i) in thumbnails" :key="i" :src="item">
-              <v-btn @click="setCoverIndex(i)" icon class="thumb-btn" large>
+              <v-btn @click="setCoverIndex(i)" icon class="thumb-btn">
                 <v-icon>mdi-image</v-icon>
               </v-btn>
             </v-carousel-item>

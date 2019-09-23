@@ -4,10 +4,15 @@
       <v-card-title>Add new videos</v-card-title>
       <v-card-text>
         <v-card class="pa-2 mb-2" v-for="video in videos" :key="video.path">
-          <v-text-field :color="$store.getters['globals/secondaryColor']" label="Video name" :value="video.name" @change="video.name = $event"></v-text-field>
+          <v-text-field
+            :color="$store.getters['globals/secondaryColor']"
+            label="Video name"
+            :value="video.name"
+            @change="video.name = $event"
+          ></v-text-field>
           <p class="sec--text">{{ video.path}}</p>
           <v-combobox
-          :color="$store.getters['globals/secondaryColor']"
+            :color="$store.getters['globals/secondaryColor']"
             :value="video.labels"
             :items="$store.getters['videos/getLabels']"
             label="Add or choose labels"
@@ -16,7 +21,7 @@
             @change="video.labels = $event"
           ></v-combobox>
           <v-autocomplete
-          :color="$store.getters['globals/secondaryColor']"
+            :color="$store.getters['globals/secondaryColor']"
             :value="video.actors"
             :items="$store.state.actors.items"
             chips
@@ -52,17 +57,29 @@
           </v-autocomplete>
         </v-card>
         <div v-if="processing.length" class="text-center">
-          <v-progress-circular indeterminate :size="80" :width="5" :color="$store.getters['globals/secondaryColor']"></v-progress-circular>
+          <v-progress-circular
+            indeterminate
+            :size="80"
+            :width="5"
+            :color="$store.getters['globals/secondaryColor']"
+          ></v-progress-circular>
           <div class="mt-2 subheading">
             {{ processing.length }}
             <span>{{ processing.length == 1 ? 'video' : 'videos' }} processing...</span>
           </div>
         </div>
+        <div v-if="error">
+          <span class="error--text">{{ error }}</span>
+        </div>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn :disabled="generatingThumbnails" text @click="videos = []">Cancel</v-btn>
-        <v-btn :disabled="generatingThumbnails" @click="add" :color="$store.getters['globals/secondaryColor']">Add</v-btn>
+        <v-btn
+          :disabled="generatingThumbnails"
+          @click="add"
+          :color="$store.getters['globals/secondaryColor']"
+        >Add</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -83,6 +100,8 @@ import { exportToDisk } from "../util/library";
 
 @Component
 export default class VideoImporter extends Vue {
+  error = null as string | null;
+
   videos = [] as {
     name: string;
     path: string;
@@ -112,6 +131,23 @@ export default class VideoImporter extends Vue {
     ffmpeg.setFfmpegPath(this.$store.state.globals.settings.ffmpegPath);
     ffmpeg.setFfprobePath(this.$store.state.globals.settings.ffprobePath);
 
+    if (!fs.existsSync(this.$store.state.globals.settings.ffmpegPath)) {
+      this.error =
+        "FFMPEG binary not found at path " +
+        this.$store.state.globals.settings.ffmpegPath;
+      console.warn(this.error);
+      return;
+    }
+
+    if (!fs.existsSync(this.$store.state.globals.settings.ffprobePath)) {
+      this.error =
+        "FFMPEG binary not found at path " +
+        this.$store.state.globals.settings.ffprobePath;
+      console.warn(this.error);
+      return;
+    }
+
+    this.error = null;
     this.processing.push(...this.videos);
     this.videos = [];
 
