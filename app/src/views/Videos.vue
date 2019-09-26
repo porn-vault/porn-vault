@@ -200,6 +200,7 @@ import { toTitleCase } from "@/util/string";
 import { exportToDisk } from "../util/library";
 import CustomField, { CustomFieldType } from "@/classes/custom_field";
 import CustomFieldComponent from "@/components/CustomField.vue";
+import ActorsModule from "@/store_modules/actors";
 
 enum FilterMode {
   NONE,
@@ -545,7 +546,8 @@ export default class Videos extends Vue {
 
     videos.forEach(video => {
       video.actors = video.actors.map((id: string) => {
-        return this.$store.getters["actors/getById"](id);
+        // !TYPE
+        return <any>ActorsModule.getById(id);
       });
     });
 
@@ -559,7 +561,7 @@ export default class Videos extends Vue {
         minMatchCharLength: 1,
         keys: ["title", "labels", "actors.name"]
       };
-      var fuse = new Fuse(videos, options); // "list" is the item array
+      var fuse = new Fuse(videos, options);
       videos = fuse.search(this.search);
     }
 

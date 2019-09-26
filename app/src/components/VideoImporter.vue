@@ -97,6 +97,8 @@ import Image from "@/classes/image";
 import { takeScreenshots } from "@/util/thumbnails";
 import { toTitleCase } from "../util/string";
 import { exportToDisk } from "../util/library";
+import GlobalsModule from "@/store_modules/globals";
+import ImagesModule from "@/store_modules/images";
 
 @Component
 export default class VideoImporter extends Vue {
@@ -128,21 +130,19 @@ export default class VideoImporter extends Vue {
   }
 
   async add() {
-    ffmpeg.setFfmpegPath(this.$store.state.globals.settings.ffmpegPath);
-    ffmpeg.setFfprobePath(this.$store.state.globals.settings.ffprobePath);
+    ffmpeg.setFfmpegPath(GlobalsModule.ffmpegPath);
+    ffmpeg.setFfprobePath(GlobalsModule.ffprobePath);
 
-    if (!fs.existsSync(this.$store.state.globals.settings.ffmpegPath)) {
+    if (!fs.existsSync(GlobalsModule.ffmpegPath)) {
       this.error =
-        "FFMPEG binary not found at path " +
-        this.$store.state.globals.settings.ffmpegPath;
+        "FFMPEG binary not found at path " + GlobalsModule.ffmpegPath;
       console.warn(this.error);
       return;
     }
 
-    if (!fs.existsSync(this.$store.state.globals.settings.ffprobePath)) {
+    if (!fs.existsSync(GlobalsModule.ffprobePath)) {
       this.error =
-        "FFMPEG binary not found at path " +
-        this.$store.state.globals.settings.ffprobePath;
+        "FFMPEG binary not found at path " + GlobalsModule.ffprobePath;
       console.warn(this.error);
       return;
     }
@@ -169,9 +169,7 @@ export default class VideoImporter extends Vue {
       video.actors = extraInfo.actors || [];
     });
 
-    let customFieldNames = this.$store.getters[
-      "globals/getCustomFieldNames"
-    ] as string[];
+    let customFieldNames = GlobalsModule.getCustomFieldNames;
 
     this.generatingThumbnails = true;
 
@@ -205,8 +203,7 @@ export default class VideoImporter extends Vue {
         let amount = Math.max(
           1,
           Math.floor(
-            metadata.format.duration /
-              this.$store.state.globals.settings.thumbnailsOnImportInterval
+            metadata.format.duration / GlobalsModule.thumbnailsOnImportInterval
           )
         );
 
@@ -252,7 +249,7 @@ export default class VideoImporter extends Vue {
           image.actors = video.actors;
         });
 
-        this.$store.commit("images/add", images);
+        ImagesModule.add(images);
 
         video.thumbnails.push(...images.map(i => i.id));
 

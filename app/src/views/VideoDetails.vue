@@ -201,6 +201,7 @@ import { toTitleCase } from "@/util/string";
 import { CustomFieldValue } from "@/classes/common";
 import { exportToDisk } from "@/util/library";
 import CustomField from "@/components/CustomField.vue";
+import ImagesModule from "@/store_modules/images";
 
 @Component({
   components: {
@@ -297,7 +298,7 @@ export default class VideoDetails extends Vue {
         image.actors.push(...this.video.actors);
       });
 
-      this.$store.commit("images/add", images);
+      ImagesModule.add(images);
 
       if (files.length) {
         this.$store.commit("videos/addThumbnails", {
@@ -333,9 +334,7 @@ export default class VideoDetails extends Vue {
   }
 
   get thumbnails(): string[] {
-    return this.video.thumbnails.map((id: string) =>
-      this.$store.getters["images/idToPath"](id)
-    );
+    return this.video.thumbnails.map(id => ImagesModule.getById(id).path);
   }
 }
 </script>

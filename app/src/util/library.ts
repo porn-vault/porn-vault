@@ -4,6 +4,10 @@ import fs from "fs";
 
 import store from "@/store";
 
+import ActorModule from "@/store_modules/actors";
+import GlobalsModule from "@/store_modules/globals";
+import ImagesModule from "@/store_modules/images";
+
 import Video from "@/classes/video";
 import Actor from "@/classes/actor";
 import Image from "@/classes/image";
@@ -28,13 +32,20 @@ export async function exportToDisk(timeout?: number): Promise<void> {
         fs.writeFileSync(videoPath, JSON.stringify(store.getters["videos/getAll"]), "utf-8");
 
         const actorPath = path.resolve(libraryPath, "actors.json");
-        fs.writeFileSync(actorPath, JSON.stringify(store.getters["actors/getAll"]), "utf-8");
+        fs.writeFileSync(actorPath, JSON.stringify(ActorModule.getAll), "utf-8");
 
         const imagePath = path.resolve(libraryPath, "images.json");
-        fs.writeFileSync(imagePath, JSON.stringify(store.getters["images/getAll"]), "utf-8");
+        fs.writeFileSync(imagePath, JSON.stringify(ImagesModule.getAll), "utf-8");
 
         const settingsPath = path.resolve(libraryPath, "settings.json");
-        fs.writeFileSync(settingsPath, JSON.stringify(store.getters["globals/get"]), "utf-8");
+        fs.writeFileSync(settingsPath, JSON.stringify({
+          copyThumbnails: GlobalsModule.copyThumbnails,
+          thumbnailsOnImportInterval: GlobalsModule.thumbnailsOnImportInterval,
+          ffmpegPath: GlobalsModule.ffmpegPath,
+          ffprobePath: GlobalsModule.ffprobePath,
+          theme: GlobalsModule.theme,
+          customFields: GlobalsModule.customFields
+        }), "utf-8");
 
         console.log("Saved to disk.");
 
@@ -84,17 +95,13 @@ export function loadFromDisk(): Promise<void> {
         if (fileContent) {
           const actors = JSON.parse(fileContent);
           if (actors && Array.isArray(actors)) {
-            store.commit(
-              "actors/set",
+            ActorModule.set(
               actors.map((o: any) => Object.assign(new Actor(), o))
             );
           }
         }
         else {
-          store.commit(
-            "actors/set",
-            []
-          );
+          ActorModule.set([]);
         }
       }
 
@@ -104,17 +111,14 @@ export function loadFromDisk(): Promise<void> {
         if (fileContent) {
           const images = JSON.parse(fileContent);
           if (images && Array.isArray(images)) {
-            store.commit(
-              "images/set",
+            ImagesModule.set(
+
               images.map((o: any) => Object.assign(new Image(), o))
             );
           }
         }
         else {
-          store.commit(
-            "images/set",
-            []
-          );
+          ImagesModule.set([]);
         }
       }
 
@@ -124,7 +128,7 @@ export function loadFromDisk(): Promise<void> {
         if (fileContent) {
           const settings = JSON.parse(fileContent);
           if (settings) {
-            store.commit("globals/set", settings);
+            GlobalsModule.set(settings);
           }
         }
       }

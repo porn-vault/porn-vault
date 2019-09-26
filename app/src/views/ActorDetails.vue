@@ -14,7 +14,12 @@
               @click="openFileInput"
             >
               <transition name="fade">
-                <v-sheet :color="$store.getters['globals/secondaryColor']" dark v-if="hover" class="fill sec--text">
+                <v-sheet
+                  :color="$store.getters['globals/secondaryColor']"
+                  dark
+                  v-if="hover"
+                  class="fill sec--text"
+                >
                   <v-icon x-large class="center">mdi-upload</v-icon>
                 </v-sheet>
               </transition>
@@ -28,7 +33,12 @@
               style="background: grey"
             >
               <transition name="fade">
-                <v-sheet :color="$store.getters['globals/secondaryColor']" dark v-if="hover" class="fill sec--text">
+                <v-sheet
+                  :color="$store.getters['globals/secondaryColor']"
+                  dark
+                  v-if="hover"
+                  class="fill sec--text"
+                >
                   <v-icon x-large class="center">mdi-upload</v-icon>
                 </v-sheet>
               </transition>
@@ -55,7 +65,11 @@
               </div>
               <div class="mt-1">
                 <v-chip class="mr-1 mb-1" small v-for="label in labels" :key="label">{{ label }}</v-chip>
-                <v-chip :color="$store.getters['globals/secondaryColor']" small @click="openLabelDialog">+ Add</v-chip>
+                <v-chip
+                  :color="$store.getters['globals/secondaryColor']"
+                  small
+                  @click="openLabelDialog"
+                >+ Add</v-chip>
               </div>
 
               <div class="mt-3">
@@ -150,6 +164,9 @@ import { toTitleCase } from "@/util/string";
 import { CustomFieldValue } from "@/classes/common";
 import CustomField from "@/components/CustomField.vue";
 import { exportToDisk } from "@/util/library";
+import ActorsModule from "@/store_modules/actors";
+import ImagesModule from "@/store_modules/images";
+import GlobalsModule from "@/store_modules/globals";
 
 @Component({
   components: {
@@ -159,7 +176,7 @@ import { exportToDisk } from "@/util/library";
 })
 export default class ActorDetails extends Vue {
   cycle = true;
-  
+
   labelDialog = false;
 
   editing = {
@@ -167,7 +184,7 @@ export default class ActorDetails extends Vue {
   };
 
   saveLabels() {
-    this.$store.commit("actors/setLabels", {
+    ActorsModule.setLabels({
       id: this.actor.id,
       labels: this.editing.chosenLabels.map((label: string) =>
         toTitleCase(label)
@@ -184,7 +201,7 @@ export default class ActorDetails extends Vue {
   }
 
   rateActor(rating: number) {
-    this.$store.commit("actors/rate", {
+    ActorsModule.rate({
       id: this.actor.id,
       rating
     });
@@ -192,7 +209,7 @@ export default class ActorDetails extends Vue {
   }
 
   setCoverIndex(index: number) {
-    this.$store.commit("actors/setCoverIndex", {
+    ActorsModule.setCoverIndex({
       id: this.actor.id,
       index
     });
@@ -212,7 +229,7 @@ export default class ActorDetails extends Vue {
         };
       }) as { name: string; path: string; size: number }[];
 
-      if (this.$store.state.globals.settings.copyThumbnails) {
+      if (GlobalsModule.copyThumbnails) {
         if (!fs.existsSync(path.resolve(process.cwd(), "library/images/"))) {
           fs.mkdirSync(path.resolve(process.cwd(), "library/images/"));
         }
@@ -239,13 +256,14 @@ export default class ActorDetails extends Vue {
         );
       });
 
-      this.$store.commit("images/add", images);
+      ImagesModule.add(images);
 
-      if (files.length)
-        this.$store.commit("actors/addThumbnails", {
+      if (files.length) {
+        ActorsModule.addThumbnails({
           id: this.actor.id,
           images: images.map(i => i.id)
         });
+      }
 
       exportToDisk();
 
@@ -265,9 +283,7 @@ export default class ActorDetails extends Vue {
   }
 
   get actor(): Actor {
-    return this.$store.state.actors.items.find(
-      (v: Actor) => v.id == this.$route.params.id
-    );
+    return ActorsModule.getById(this.$route.params.id);
   }
 
   get videos(): Video[] {
@@ -275,8 +291,8 @@ export default class ActorDetails extends Vue {
   }
 
   get thumbnails(): string[] {
-    return (<Actor>this.actor).thumbnails.map(id =>
-      this.$store.getters["images/idToPath"](id)
+    return (<Actor>this.actor).thumbnails.map(
+      id => ImagesModule.getById(id).path
     );
   }
 

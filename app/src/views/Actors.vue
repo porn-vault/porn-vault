@@ -129,7 +129,12 @@
         </v-toolbar>
 
         <v-card-text>
-            <v-text-field :color="$store.getters['globals/secondaryColor']" single-line v-model="creating.name" label="Enter a name"></v-text-field>
+          <v-text-field
+            :color="$store.getters['globals/secondaryColor']"
+            single-line
+            v-model="creating.name"
+            label="Enter a name"
+          ></v-text-field>
         </v-card-text>
 
         <v-card-actions>
@@ -152,6 +157,8 @@ import Fuse from "fuse.js";
 import { exportToDisk } from "@/util/library";
 import CustomField, { CustomFieldType } from "@/classes/custom_field";
 import CustomFieldComponent from "@/components/CustomField.vue";
+import ActorModule from "@/store_modules/actors";
+import GlobalsModule from "@/store_modules/globals";
 
 enum FilterMode {
   NONE,
@@ -221,17 +228,16 @@ export default class Actors extends Vue {
   fieldFilters = [] as FieldFilter[];
 
   mounted() {
-    this.fieldFilters = (<CustomField[]>this.$store.state.globals.customFields)
-      .slice()
-      .map(field => {
-        return {
-          name: field.name,
-          values: field.values,
-          type: field.type,
-          mode: FilterMode.NONE,
-          value: field.type >= 3 ? [] : null
-        };
-      }) as FieldFilter[];
+    console.log(GlobalsModule.getCustomFields);
+    this.fieldFilters = GlobalsModule.getCustomFields.slice().map(field => {
+      return {
+        name: field.name,
+        values: field.values,
+        type: field.type,
+        mode: FilterMode.NONE,
+        value: field.type >= 3 ? [] : null
+      };
+    }) as FieldFilter[];
   }
 
   setFieldFilterValue({
@@ -260,28 +266,24 @@ export default class Actors extends Vue {
   addActor() {
     let actor = Actor.create(toTitleCase(this.creating.name));
 
-    let customFieldNames = this.$store.getters[
-      "globals/getCustomFieldNames"
-    ] as string[];
+    let customFieldNames = GlobalsModule.getCustomFieldNames;
 
     customFieldNames.forEach(field => {
       actor.customFields[field] = null;
     });
 
-    this.$store.commit("actors/add", actor);
+    ActorModule.add(actor);
     this.createDialog = false;
 
     exportToDisk();
   }
 
   get labels(): string[] {
-    return this.$store.getters["actors/getLabels"];
+    return ActorModule.getLabels;
   }
 
   get items(): Actor[] {
-    let actors = JSON.parse(
-      JSON.stringify(this.$store.state.actors.items)
-    ) as any[];
+    let actors = JSON.parse(JSON.stringify(ActorModule.getAll)) as any[];
 
     if (this.favoritesOnly) {
       actors = actors.filter(actor => actor.favorite);
@@ -431,7 +433,7 @@ export default class Actors extends Vue {
   }
 
   set chosenSort(value: number) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "chosenSort",
       value
     });
@@ -442,7 +444,7 @@ export default class Actors extends Vue {
   }
 
   set ratingFilter(value: number) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "ratingFilter",
       value
     });
@@ -453,7 +455,7 @@ export default class Actors extends Vue {
   }
 
   set bookmarksOnly(value: boolean) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "bookmarksOnly",
       value
     });
@@ -464,7 +466,7 @@ export default class Actors extends Vue {
   }
 
   set favoritesOnly(value: boolean) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "favoritesOnly",
       value
     });
@@ -475,7 +477,7 @@ export default class Actors extends Vue {
   }
 
   set chosenLabels(value: string[]) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "chosenLabels",
       value
     });
@@ -485,7 +487,7 @@ export default class Actors extends Vue {
     return this.$store.state.actors.search.search;
   }
   set search(value: string) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "search",
       value
     });
@@ -496,7 +498,7 @@ export default class Actors extends Vue {
   }
 
   set gridSize(value: number) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "gridSize",
       value
     });
@@ -507,7 +509,7 @@ export default class Actors extends Vue {
   }
 
   set filterDrawer(value: boolean) {
-    this.$store.commit("actors/setSearchParam", {
+    ActorModule.setSearchParam({
       key: "filterDrawer",
       value
     });
