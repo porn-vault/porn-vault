@@ -28,3 +28,7 @@ build/
 db\.json
 
 *.mp4
+
+config\.json
+
+library/*

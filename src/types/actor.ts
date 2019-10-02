@@ -27,10 +27,9 @@ export default class Actor {
   }
 
   static getById(id: string): Actor | null {
-    return database
-      .get('actors')
-      .findKey(id)
-      .value();
+    return Actor
+      .getAll()
+      .find(actor => actor.id == id) || null;
   }
 
   static getAll(): Actor[] {

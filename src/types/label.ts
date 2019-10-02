@@ -8,10 +8,9 @@ export default class Label {
   addedOn = +new Date();
 
   static getById(id: string): Label | null {
-    return database
-      .get('labels')
-      .findKey(id)
-      .value();
+    return Label
+      .getAll()
+      .find(label => label.id == id) || null;
   }
 
   static getAll(): Label[] {

@@ -1,6 +1,5 @@
 export default `
 scalar Long
-scalar Upload
 
 type VideoDimensions {
   width: Long
@@ -14,7 +13,9 @@ type SceneMeta {
 }
 
 type Query {
+  getSceneById(id: String!): Scene
   getScenes: [Scene]
+  getActorScenes(id: String!): [Scene]
 
   getActorById(id: String!): Actor
   findActors(name: String!): [Actor]
@@ -37,6 +38,7 @@ type Actor {
   bookmark: Boolean!
   rating: Int
   labels: [String!]!
+  scenes: [Scene!]
   #customFields
 }
 
@@ -57,6 +59,7 @@ type Scene {
   favorite: Boolean!
   bookmark: Boolean!
   rating: Int
+  actors: [String!]!
   labels: [String!]!
   movies: [String!]!
   path: String
@@ -64,12 +67,13 @@ type Scene {
   watches: [Long!]!
   meta: SceneMeta!
   #customFields
+  studio: String
 }
 
 type Mutation {
   addActor(name: String!, aliases: [String!]): Actor
   addLabel(name: String!, aliases: [String!]): Label
 
-  uploadScene(file: Upload!): String
+  uploadScene(file: Upload!, actors: [String!]): Scene
 }
 `;
