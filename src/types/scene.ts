@@ -37,8 +37,7 @@ export default class Scene {
   name: string;
   addedOn = +new Date();
   releaseDate: string | null = null;
-  images: string[] = [];
-  coverIndex: number = 0;
+  thumbnail: string | null = null;
   favorite: boolean = false;
   bookmark: boolean = false;
   rating: number = 0;
@@ -111,6 +110,8 @@ export default class Scene {
           i++;
         }
 
+        logger.LOG(`Generating thumbnails...`);
+
         await asyncPool(4, timestamps, timestamp => {
           return new Promise((resolve, reject) => {
             ffmpeg(options.file)
@@ -129,7 +130,7 @@ export default class Scene {
           })
         });
 
-        logger.SUCCESS(`SUCCESS: Generated ${amount} thumbnails`);
+        logger.SUCCESS(`SUCCESS: Generated thumbnails`);
 
         const thumbnailFilenames = fs
           .readdirSync(options.thumbnailPath)

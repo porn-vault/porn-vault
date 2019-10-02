@@ -4,14 +4,13 @@ import { ApolloServer, gql } from "apollo-server-express";
 
 const app = express();
 
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+/* app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.log(`${req.method} request to ${req.originalUrl}: ${new Date().toUTCString()}`);
   next();
-});
+}); */
 
 import types from "./graphql/types"
 import resolvers from "./graphql/resolvers"
-
 const server = new ApolloServer({ typeDefs: gql(types), resolvers });
 server.applyMiddleware({ app, path: "/ql"  });
 

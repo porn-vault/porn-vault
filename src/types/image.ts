@@ -20,6 +20,18 @@ export default class Image {
   actors: string[] = [];
   movies: string[] = [];
 
+  static getByScene(id: string): Image[] {
+    return Image
+      .getAll()
+      .filter(image => image.scene == id)
+  }
+
+  static getByActor(id: string): Image[] {
+    return Image
+      .getAll()
+      .filter(image => image.actors.includes(id))
+  }
+
   static getById(id: string): Image | null {
     return Image
       .getAll()

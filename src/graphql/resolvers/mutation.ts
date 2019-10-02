@@ -36,6 +36,8 @@ export default {
     );
     scene.path = sourcePath;
 
+    logger.LOG(`Getting file...`);
+
     const read = createReadStream() as ReadStream;
     const write = createWriteStream(sourcePath);
 
@@ -89,8 +91,6 @@ export default {
         .get('images')
         .push(image)
         .write();
-
-      scene.images.push(image.id);
     }
 
     logger.SUCCESS(`SUCCESS: Created ${thumbnailFiles.length} images.`);

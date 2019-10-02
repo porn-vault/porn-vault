@@ -17,6 +17,8 @@ type SceneMeta {
 }
 
 type Query {
+  getImages: [Image]
+
   getSceneById(id: String!): Scene
   getScenes: [Scene]
   getActorScenes(id: String!): [Scene]
@@ -36,8 +38,7 @@ type Actor {
   aliases: [String!]!
   addedOn: Long!
   bornOn: Long
-  images: [String!]!
-  coverIndex: Int!
+  images: [Image!]!
   favorite: Boolean!
   bookmark: Boolean!
   rating: Int
@@ -58,12 +59,11 @@ type Scene {
   name: String!
   addedOn: Long!
   releaseDate: String
-  images: [String!]!
-  coverIndex: Int!
+  images: [Image!]!
   favorite: Boolean!
   bookmark: Boolean!
   rating: Int
-  actors: [String!]!
+  actors: [Actor!]!
   labels: [String!]!
   movies: [String!]!
   path: String
@@ -85,7 +85,7 @@ type Image {
   labels: [String!]!
   size: ImageMeta!
   scene: String
-  actors: [String!]!
+  actors: [Actor!]!
   movies: [String!]!
 }
 
