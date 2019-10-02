@@ -1,7 +1,15 @@
 const lowdb = require("lowdb");
 import FileSync from "lowdb/adapters/FileSync";
+import mkdirp from "mkdirp";
 
-const adapter = new FileSync('db.json');
+try {
+  mkdirp.sync('./library/scenes');
+  mkdirp.sync('./library/images');
+  mkdirp.sync('./library/thumbnails');
+}
+catch(err) {}
+
+const adapter = new FileSync('./library/db.json');
 const database = lowdb(adapter);
 
 database
@@ -10,9 +18,11 @@ database
     labels: [],
     scenes: [],
     images: [],
+    movies: [],
+    studios: [],
 
     settings: {
-      LIBRARY_PATH: "./"
+      LIBRARY_PATH: "./library/"
     }
   })
   .write()

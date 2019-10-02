@@ -26,3 +26,5 @@ node_modules
 build/
 
 db\.json
+
+*.mp4

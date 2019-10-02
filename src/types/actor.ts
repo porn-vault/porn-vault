@@ -8,6 +8,7 @@ export default class Actor {
   addedOn = +new Date();
   bornOn: number | null = null;
   thumbnails: string[] = [];
+  coverIndex: number = 0;
   favorite: boolean = false;
   bookmark: boolean = false;
   rating: number = 0;
@@ -21,7 +22,7 @@ export default class Actor {
       .filter(actor => (
         actor.name.toLowerCase() == name ||
         actor.aliases.map(a => a.toLowerCase()).includes(name)
-        )
+      )
       )
   }
 
@@ -36,8 +37,9 @@ export default class Actor {
     return database.get('actors').value();
   }
 
-  constructor(name: string) {
+  constructor(name: string, aliases: string[] = []) {
     this.id = generateHash();
-    this.name = name;
+    this.name = name.trim();
+    this.aliases = aliases.map(tag => tag.trim());
   }
 }
