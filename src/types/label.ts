@@ -6,6 +6,7 @@ export default class Label {
   name: string;
   aliases: string[] = [];
   addedOn = +new Date();
+  image: string | null = null;
 
   static getById(id: string): Label | null {
     return Label

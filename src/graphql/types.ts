@@ -52,6 +52,7 @@ type Label {
   name: String!
   aliases: [String!]!
   addedOn: Long!
+  image: String
 }
 
 type Scene {
@@ -84,9 +85,8 @@ type Image {
   #customFields
   labels: [String!]!
   size: ImageMeta!
-  scene: String
+  scene: Scene
   actors: [Actor!]!
-  movies: [String!]!
 }
 
 type Mutation {

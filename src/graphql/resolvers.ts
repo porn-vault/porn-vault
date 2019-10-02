@@ -3,11 +3,13 @@ import QueryResolvers from "./resolvers/query";
 import ActorResolver from "./resolvers/actor";
 import SceneResolver from "./resolvers/scene";
 import MutationResolver from "./resolvers/mutation";
+import ImageResolver from "./resolvers/image";
 
 const resolvers = {
   Long: GraphQLLong,
   Actor: ActorResolver,
   Scene: SceneResolver,
+  Image: ImageResolver,
   Query: QueryResolvers,
   Mutation: MutationResolver
 }

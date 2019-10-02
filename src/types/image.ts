@@ -18,7 +18,6 @@ export default class Image {
   labels: string[] = [];
   meta = new ImageMeta();
   actors: string[] = [];
-  movies: string[] = [];
 
   static getByScene(id: string): Image[] {
     return Image
