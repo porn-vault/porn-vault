@@ -49,7 +49,7 @@ export default {
       Actor.filterLabel(label.id);
       Image.filterLabel(label.id);
       Scene.filterLabel(label.id);
-      
+
       return true;
     }
     else {
@@ -80,7 +80,56 @@ export default {
     }
   },
 
+  addScene(parent, args: AnyMap) {
+    for (const actor of args.actors || []) {
+      const actorInDb = Actor.getById(actor);
+
+      if (!actorInDb)
+        throw new Error(`Actor ${actor} not found`);
+    }
+
+    for (const label of args.labels || []) {
+      const labelInDb = Label.getById(label);
+
+      if (!labelInDb)
+        throw new Error(`Label ${label} not found`);
+    }
+
+    const sceneName = args.name;
+    const scene = new Scene(sceneName);
+
+    if (args.actors) {
+      scene.actors = args.actors;
+    }
+
+    if (args.labels) {
+      scene.labels = args.labels;
+    }
+
+    database
+      .get('scenes')
+      .push(scene)
+      .write();
+
+    logger.SUCCESS(`SUCCESS: Scene '${sceneName}' done.`);
+    return scene;
+  },
+
   async uploadScene(parent, args: AnyMap) {
+    for (const actor of args.actors || []) {
+      const actorInDb = Actor.getById(actor);
+
+      if (!actorInDb)
+        throw new Error(`Actor ${actor} not found`);
+    }
+
+    for (const label of args.labels || []) {
+      const labelInDb = Label.getById(label);
+
+      if (!labelInDb)
+        throw new Error(`Label ${label} not found`);
+    }
+
     const { filename, mimetype, createReadStream } = await args.file;
     const ext = extname(filename);
     const fileNameWithoutExtension = filename.split(".")[0];
@@ -140,9 +189,9 @@ export default {
       scene.actors = args.actors;
     }
 
-    /* if (args.labels) {
+    if (args.labels) {
       scene.labels = args.labels;
-    } */
+    }
 
     const thumbnailFiles = await scene.generateThumbnails();
 
@@ -151,7 +200,7 @@ export default {
       const image = new Image(`${sceneName} ${i}`, file.path, scene.id);
       image.meta.size = file.size;
       image.actors = scene.actors;
-      /* image.labels = scene.labels; */
+      image.labels = scene.labels;
       database
         .get('images')
         .push(image)

@@ -21,7 +21,6 @@ type Query {
 
   getSceneById(id: String!): Scene
   getScenes: [Scene]
-  getActorScenes(id: String!): [Scene]
 
   getActorById(id: String!): Actor
   findActors(name: String!): [Actor]
@@ -98,7 +97,7 @@ type Mutation {
   
   setActorLabels(id: String!, labels: [String!]!): Actor
   
-
+  addScene(name: String!, actors: [String!], labels: [String!]): Scene
   uploadScene(file: Upload!, name: String, actors: [String!], labels: [String!]): Scene
 }
 `;
