@@ -8,6 +8,12 @@ export default class Label {
   addedOn = +new Date();
   image: string | null = null;
 
+  static remove(id: string) {
+    database.get('labels')
+      .remove({ id })
+      .write();
+  }
+
   static getById(id: string): Label | null {
     return Label
       .getAll()

@@ -15,6 +15,71 @@ interface HashMap<T> {
 type AnyMap = HashMap<any>;
 
 export default {
+  updateLabel(parent, args: AnyMap) {
+    const label = Label.getById(args.id);
+
+    if (args.name)
+      if (!args.name.length)
+        throw new Error(`Invalid label name`);
+
+    if (label) {
+      label.name = args.name || label.name;
+      label.aliases = args.aliases || label.aliases;
+
+      label.aliases = label.aliases.filter(s => s && s.length);
+
+      database.get('labels')
+        .find({ id: label.id })
+        .assign(label)
+        .write();
+
+      return label;
+    }
+    else {
+      throw new Error(`Label ${args.id} not found`);
+    }
+  },
+
+  removeLabel(parent, args: AnyMap) {
+    const label = Label.getById(args.id);
+
+    if (label) {
+      Label.remove(label.id);
+
+      Actor.filterLabel(label.id);
+      Image.filterLabel(label.id);
+      Scene.filterLabel(label.id);
+      
+      return true;
+    }
+    else {
+      throw new Error(`Label ${args.id} not found`);
+    }
+  },
+
+  setActorLabels(parent, args: AnyMap) {
+    const actor = Actor.getById(args.id);
+
+    for (const label of args.labels) {
+      const labelInDb = Label.getById(label);
+
+      if (!labelInDb)
+        throw new Error(`Label ${label} not found`);
+    }
+
+    if (actor) {
+      actor.labels = args.labels;
+      database.get('actors')
+        .find({ id: actor.id })
+        .assign({ labels: args.labels })
+        .write();
+      return actor;
+    }
+    else {
+      throw new Error(`Actor ${args.id} not found`);
+    }
+  },
+
   async uploadScene(parent, args: AnyMap) {
     const { filename, mimetype, createReadStream } = await args.file;
     const ext = extname(filename);

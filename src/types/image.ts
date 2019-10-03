@@ -19,6 +19,15 @@ export default class Image {
   meta = new ImageMeta();
   actors: string[] = [];
 
+  static filterLabel(label: string) {
+    for (const image of Image.getAll()) {
+      database.get('images')
+        .find({ id: image.id })
+        .assign({ labels: image.labels.filter(l => l != label) })
+        .write();
+    }
+  }
+
   static getByScene(id: string): Image[] {
     return Image
       .getAll()

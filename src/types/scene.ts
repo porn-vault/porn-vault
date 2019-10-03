@@ -49,6 +49,15 @@ export default class Scene {
   watches: number[] = []; // Array of timestamps of watches
   meta = new SceneMeta();
 
+  static filterLabel(label: string) {
+    for (const scene of Scene.getAll()) {
+      database.get('scenes')
+        .find({ id: scene.id })
+        .assign({ labels: scene.labels.filter(l => l != label) })
+        .write();
+    }
+  }
+
   static getByActor(id: string): Scene[] {
     return Scene
       .getAll()

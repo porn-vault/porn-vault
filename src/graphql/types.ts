@@ -42,7 +42,7 @@ type Actor {
   favorite: Boolean!
   bookmark: Boolean!
   rating: Int
-  labels: [String!]!
+  labels: [Label!]!
   scenes: [Scene!]
   #customFields
 }
@@ -65,7 +65,7 @@ type Scene {
   bookmark: Boolean!
   rating: Int
   actors: [Actor!]!
-  labels: [String!]!
+  labels: [Label!]!
   movies: [String!]!
   path: String
   streamLinks: [String!]!
@@ -83,7 +83,7 @@ type Image {
   bookmark: Boolean!
   rating: Int
   #customFields
-  labels: [String!]!
+  labels: [Label!]!
   size: ImageMeta!
   scene: Scene
   actors: [Actor!]!
@@ -91,7 +91,13 @@ type Image {
 
 type Mutation {
   addActor(name: String!, aliases: [String!]): Actor
+  
   addLabel(name: String!, aliases: [String!]): Label
+  updateLabel(id: String!, name: String, aliases: [String!]): Label
+  removeLabel(id: String!): Boolean
+  
+  setActorLabels(id: String!, labels: [String!]!): Actor
+  
 
   uploadScene(file: Upload!, name: String, actors: [String!], labels: [String!]): Scene
 }

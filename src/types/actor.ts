@@ -14,6 +14,15 @@ export default class Actor {
   customFields: any = {};
   labels: string[] = [];
 
+  static filterLabel(label: string) {
+    for (const actor of Actor.getAll()) {
+      database.get('actors')
+        .find({ id: actor.id })
+        .assign({ labels: actor.labels.filter(l => l != label) })
+        .write();
+    }
+  }
+
   static find(name: string): Actor[] {
     name = name.toLowerCase().trim();
     return Actor
@@ -21,8 +30,7 @@ export default class Actor {
       .filter(actor => (
         actor.name.toLowerCase() == name ||
         actor.aliases.map(a => a.toLowerCase()).includes(name)
-      )
-      )
+      ))
   }
 
   static getById(id: string): Actor | null {

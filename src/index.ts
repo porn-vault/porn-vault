@@ -5,7 +5,7 @@ import { ApolloServer, gql } from "apollo-server-express";
 const app = express();
 
 /* app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.log(`${req.method} request to ${req.originalUrl}: ${new Date().toUTCString()}`);
+  console.log(`${req.method} ${req.originalUrl}: ${new Date().toLocaleString()}`);
   next();
 }); */
 
