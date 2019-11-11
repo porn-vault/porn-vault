@@ -6,6 +6,7 @@ import config from "../config";
 import * as logger from "../logger";
 import * as fs from "fs";
 import * as path from "path";
+import { libraryPath } from "./utility";
 
 type ThumbnailFile = {
   name: string;
@@ -116,10 +117,10 @@ export default class Scene {
       );
 
       const options = {
-        file: this.path,
+        file: libraryPath(this.path),
         pattern: `${this.id}-%s.jpg`,
         count: amount,
-        thumbnailPath: "thumbnails/"
+        thumbnailPath: libraryPath("thumbnails/")
       }
 
       try {
@@ -162,7 +163,7 @@ export default class Scene {
 
         const thumbnailFiles = thumbnailFilenames.map(name => {
           const filePath = `thumbnails/${name}`;
-          const stats = fs.statSync(filePath);
+          const stats = fs.statSync(libraryPath(filePath));
           return {
             name,
             path: filePath,

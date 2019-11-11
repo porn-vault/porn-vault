@@ -1,7 +1,6 @@
 import express from "express"
 import * as logger from "./logger";
 import { ApolloServer, gql } from "apollo-server-express";
-import "./ffmpeg";
 import "./database";
 import config from "./config";
 import Image from "./types/image";
@@ -10,8 +9,11 @@ import resolvers from "./graphql/resolvers"
 import Scene from "./types/scene";
 import * as path from "path";
 import { libraryPath } from "./types/utility";
+import debugHandler from "./debug";
 
 const app = express();
+
+app.get("/debug", debugHandler);
 
 app.use('/js', express.static('./app/dist/js'));
 app.use('/css', express.static('./app/dist/css'));
@@ -38,6 +40,9 @@ app.use("/scene/:scene", (req, res, next) => {
 
 app.use("/image/:image", (req, res, next) => {
   const image = Image.getById(req.params.image);
+
+  if (image && image.path)
+  console.log(libraryPath(image.path));
 
   if (image && image.path)
     res.sendFile(libraryPath(image.path));

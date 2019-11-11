@@ -96,9 +96,14 @@ export default {
       throw new Error("FFPROBE not found");
     }
 
+    console.log(config.FFPROBE_PATH);
+
+    ffmpeg.setFfmpegPath(config.FFMPEG_PATH);
+    ffmpeg.setFfprobePath(config.FFPROBE_PATH);
+
     const scene = new Scene(sceneName);
 
-    const sourcePath =  `scenes/${scene.id}${ext}`;
+    const sourcePath = `scenes/${scene.id}${ext}`;
     scene.path = sourcePath;
 
     logger.LOG(`Getting file...`);
@@ -115,12 +120,15 @@ export default {
     });
 
     // File written, now process
-    logger.SUCCESS(`SUCCESS: File written to ${sourcePath}.`);
+    logger.SUCCESS(`SUCCESS: File written to ${libraryPath(sourcePath)}.`);
 
     await new Promise((resolve, reject) => {
-      ffmpeg.ffprobe(sourcePath, (err, data) => {
+      ffmpeg.ffprobe(libraryPath(sourcePath), (err, data) => {
+
+        console.log(err);
+
         const meta = data.streams[0];
-        const { size } = statSync(sourcePath);
+        const { size } = statSync(libraryPath(sourcePath));
 
         if (meta) {
           scene.meta.dimensions = {
