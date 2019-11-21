@@ -96,7 +96,7 @@
           <v-spacer></v-spacer>
           <h1 class="font-weight-light mr-3">Images</h1>
           <v-btn @click="openUploadDialog" icon>
-            <v-icon>mdi-cloud-upload</v-icon>
+            <v-icon>mdi-upload</v-icon>
           </v-btn>
           <v-spacer></v-spacer>
         </div>
