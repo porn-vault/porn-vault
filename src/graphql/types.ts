@@ -53,6 +53,7 @@ type Actor {
   rating: Int
   labels: [Label!]!
   scenes: [Scene!]
+  watches: [Long!]!
   #customFields
 }
 
