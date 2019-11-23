@@ -122,7 +122,8 @@ export default {
         rating: scene.rating,
         labels: await Scene.getLabels(scene),
         actors: await Scene.getActors(scene),
-        addedOn: scene.addedOn
+        addedOn: scene.addedOn,
+        watches: scene.watches
       }))
     );
 
@@ -185,6 +186,11 @@ export default {
         if (options.sortDir == "asc")
           searchDocs.sort((a, b) => a.rating - b.rating);
         else searchDocs.sort((a, b) => b.rating - a.rating);
+        break;
+      case SortTarget.VIEWS:
+        if (options.sortDir == "asc")
+          searchDocs.sort((a, b) => a.watches.length - b.watches.length);
+        else searchDocs.sort((a, b) => b.watches.length - a.watches.length);
         break;
       case SortTarget.DATE:
         if (options.sortDir == "asc")

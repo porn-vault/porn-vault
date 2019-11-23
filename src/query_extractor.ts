@@ -2,7 +2,8 @@ export enum SortTarget {
   RELEVANCE = "relevance",
   RATING = "rating",
   DATE = "date",
-  ADDED_ON = "addedOn"
+  ADDED_ON = "addedOn",
+  VIEWS = "views"
 }
 
 interface IQueryOptions {

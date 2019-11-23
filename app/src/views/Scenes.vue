@@ -236,12 +236,16 @@ export default class SceneList extends Vue {
       value: "relevance"
     },
     {
-      text: "Added to libray",
+      text: "Added to collection",
       value: "addedOn"
     },
     {
       text: "Rating",
       value: "rating"
+    },
+    {
+      text: "Views",
+      value: "views"
     }
   ];
 
