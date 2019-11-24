@@ -31,18 +31,21 @@ class MovieModule extends VuexModule {
     if (this.current) this.current.bookmark = bool;
   }
 
-  /* @Mutation
-  setRating(rating: number) {
-    if (this.current) this.current.rating = rating;
-  } */
-
-  /*  @Mutation
-  setThumbnail(id: string) {
+  @Mutation
+  setFrontCover(id: string) {
     if (this.current) {
-      if (!this.current.thumbnail) this.current.thumbnail = { _id: id };
-      else this.current.thumbnail._id = id;
+      if (!this.current.frontCover) this.current.frontCover = { _id: id };
+      else this.current.frontCover._id = id;
     }
-  } */
+  }
+
+  @Mutation
+  setBackCover(id: string) {
+    if (this.current) {
+      if (!this.current.backCover) this.current.backCover = { _id: id };
+      else this.current.backCover._id = id;
+    }
+  }
 
   @Mutation
   setActors(actors: IActor[]) {

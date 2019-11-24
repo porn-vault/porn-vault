@@ -15,6 +15,10 @@
                 </v-img>
               </template>
             </v-hover>
+            <div class="mt-2 text-center">
+              <v-btn color="accent" text small @click="frontCoverDialog = true">Set front cover</v-btn>
+              <v-btn color="accent" text small @click="backCoverDialog = true">Set back cover</v-btn>
+            </div>
           </v-container>
         </v-col>
         <v-col cols="12" sm="8" md="8" lg="9" xl="10">
@@ -187,6 +191,32 @@
       <v-progress-circular indeterminate></v-progress-circular>
     </div>
 
+    <v-dialog v-model="frontCoverDialog" max-width="400px">
+      <v-card v-if="currentMovie">
+        <v-card-title>Set front cover for '{{ currentMovie.name }}'</v-card-title>
+        <v-card-text>
+          <v-file-input color="accent" placeholder="Select an image" v-model="frontCoverFile"></v-file-input>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="uploadFrontCover" text class="text-none" color="accent">Upload</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="backCoverDialog" max-width="400px">
+      <v-card v-if="currentMovie">
+        <v-card-title>Set back cover for '{{ currentMovie.name }}'</v-card-title>
+        <v-card-text>
+          <v-file-input color="accent" placeholder="Select an image" v-model="backCoverFile"></v-file-input>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="uploadBackCover" text class="text-none" color="accent">Upload</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <infinite-loading v-if="currentMovie" :identifier="infiniteId" @infinite="infiniteHandler">
       <div slot="no-results">
         <v-icon large>mdi-close</v-icon>
@@ -252,6 +282,122 @@ export default class SceneDetails extends Vue {
 
   infiniteId = 0;
   page = 0;
+
+  frontCoverFile = null as File | null;
+  frontCoverDialog = false;
+
+  backCoverFile = null as File | null;
+  backCoverDialog = false;
+
+  uploadFrontCover() {
+    if (!this.currentMovie) return;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($file: Upload!, $name: String) {
+          uploadImage(file: $file, name: $name) {
+            ...ImageFragment
+          }
+        }
+        ${imageFragment}
+      `,
+      variables: {
+        file: this.frontCoverFile,
+        name: this.currentMovie.name + " (front cover)"
+      }
+    })
+      .then(res => {
+        const image = res.data.uploadImage;
+        this.images.unshift(image);
+        this.setAsFrontCover(image._id);
+        this.frontCoverDialog = false;
+        this.frontCoverFile = null;
+      })
+      .finally(() => {});
+  }
+
+  uploadBackCover() {
+    if (!this.currentMovie) return;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($file: Upload!, $name: String) {
+          uploadImage(file: $file, name: $name) {
+            ...ImageFragment
+          }
+        }
+        ${imageFragment}
+      `,
+      variables: {
+        file: this.backCoverFile,
+        name: this.currentMovie.name + " (back cover)"
+      }
+    })
+      .then(res => {
+        const image = res.data.uploadImage;
+        this.images.unshift(image);
+        this.setAsBackCover(image._id);
+        this.backCoverDialog = false;
+        this.backCoverFile = null;
+      })
+      .finally(() => {});
+  }
+
+  setAsFrontCover(id: string) {
+    if (!this.currentMovie) return;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($ids: [String!]!, $opts: MovieUpdateOpts!) {
+          updateMovies(ids: $ids, opts: $opts) {
+            frontCover {
+              _id
+            }
+          }
+        }
+      `,
+      variables: {
+        ids: [this.currentMovie._id],
+        opts: {
+          frontCover: id
+        }
+      }
+    })
+      .then(res => {
+        movieModule.setFrontCover(id);
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
+
+  setAsBackCover(id: string) {
+    if (!this.currentMovie) return;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($ids: [String!]!, $opts: MovieUpdateOpts!) {
+          updateMovies(ids: $ids, opts: $opts) {
+            backCover {
+              _id
+            }
+          }
+        }
+      `,
+      variables: {
+        ids: [this.currentMovie._id],
+        opts: {
+          backCover: id
+        }
+      }
+    })
+      .then(res => {
+        movieModule.setBackCover(id);
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
 
   get frontCover() {
     if (this.currentMovie.frontCover)
@@ -384,34 +530,6 @@ export default class SceneDetails extends Vue {
     });
   }
 
-  setAsThumbnail(id: string) {
-    if (!this.currentMovie) return;
-
-    ApolloClient.mutate({
-      mutation: gql`
-        mutation($ids: [String!]!, $opts: SceneUpdateOpts!) {
-          updateScenes(ids: $ids, opts: $opts) {
-            thumbnail {
-              _id
-            }
-          }
-        }
-      `,
-      variables: {
-        ids: [this.currentMovie._id],
-        opts: {
-          thumbnail: id
-        }
-      }
-    })
-      .then(res => {
-        sceneModule.setThumbnail(id);
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  }
-
   get releaseDate() {
     if (this.currentMovie && this.currentMovie.releaseDate)
       return new Date(this.currentMovie.releaseDate).toDateString();
@@ -451,6 +569,36 @@ export default class SceneDetails extends Vue {
       const actor = this.actors[index];
       actor.bookmark = bookmark;
       Vue.set(this.actors, index, actor);
+    }
+  }
+
+  rateScene(id: any, rating: number) {
+    const index = this.scenes.findIndex(sc => sc._id == id);
+
+    if (index > -1) {
+      const actor = this.scenes[index];
+      actor.rating = rating;
+      Vue.set(this.scenes, index, actor);
+    }
+  }
+
+  favoriteScene(id: any, favorite: boolean) {
+    const index = this.scenes.findIndex(sc => sc._id == id);
+
+    if (index > -1) {
+      const actor = this.scenes[index];
+      actor.favorite = favorite;
+      Vue.set(this.scenes, index, actor);
+    }
+  }
+
+  bookmarkScene(id: any, bookmark: boolean) {
+    const index = this.scenes.findIndex(sc => sc._id == id);
+
+    if (index > -1) {
+      const actor = this.scenes[index];
+      actor.bookmark = bookmark;
+      Vue.set(this.scenes, index, actor);
     }
   }
 
