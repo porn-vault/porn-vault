@@ -1,41 +1,32 @@
 <template>
-  <v-card outlined>
-    <v-card-title>Select actors</v-card-title>
-    <v-card-text>
-      <v-subheader v-if="value.length">Selected actors</v-subheader>
-      <v-list v-for="(actor, i) in value" :key="'selected-' + actor._id">
-        <v-list-item @click="value.splice(i, 1)">
-          <v-list-item-icon>
-            <v-avatar color="grey">
-              <v-img :src="thumbnail(actor)"></v-img>
-            </v-avatar>
-          </v-list-item-icon>
+  <div>
+    <v-autocomplete
+      color="accent"
+      v-model="innerValue"
+      :loading="loading"
+      :items="actors"
+      :search-input.sync="searchQuery"
+      cache-items
+      hide-no-data
+      label="Search for actors"
+      multiple
+      item-text="name"
+      item-value="_id"
+      clearable
+      @input="onInnerValueChange"
+    >
+      <template v-slot:item="{ item }">
+        <template>
+          <v-list-item-avatar>
+            <img :src="thumbnail(item)" />
+          </v-list-item-avatar>
           <v-list-item-content>
-            <v-list-item-title>{{ actor.name }}</v-list-item-title>
+            <v-list-item-title v-html="item.name"></v-list-item-title>
           </v-list-item-content>
-        </v-list-item>
-      </v-list>
-      <v-text-field
-        placeholder="Search for actors"
-        color="accent"
-        @input="onQueryChange"
-        v-model="searchQuery"
-        :loading="waiting"
-      ></v-text-field>
-      <v-list v-for="actor in notSelectedActors" :key="actor._id">
-        <v-list-item @click="select(actor)">
-          <v-list-item-icon>
-            <v-avatar>
-              <v-img :src="thumbnail(actor)"></v-img>
-            </v-avatar>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>{{ actor.name }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-card-text>
-  </v-card>
+        </template>
+      </template>
+    </v-autocomplete>
+  </div>
 </template>
 
 <script lang="ts">
@@ -49,26 +40,23 @@ import IActor from "../types/actor";
 export default class ActorSelector extends Vue {
   @Prop() value!: IActor[];
 
-  actors: IActor[] = [];
+  innerValue = this.value || [];
+
+  actors: IActor[] = this.value || [];
   searchQuery = "";
 
-  waiting = false;
+  loading = false;
   resetTimeout = null as NodeJS.Timeout | null;
 
-  @Watch("selectedActors", { deep: true })
-  onSelectionChange(newVal: IActor[]) {
-    this.$emit("input", newVal);
+  @Watch("value")
+  onValueChange(newVal: IActor[]) {
+    this.innerValue = newVal;
   }
 
-  get notSelectedActors() {
-    const ids = this.value.map(a => a._id);
-    return this.actors.filter(a => !ids.includes(a._id));
-  }
-
-  select(actor: IActor) {
-    if (!this.value.find(a => a._id == actor._id)) {
-      this.$emit("input", this.value.concat(actor));
-    }
+  onInnerValueChange(newVal: string[]) {
+    this.$emit("input", newVal
+      .map(id => this.actors.find(a => a._id == id))
+      .filter(Boolean) as IActor[]);
   }
 
   thumbnail(actor: IActor) {
@@ -79,9 +67,22 @@ export default class ActorSelector extends Vue {
     return "";
   }
 
-  async fetchPage() {
+  @Watch("searchQuery")
+  onSearch(newVal: string | null) {
+    if (this.resetTimeout) {
+      clearTimeout(this.resetTimeout);
+    }
+    if (!this.searchQuery) return;
+
+    this.resetTimeout = setTimeout(() => {
+      this.loading = true;
+      this.fetchPage(this.searchQuery);
+    }, 500);
+  }
+
+  async fetchPage(searchQuery: string) {
     try {
-      const query = `query:'${this.searchQuery || ""}'`;
+      const query = `query:'${searchQuery || ""}'`;
 
       const result = await ApolloClient.query({
         query: gql`
@@ -97,25 +98,17 @@ export default class ActorSelector extends Vue {
         }
       });
 
-      this.actors = result.data.getActors;
+      this.loading = false;
+      this.actors.push(...result.data.getActors);
+
+      const ids = [...new Set(this.actors.map(a => a._id))];
+
+      this.actors = ids
+        .map(id => this.actors.find(a => a._id == id))
+        .filter(Boolean) as IActor[];
     } catch (err) {
       throw err;
     }
-  }
-
-  onQueryChange() {
-    if (this.resetTimeout) {
-      clearTimeout(this.resetTimeout);
-    }
-    if (!this.searchQuery) return;
-
-    this.waiting = true;
-    this.actors = [];
-
-    this.resetTimeout = setTimeout(() => {
-      this.waiting = false;
-      this.fetchPage();
-    }, 500);
   }
 }
 </script>
