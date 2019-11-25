@@ -65,13 +65,12 @@ export async function checkConfig() {
     if (defaultOverride) {
       await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
     }
-    return false;
-  } else {
-    config = await setupFunction();
-    await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
-    logger.warn("Created config.json. Please edit and restart.");
-    process.exit(0);
+    return config;
   }
+  config = await setupFunction();
+  await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
+  logger.warn("Created config.json. Please edit and restart.");
+  return process.exit(0);
 }
 
 export async function getConfig() {
