@@ -32,10 +32,12 @@ export class SceneMeta {
   size: number | null = null;
   duration: number | null = null;
   dimensions = new VideoDimensions();
+  fps: number | null = null;
 }
 
 export default class Scene {
   _id: string;
+  hash: string | null = null;
   name: string;
   description: string | null = null;
   addedOn = +new Date();

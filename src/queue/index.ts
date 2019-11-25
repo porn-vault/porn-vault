@@ -10,10 +10,11 @@ import { getConfig } from "../config";
 import { extractLabels, extractActors } from "../extractor";
 import ora from "ora";
 import { existsAsync, unlinkAsync, statAsync } from "../fs/async";
+import { fileHash } from "../hash";
 
 export interface IQueueItem {
   _id: string;
-  name: string;
+  name: string | null;
   filename: string;
   path: string;
   actors: string[];
@@ -29,12 +30,7 @@ class Queue {
   }
 
   getLength(): Promise<number> {
-    return new Promise((resolve, reject) => {
-      this.store.count({}, (err, num) => {
-        if (err) return reject(err);
-        resolve(num);
-      });
-    });
+    return database.count(this.store, {});
   }
 
   async process(item: IQueueItem) {
@@ -43,13 +39,11 @@ class Queue {
 
     for (const actor of item.actors || []) {
       const actorInDb = await Actor.getById(actor);
-
       if (!actorInDb) throw new Error(`Actor ${actor} not found`);
     }
 
     for (const label of item.labels || []) {
       const labelInDb = await Label.getById(label);
-
       if (!labelInDb) throw new Error(`Label ${label} not found`);
     }
 
@@ -78,6 +72,10 @@ class Queue {
     scene._id = item._id;
     scene.path = sourcePath;
 
+    logger.log("Generating file checksum...");
+
+    scene.hash = await fileHash(sourcePath);
+
     try {
       await new Promise(async (resolve, reject) => {
         ffmpeg.ffprobe(sourcePath, async (err, data) => {
@@ -95,6 +93,9 @@ class Queue {
               height: <any>meta.height || null
             };
             if (meta.duration) scene.meta.duration = parseInt(meta.duration);
+
+            const fps = data.streams[0].avg_frame_rate;
+            if (fps) scene.meta.fps = parseFloat(fps);
           } else {
             logger.warn("Could not get video meta data.");
           }
@@ -118,16 +119,12 @@ class Queue {
     }
 
     // Extract actors
-    const extractedActors = await extractActors(scene.name);
-
-    let extractedActorsFromFileName = [] as string[];
-    if (item.name)
-      extractedActorsFromFileName = await extractActors(item.filename);
+    let extractedActors = [] as string[];
+    extractedActors = await extractActors(sourcePath);
 
     scene.actors.push(...extractedActors);
-    scene.actors.push(...extractedActorsFromFileName);
     scene.actors = [...new Set(scene.actors)];
-    logger.log(`Found ${scene.actors.length} actors in scene title.`);
+    logger.log(`Found ${scene.actors.length} actors in scene path.`);
 
     if (item.labels) {
       scene.labels = item.labels;
@@ -136,14 +133,30 @@ class Queue {
     // Extract labels
     const extractedLabels = await extractLabels(scene.name);
 
-    let extractedLabelsFromFileName = [] as string[];
+    let extractedLabelsFromFilePath = [] as string[];
     if (item.name)
-      extractedLabelsFromFileName = await extractLabels(item.filename);
+      extractedLabelsFromFilePath = await extractLabels(sourcePath);
 
     scene.labels.push(...extractedLabels);
-    scene.labels.push(...extractedLabelsFromFileName);
+    scene.labels.push(...extractedLabelsFromFilePath);
+    logger.log(`Found ${scene.labels.length} labels in scene path.`);
+
+    if (config.APPLY_ACTOR_LABELS === true) {
+      logger.log("Applying actor labels to scene");
+      scene.labels.push(
+        ...(
+          await Promise.all(
+            extractedActors.map(async id => {
+              const actor = await Actor.getById(id);
+              if (!actor) return [];
+              return actor.labels;
+            })
+          )
+        ).flat()
+      );
+    }
+
     scene.labels = [...new Set(scene.labels)];
-    logger.log(`Found ${scene.labels.length} labels in scene title.`);
 
     if (config.GENERATE_THUMBNAILS) {
       const loader = ora("Generating thumbnails...").start();
