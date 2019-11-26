@@ -96,7 +96,9 @@
     <v-dialog v-model="removeDialog" max-width="400px">
       <v-card :loading="removeLoader">
         <v-card-title>Really delete '{{ currentScene.name }}'?</v-card-title>
-        <v-card-text>Images of {{ currentScene.name }} will stay in your collection.</v-card-text>
+        <v-card-text>
+          <v-checkbox color="error" v-model="deleteImages" label="Delete images as well"></v-checkbox>
+        </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="text-none" text color="error" @click="remove">Delete</v-btn>
@@ -130,6 +132,7 @@ export default class SceneToolbar extends Vue {
   sceneNameRules = [v => (!!v && !!v.length) || "Invalid scene name"];
 
   removeDialog = false;
+  deleteImages = false;
   removeLoader = false;
 
   watch(url: string) {
@@ -171,12 +174,13 @@ export default class SceneToolbar extends Vue {
     this.removeLoader = true;
     ApolloClient.mutate({
       mutation: gql`
-        mutation($ids: [String!]!) {
-          removeScenes(ids: $ids)
+        mutation($ids: [String!]!, $deleteImages: Boolean) {
+          removeScenes(ids: $ids, deleteImages: $deleteImages)
         }
       `,
       variables: {
-        ids: [this.currentScene._id]
+        ids: [this.currentScene._id],
+        deleteImages: this.deleteImages
       }
     })
       .then(res => {
@@ -221,8 +225,8 @@ export default class SceneToolbar extends Vue {
       }
     })
       .then(res => {
-        sceneModule.setName(this.editName);
-        sceneModule.setDescription(this.editDescription);
+        sceneModule.setName(this.editName.trim());
+        sceneModule.setDescription(this.editDescription.trim());
         sceneModule.setStreamLinks(streamLinks);
         sceneModule.setActors(this.editActors);
         this.editDialog = false;

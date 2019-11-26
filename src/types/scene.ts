@@ -7,7 +7,7 @@ import * as logger from "../logger";
 import { libraryPath } from "./utility";
 import Label from "./label";
 import Actor from "./actor";
-import { statAsync, readdirAsync } from "../fs/async";
+import { statAsync, readdirAsync, unlinkAsync } from "../fs/async";
 
 export type ThumbnailFile = {
   name: string;
@@ -67,6 +67,11 @@ export default class Scene {
 
   static async remove(scene: Scene) {
     await database.remove(database.store.scenes, { _id: scene._id });
+    try {
+      if (scene.path) await unlinkAsync(scene.path);
+    } catch (error) {
+      logger.warn("Could not delete source file for scene " + scene._id);
+    }
   }
 
   static async filterImage(thumbnail: string) {

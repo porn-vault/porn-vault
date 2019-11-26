@@ -190,7 +190,10 @@ export default {
     return updatedScenes;
   },
 
-  async removeScenes(_, { ids }: { ids: string[] }) {
+  async removeScenes(
+    _,
+    { ids, deleteImages }: { ids: string[]; deleteImages?: boolean }
+  ) {
     for (const id of ids) {
       const scene = await Scene.getById(id);
 
@@ -198,6 +201,14 @@ export default {
         await Scene.remove(scene);
         await Image.filterScene(scene._id);
         await Movie.filterScene(scene._id);
+
+        if (deleteImages === true) {
+          for (const image of await Image.getByScene(scene._id)) {
+            await Image.remove(image);
+          }
+          logger.success("Deleted images of scene " + scene._id);
+        }
+        logger.success("Deleted scene " + scene._id);
       }
     }
     return true;

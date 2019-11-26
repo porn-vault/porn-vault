@@ -6,7 +6,11 @@
           <v-container>
             <v-hover>
               <template v-slot:default="{ hover }">
-                <v-img contain aspect-ratio="1" :src="hover ? backCover : frontCover"></v-img>
+                <v-img contain aspect-ratio="1" :src="hover ? backCover : frontCover">
+                  <template v-slot:placeholder>
+                    <v-sheet style="width: 100%; height: 100%;" color="grey" />
+                  </template>
+                </v-img>
               </template>
             </v-hover>
             <div class="mt-2 text-center">
