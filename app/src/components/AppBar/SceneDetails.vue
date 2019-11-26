@@ -70,7 +70,7 @@
 
             <ActorSelector v-model="editActors" />
 
-            <!-- <StudioSelector v-model="editStudio" /> -->
+            <StudioSelector v-model="editStudio" />
 
             <v-textarea
               auto-grow
