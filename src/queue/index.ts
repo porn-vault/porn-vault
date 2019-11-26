@@ -9,7 +9,7 @@ import Image from "../types/image";
 import { getConfig } from "../config";
 import { extractLabels, extractActors } from "../extractor";
 import ora from "ora";
-import { existsAsync, unlinkAsync, statAsync } from "../fs/async";
+import { existsAsync, statAsync } from "../fs/async";
 import { fileHash } from "../hash";
 
 export interface IQueueItem {
