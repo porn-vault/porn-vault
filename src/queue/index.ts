@@ -106,11 +106,6 @@ class Queue {
       });
     } catch (err) {
       logger.error("Error ffprobing file - perhaps a permission problem?");
-      try {
-        await unlinkAsync(sourcePath);
-      } catch (error) {
-        logger.warn(`Could not cleanup source file - ${sourcePath}`);
-      }
       throw new Error("Error");
     }
 
