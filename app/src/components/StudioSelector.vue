@@ -38,6 +38,7 @@ import studioFragment from "../fragments/studio";
 export default class StudioSelector extends Vue {
   @Prop() value!: any;
   @Prop({ default: false }) multiple!: boolean;
+  @Prop({ default: null }) ignore!: string; // Ignores studio ID in search results
 
   innerValue = this.value ? JSON.parse(JSON.stringify(this.value)) : null;
 
@@ -98,7 +99,11 @@ export default class StudioSelector extends Vue {
       this.loading = false;
       this.studios.push(...result.data.getStudios);
 
-      const ids = [...new Set(this.studios.map(a => a._id))];
+      let ids = [...new Set(this.studios.map(a => a._id))];
+
+      if (this.ignore !== null) {
+        ids = ids.filter(id => id != this.ignore);
+      }
 
       this.studios = ids
         .map(id => this.studios.find(a => a._id == id))

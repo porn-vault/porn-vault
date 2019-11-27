@@ -37,6 +37,15 @@ export default {
     );
   },
 
+  async parent(studio: Studio) {
+    if (studio.parent) return await Studio.getById(studio.parent);
+    return null;
+  },
+
+  async substudios(studio: Studio) {
+    return await Studio.getSubStudios(studio._id);
+  },
+
   async numScenes(studio: Studio) {
     return (await Scene.getByStudio(studio._id)).length;
   }

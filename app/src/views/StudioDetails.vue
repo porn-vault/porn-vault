@@ -6,11 +6,18 @@
       </div>
       <div class="d-flex" v-else>
         <v-spacer></v-spacer>
-        <v-img eager :src="thumbnail"></v-img>
+        <v-img style="width: 50vw; max-width: 400px;" eager :src="thumbnail"></v-img>
         <v-spacer></v-spacer>
       </div>
+      <div class="mt-3" v-if="currentStudio.parent">
+        Part of
+        <router-link
+          class="accent--text"
+          :to="`/studio/${currentStudio.parent._id}`"
+        >{{ currentStudio.parent.name }}</router-link>
+      </div>
 
-      <div v-if="currentStudio.description" class="pa-2">{{ currentStudio.description }}</div>
+      <div v-if="currentStudio.description" class="med--text pa-2">{{ currentStudio.description }}</div>
 
       <div class="pt-5 pa-2">
         <v-chip
@@ -23,9 +30,51 @@
         >{{ label }}</v-chip>
       </div>
 
+      <v-row>
+        <v-col
+          class="pa-1"
+          v-for="studio in currentStudio.substudios"
+          :key="studio._id"
+          cols="12"
+          sm="6"
+          md="4"
+          lg="3"
+          xl="2"
+        >
+          <studio-card :studio="studio" style="height: 100%" />
+        </v-col>
+      </v-row>
+
+      <v-row v-if="movies.length">
+        <v-col cols="12">
+          <h1 class="text-center font-weight-light">{{ movies.length }} movies</h1>
+
+          <v-row>
+            <v-col
+              class="pa-1"
+              v-for="movie in movies"
+              :key="movie._id"
+              cols="12"
+              sm="6"
+              md="4"
+              lg="3"
+              xl="2"
+            >
+              <movie-card
+                @rate="rateScene(movie._id, $event)"
+                @bookmark="bookmarkScene(movie._id, $event)"
+                @favorite="favoriteScene(movie._id, $event)"
+                :movie="movie"
+                style="height: 100%"
+              />
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
+
       <v-row v-if="scenes.length">
         <v-col cols="12">
-          <h1 class="text-center font-weight-light">{{ scenes.length }} Scenes</h1>
+          <h1 class="text-center font-weight-light">{{ scenes.length }} scenes</h1>
 
           <v-row>
             <v-col
@@ -91,9 +140,11 @@ import sceneFragment from "../fragments/scene";
 import { studioModule } from "../store/studio";
 import actorFragment from "../fragments/actor";
 import imageFragment from "../fragments/image";
+import movieFragment from "../fragments/movie";
 import moment from "moment";
 import Lightbox from "../components/Lightbox.vue";
 import SceneCard from "../components/SceneCard.vue";
+import MovieCard from "../components/MovieCard.vue";
 import InfiniteLoading from "vue-infinite-loading";
 import { actorModule } from "../store/actor";
 import IActor from "../types/actor";
@@ -101,20 +152,24 @@ import IImage from "../types/image";
 import ILabel from "../types/label";
 import studioFragment from "../fragments/studio";
 import IScene from "../types/scene";
+import IMovie from "../types/movie";
+import StudioCard from "../components/StudioCard.vue";
 
 @Component({
   components: {
     Lightbox,
     SceneCard,
-    InfiniteLoading
+    MovieCard,
+    InfiniteLoading,
+    StudioCard
   },
   beforeRouteLeave(_to, _from, next) {
     studioModule.setCurrent(null);
     next();
   }
 })
-export default class SceneDetails extends Vue {
-  actors = [] as IActor[];
+export default class StudioDetails extends Vue {
+  movies = [] as IMovie[];
   scenes = [] as IScene[];
   lightboxIndex = null as number | null;
 
@@ -369,16 +424,40 @@ export default class SceneDetails extends Vue {
         query($id: String!) {
           getStudioById(id: $id) {
             ...StudioFragment
+            movies {
+              ...MovieFragment
+              actors {
+                ...ActorFragment
+              }
+              scenes {
+                ...SceneFragment
+                actors {
+                  ...ActorFragment
+                }
+                studio {
+                  ...StudioFragment
+                }
+              }
+              studio {
+                ...StudioFragment
+              }
+            }
+            substudios {
+              ...StudioFragment
+            }
           }
         }
+        ${sceneFragment}
+        ${actorFragment}
         ${studioFragment}
+        ${movieFragment}
       `,
       variables: {
         id: (<any>this).$route.params.id
       }
     }).then(res => {
       studioModule.setCurrent(res.data.getStudioById);
-      // this.actors = res.data.getSceneById.actors;
+      this.movies = res.data.getStudioById.movies;
     });
   }
 }

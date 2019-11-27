@@ -149,6 +149,7 @@ type Studio {
   
   # Resolvers
   parent: Studio
+  substudios: [Studio!]!
   numScenes: Int!
   thumbnail: Image
   rating: Int # Inferred from scene ratings
@@ -256,5 +257,6 @@ type Mutation {
 
   addStudio(name: String!): Studio!
   updateStudios(ids: [String!]!, opts: StudioUpdateOpts!): [Studio!]!
+  removeStudios(ids: [String!]!): Boolean!
 }
 `;

@@ -1,5 +1,6 @@
 import Movie from "../../types/movie";
 import Image from "../../types/image";
+import Studio from "../../types/studio";
 
 export default {
   frontCover(movie: Movie) {
@@ -52,5 +53,10 @@ export default {
       (dur, scene) => dur + <number>scene.meta.size,
       0
     );
+  },
+
+  async studio(movie: Movie) {
+    if (movie.studio) return Studio.getById(movie.studio);
+    return null;
   }
 };

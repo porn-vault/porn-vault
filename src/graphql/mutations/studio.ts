@@ -1,5 +1,8 @@
 import * as database from "../../database";
 import Studio from "../../types/studio";
+import Scene from "../../types/scene";
+import Movie from "../../types/movie";
+import Image from "../../types/image";
 
 type IStudioUpdateOpts = Partial<{
   name: string;
@@ -7,7 +10,7 @@ type IStudioUpdateOpts = Partial<{
   thumbnail: string;
   favorite: boolean;
   bookmark: boolean;
-  parent: string;
+  parent: string | null;
 }>;
 
 export default {
@@ -35,7 +38,7 @@ export default {
         if (typeof opts.thumbnail == "string")
           studio.thumbnail = opts.thumbnail;
 
-        if (typeof opts.parent == "string") studio.parent = opts.parent;
+        if (opts.parent !== undefined) studio.parent = opts.parent;
 
         if (typeof opts.bookmark == "boolean") studio.bookmark = opts.bookmark;
 
@@ -51,5 +54,20 @@ export default {
     }
 
     return updatedStudios;
+  },
+
+  async removeStudios(_, { ids }: { ids: string[] }) {
+    for (const id of ids) {
+      const studio = await Studio.getById(id);
+
+      if (studio) {
+        await Studio.remove(studio);
+        await Studio.filterStudio(studio._id);
+        await Scene.filterStudio(studio._id);
+        await Movie.filterStudio(studio._id);
+        await Image.filterStudio(studio._id);
+      }
+    }
+    return true;
   }
 };

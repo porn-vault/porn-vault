@@ -20,7 +20,7 @@ type IImageUpdateOpts = Partial<{
   actors: string[];
   favorite: boolean;
   bookmark: boolean;
-  studio: string;
+  studio: string | null;
 }>;
 
 export default {
@@ -208,7 +208,7 @@ export default {
 
         if (typeof opts.rating == "number") image.rating = opts.rating;
 
-        if (typeof opts.studio == "string") image.studio = opts.studio;
+        if (opts.studio !== undefined) image.studio = opts.studio;
 
         await database.update(database.store.images, { _id: image._id }, image);
         updatedImages.push(image);

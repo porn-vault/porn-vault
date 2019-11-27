@@ -44,6 +44,8 @@
               placeholder="Movie description"
             />
             <SceneSelector :multiple="true" v-model="editScenes" />
+
+            <StudioSelector v-model="editStudio" />
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -83,10 +85,12 @@ import IScene from "../../types/scene";
 import actorFragment from "../../fragments/actor";
 import sceneFragment from "../../fragments/scene";
 import movieFragment from "../../fragments/movie";
+import StudioSelector from "../../components/StudioSelector.vue";
 
 @Component({
   components: {
-    SceneSelector
+    SceneSelector,
+    StudioSelector
   }
 })
 export default class MovieToolbar extends Vue {
@@ -95,6 +99,7 @@ export default class MovieToolbar extends Vue {
   editName = "";
   editDescription = "";
   editScenes = [] as IScene[];
+  editStudio = null as any;
 
   movieNameRules = [v => (!!v && !!v.length) || "Invalid movie name"];
 
@@ -118,6 +123,13 @@ export default class MovieToolbar extends Vue {
             actors {
               ...ActorFragment
             }
+            studio {
+              _id
+              name
+              thumbnail {
+                _id
+              }
+            }
           }
         }
         ${movieFragment}
@@ -129,7 +141,8 @@ export default class MovieToolbar extends Vue {
         opts: {
           name: this.editName,
           description: this.editDescription,
-          scenes: this.editScenes.map(a => a._id)
+          scenes: this.editScenes.map(a => a._id),
+          studio: this.editStudio ? this.editStudio._id : null
         }
       }
     })
@@ -140,6 +153,7 @@ export default class MovieToolbar extends Vue {
         movieModule.setScenes(res.data.updateMovies[0].scenes);
         movieModule.setDuration(res.data.updateMovies[0].duration);
         movieModule.setSize(res.data.updateMovies[0].size);
+        movieModule.setStudio(res.data.updateMovies[0].studio);
         this.editDialog = false;
       })
       .catch(err => {
@@ -154,6 +168,7 @@ export default class MovieToolbar extends Vue {
     this.editDescription = this.currentMovie.description || "";
     this.editScenes = JSON.parse(JSON.stringify(this.currentMovie.scenes));
     this.editDialog = true;
+    this.editStudio = this.currentMovie.studio;
   }
 
   remove() {

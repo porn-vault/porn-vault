@@ -1,10 +1,8 @@
 import { VuexModule, Module, Mutation, Action } from "vuex-class-modules";
-import IScene from "@/types/scene";
-import IActor from "@/types/actor";
 
 @Module
 class StudioModule extends VuexModule {
-  current = null as IScene | null;
+  current = null as any | null;
 
   @Mutation
   setName(name: string) {
@@ -42,6 +40,11 @@ class StudioModule extends VuexModule {
       if (!this.current.thumbnail) this.current.thumbnail = { _id: id };
       else this.current.thumbnail._id = id;
     }
+  }
+
+  @Mutation
+  setParent(parent: number) {
+    if (this.current) this.current.parent = parent;
   }
 }
 

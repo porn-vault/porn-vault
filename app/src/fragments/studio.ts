@@ -11,6 +11,10 @@ export default gql`
       _id
       name
     }
+    parent {
+      _id
+      name
+    }
     numScenes
     rating
     favorite

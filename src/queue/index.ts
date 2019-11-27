@@ -7,7 +7,7 @@ import Scene, { ThumbnailFile } from "../types/scene";
 import ffmpeg from "fluent-ffmpeg";
 import Image from "../types/image";
 import { getConfig } from "../config";
-import { extractLabels, extractActors } from "../extractor";
+import { extractLabels, extractActors, extractStudios } from "../extractor";
 import ora from "ora";
 import { existsAsync, statAsync } from "../fs/async";
 import { fileHash } from "../hash";
@@ -126,14 +126,9 @@ class Queue {
     }
 
     // Extract labels
-    const extractedLabels = await extractLabels(scene.name);
-
-    let extractedLabelsFromFilePath = [] as string[];
-    if (item.name)
-      extractedLabelsFromFilePath = await extractLabels(sourcePath);
+    const extractedLabels = await extractLabels(sourcePath);
 
     scene.labels.push(...extractedLabels);
-    scene.labels.push(...extractedLabelsFromFilePath);
     logger.log(`Found ${scene.labels.length} labels in scene path.`);
 
     if (config.APPLY_ACTOR_LABELS === true) {
@@ -152,6 +147,15 @@ class Queue {
     }
 
     scene.labels = [...new Set(scene.labels)];
+
+    // Extract studio
+    const extractedStudios = await extractStudios(scene.name);
+
+    scene.studio = extractedStudios[0] || null;
+
+    if (scene.studio) logger.log("Found studio in scene path");
+
+    // Thumbnails
 
     if (config.GENERATE_THUMBNAILS) {
       const loader = ora("Generating thumbnails...").start();

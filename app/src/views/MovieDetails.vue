@@ -20,6 +20,12 @@
           </v-container>
         </v-col>
         <v-col cols="12" sm="8" md="8" lg="9" xl="10">
+          <div class="d-flex" v-if="currentMovie.studio">
+            <v-spacer></v-spacer>
+            <router-link :to="`/studio/${currentMovie.studio._id}`">
+              <v-img v-ripple max-width="200px" :src="studioLogo"></v-img>
+            </router-link>
+          </div>
           <div v-if="currentMovie.releaseDate">
             <div class="d-flex align-center">
               <v-icon>mdi-calendar</v-icon>
@@ -631,6 +637,18 @@ export default class SceneDetails extends Vue {
     return this.currentMovie.labels.map(l => l.name).sort();
   }
 
+  get studioLogo() {
+    if (
+      this.currentMovie &&
+      this.currentMovie.studio &&
+      this.currentMovie.studio.thumbnail
+    )
+      return `${serverBase}/image/${
+        this.currentMovie.studio.thumbnail._id
+      }?password=${localStorage.getItem("password")}`;
+    return "";
+  }
+
   beforeCreate() {
     ApolloClient.query({
       query: gql`
@@ -648,6 +666,9 @@ export default class SceneDetails extends Vue {
               studio {
                 ...StudioFragment
               }
+            }
+            studio {
+              ...StudioFragment
             }
           }
         }

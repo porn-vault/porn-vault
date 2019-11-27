@@ -5,29 +5,6 @@
     </v-btn>
     <v-toolbar-title v-if="$vuetify.breakpoint.smAndUp" class="mr-1 title">{{ currentStudio.name }}</v-toolbar-title>
 
-    <v-menu v-if="currentStudio.path || currentStudio.streamLinks.length">
-      <template v-slot:activator="{ on }">
-        <v-btn v-on="on" class="mr-1" icon>
-          <v-icon>mdi-play</v-icon>
-        </v-btn>
-      </template>
-
-      <v-list>
-        <v-list-item v-ripple @click="watch(currentStudioURL)" v-if="currentStudio.path">
-          <v-list-item-title>Local copy</v-list-item-title>
-        </v-list-item>
-
-        <v-list-item
-          v-for="link in currentStudio.streamLinks"
-          :key="link"
-          v-ripple
-          @click="watch(link)"
-        >
-          <v-list-item-title>{{ getDomainName(link) }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
-
     <v-btn @click="favorite" class="mr-1" icon>
       <v-icon
         :color="currentStudio.favorite ? 'error' : undefined"
@@ -68,15 +45,8 @@
               :rows="2"
             />
 
-            <ActorSelector v-model="editActors" />
-
-            <v-textarea
-              auto-grow
-              color="accent"
-              v-model="editStreamLinks"
-              placeholder="Streaming links (per line)"
-              :rows="2"
-            />
+            <v-subheader>Parent studio</v-subheader>
+            <StudioSelector :ignore="currentStudio._id" v-model="editParent" />
           </v-form>
         </v-card-text>
         <v-divider></v-divider>
@@ -96,9 +66,7 @@
     <v-dialog v-model="removeDialog" max-width="400px">
       <v-card :loading="removeLoader">
         <v-card-title>Really delete '{{ currentStudio.name }}'?</v-card-title>
-        <v-card-text>
-          <v-checkbox color="error" v-model="deleteImages" label="Delete images as well"></v-checkbox>
-        </v-card-text>
+        <v-card-text>Scenes, images and movies by {{ currentStudio.name }} will stay in your collection</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn class="text-none" text color="error" @click="remove">Delete</v-btn>
@@ -115,6 +83,7 @@ import gql from "graphql-tag";
 import IActor from "../../types/actor";
 import { studioModule } from "../../store/studio";
 import StudioSelector from "../../components/StudioSelector.vue";
+import studioFragment from "../../fragments/studio";
 
 @Component({
   components: {
@@ -126,11 +95,11 @@ export default class StudioToolbar extends Vue {
   validEdit = false;
   editName = "";
   editDescription = "";
+  editParent = null as any | null;
 
   studioNameRules = [v => (!!v && !!v.length) || "Invalid studio name"];
 
   removeDialog = false;
-  deleteImages = false;
   removeLoader = false;
 
   getDomainName(url: string) {
@@ -146,13 +115,12 @@ export default class StudioToolbar extends Vue {
     this.removeLoader = true;
     ApolloClient.mutate({
       mutation: gql`
-        mutation($ids: [String!]!, $deleteImages: Boolean) {
-          removeStudios(ids: $ids, deleteImages: $deleteImages)
+        mutation($ids: [String!]!) {
+          removeStudios(ids: $ids)
         }
       `,
       variables: {
-        ids: [this.currentStudio._id],
-        deleteImages: this.deleteImages
+        ids: [this.currentStudio._id]
       }
     })
       .then(res => {
@@ -179,20 +147,30 @@ export default class StudioToolbar extends Vue {
         mutation($ids: [String!]!, $opts: StudioUpdateOpts!) {
           updateStudios(ids: $ids, opts: $opts) {
             _id
+            parent {
+              _id
+              name
+            }
+            substudios {
+              ...StudioFragment
+            }
           }
         }
+        ${studioFragment}
       `,
       variables: {
         ids: [this.currentStudio._id],
         opts: {
           name: this.editName,
-          description: this.editDescription
+          description: this.editDescription,
+          parent: this.editParent ? this.editParent._id : null
         }
       }
     })
       .then(res => {
         studioModule.setName(this.editName.trim());
         studioModule.setDescription(this.editDescription.trim());
+        studioModule.setParent(res.data.updateStudios[0].parent);
         this.editDialog = false;
       })
       .catch(err => {
@@ -206,6 +184,7 @@ export default class StudioToolbar extends Vue {
     this.editName = this.currentStudio.name;
     this.editDescription = this.currentStudio.description || "";
     this.editDialog = true;
+    this.editParent = this.currentStudio.parent;
   }
 
   favorite() {

@@ -70,14 +70,7 @@
           lg="3"
           xl="2"
         >
-          <!-- <scene-card
-            @rate="rate(scene._id, $event)"
-            @bookmark="bookmark(scene._id, $event)"
-            @favorite="favorite(scene._id, $event)"
-            :scene="scene"
-            style="height: 100%"
-          />-->
-          <router-link :to="'/studio/' + studio._id">{{ studio }}</router-link>
+          <studio-card :studio="studio" style="height: 100%" />
         </v-col>
       </v-row>
     </div>
@@ -140,10 +133,12 @@ import { contextModule } from "../store/context";
 import InfiniteLoading from "vue-infinite-loading";
 import ILabel from "../types/label";
 import studioFragment from "../fragments/studio";
+import StudioCard from "../components/StudioCard.vue";
 
 @Component({
   components: {
-    InfiniteLoading
+    InfiniteLoading,
+    StudioCard
   }
 })
 export default class StudioList extends Vue {
@@ -254,17 +249,7 @@ export default class StudioList extends Vue {
     this.createStudioDialog = true;
   }
 
-  rate(id: any, rating: number) {
-    const index = this.studios.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const studio = this.studios[index];
-      studio.rating = rating;
-      Vue.set(this.studios, index, studio);
-    }
-  }
-
-  favorite(id: any, favorite: boolean) {
+  /* favorite(id: any, favorite: boolean) {
     const index = this.studios.findIndex(sc => sc._id == id);
 
     if (index > -1) {
@@ -282,18 +267,10 @@ export default class StudioList extends Vue {
       studio.bookmark = bookmark;
       Vue.set(this.studios, index, studio);
     }
-  }
+  } */
 
   studioLabels(studio: any) {
     return studio.labels.map(l => l.name).sort();
-  }
-
-  studioThumbnail(studio: any) {
-    if (studio.thumbnail)
-      return `${serverBase}/image/${
-        studio.thumbnail._id
-      }?password=${localStorage.getItem("password")}`;
-    return "";
   }
 
   @Watch("ratingFilter", {})

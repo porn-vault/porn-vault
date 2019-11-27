@@ -118,7 +118,6 @@ import gql from "graphql-tag";
 import ActorSelector from "../ActorSelector.vue";
 import IActor from "../../types/actor";
 import StudioSelector from "../../components/StudioSelector.vue";
-import studioFragment from "../../fragments/studio";
 
 @Component({
   components: {
@@ -218,11 +217,14 @@ export default class SceneToolbar extends Vue {
           updateScenes(ids: $ids, opts: $opts) {
             _id
             studio {
-              ...StudioFragment
+              _id
+              name
+              thumbnail {
+                _id
+              }
             }
           }
         }
-        ${studioFragment}
       `,
       variables: {
         ids: [this.currentScene._id],

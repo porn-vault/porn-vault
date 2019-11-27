@@ -69,6 +69,11 @@ class MovieModule extends VuexModule {
   }
 
   @Mutation
+  setStudio(studio: any) {
+    if (this.current) this.current.studio = studio;
+  }
+
+  @Mutation
   setSize(size: number) {
     if (this.current) this.current.size = size;
   }
