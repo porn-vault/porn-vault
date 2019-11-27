@@ -1,5 +1,6 @@
 import Label from "./types/label";
 import Actor from "./types/actor";
+import Studio from "./types/studio";
 
 // Calculate token permutation in string
 // "a test string"
@@ -63,4 +64,19 @@ export async function extractActors(str: string) {
     }
   });
   return foundActors;
+}
+
+// Returns IDs of extracted studios
+export async function extractStudios(str: string) {
+  const perms = tokenPerms(str);
+
+  const foundStudios = [] as string[];
+  const allStudios = await Studio.getAll();
+
+  allStudios.forEach(studio => {
+    if (perms.includes(studio.name.toLowerCase())) {
+      foundStudios.push(studio._id);
+    }
+  });
+  return foundStudios;
 }

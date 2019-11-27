@@ -23,7 +23,7 @@ type ISceneUpdateOpts = Partial<{
   streamLinks: string[];
   thumbnail: string;
   releaseDate: number;
-  studio: string;
+  studio: string | null;
 }>;
 
 export default {
@@ -165,7 +165,7 @@ export default {
 
         if (typeof opts.thumbnail == "string") scene.thumbnail = opts.thumbnail;
 
-        if (typeof opts.studio == "string") scene.studio = opts.studio;
+        if (opts.studio !== undefined) scene.studio = opts.studio;
 
         if (Array.isArray(opts.actors))
           scene.actors = [...new Set(opts.actors)];

@@ -8,6 +8,10 @@ export default gql`
       _id
       name
     }
+    studio {
+      _id
+      name
+    }
     bookmark
     favorite
     rating

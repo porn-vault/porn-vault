@@ -14,6 +14,7 @@ export default class Studio {
   favorite: boolean = false;
   bookmark: boolean = false;
   parent: string | null = null;
+  labels: string[] = [];
 
   constructor(name: string) {
     this._id = generateHash();
@@ -64,6 +65,12 @@ export default class Studio {
 
   static async getMovies(studio: Studio) {
     return await Movie.getByStudio(studio._id);
+  }
+
+  static async getSubStudios(studioId: string) {
+    return (await database.find(database.store.studios, {
+      parent: studioId
+    })) as Studio[];
   }
 
   static async getActors(studio: Studio) {

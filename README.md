@@ -12,6 +12,7 @@ Note: this is by no means finished, but useable.
 - Browse, manage & watch scenes
 - Browse & manage actors, including actor aliases
 - Browse & manage movies
+- Browse & manage studios (+ parent studios!)
 - Browse, manage & view images
 - Label your collection, including sub-labels
   - Automatic label extraction from scene titles & file names
@@ -26,7 +27,6 @@ Note: this is by no means finished, but useable.
 - Fork & create a new branch, give it the name of your feature you're implementing (e.g. "my-new-feature") & submit a pull request!
 
 ## Roadmap
-- Studios
 - Image albums
 - Recommend similar scenes/actors/images
 - Statistics?
@@ -52,15 +52,27 @@ Note: this is by no means finished, but useable.
 ### Actor page
 ![Actor page](/doc/img/actor_details.jpg)
 
+### Movie collection
+![Movies](/doc/img/movie_collection.jpg)
+
 ### Movie page
 ![Movie page](/doc/img/movie_details.jpg)
-
-### Image details
-![Image details](/doc/img/image.jpg)
 
 ### Image collection
 You can do everything you can do with scenes (e.g. rate/favorite/bookmark/label) with images as well - useful if you run an image collection only.
 ![Scene details](/doc/img/image_collection.jpg)
 
+### Image details
+![Image details](/doc/img/image_details.jpg)
+
+### Studio collection
+![Studios](/doc/img/studio_collection.jpg)
+
+### Parent studio
+![Studios](/doc/img/parent_studio.jpg)
+
 ### Dark mode
 ![Dark mode](/doc/img/darkmode.jpg)
+
+### Mobile
+![Dark mode](/doc/img/mobile.jpg)

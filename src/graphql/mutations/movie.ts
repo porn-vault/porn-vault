@@ -12,7 +12,7 @@ type IMovieUpdateOpts = Partial<{
   bookmark: boolean;
   rating: number;
   scenes: string[];
-  studio: string;
+  studio: string | null;
 }>;
 
 export default {
@@ -70,7 +70,7 @@ export default {
 
         if (typeof opts.backCover == "string") movie.backCover = opts.backCover;
 
-        if (typeof opts.studio == "string") movie.studio = opts.studio;
+        if (opts.studio !== undefined) movie.studio = opts.studio;
 
         if (typeof opts.frontCover == "string")
           movie.frontCover = opts.frontCover;

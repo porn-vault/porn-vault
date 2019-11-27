@@ -1,15 +1,27 @@
 <template>
   <v-app>
     <v-app-bar clipped-left elevate-on-scroll app color="primary">
-      <div class="d-flex align-center" v-if="$vuetify.breakpoint.xsOnly">
+      <div
+        style="overflow: hidden; text-overflow: ellipsis"
+        class="d-flex align-center"
+        v-if="$vuetify.breakpoint.xsOnly"
+      >
         <v-app-bar-nav-icon class="mr-2" @click="navDrawer = true"></v-app-bar-nav-icon>
         <v-toolbar-title v-if="currentScene" class="mr-1 title">{{ currentScene.name }}</v-toolbar-title>
         <v-toolbar-title v-if="currentActor" class="mr-1 title">{{ currentActor.name }}</v-toolbar-title>
         <v-toolbar-title v-if="currentMovie" class="mr-1 title">{{ currentMovie.name }}</v-toolbar-title>
+        <v-toolbar-title v-if="currentStudio" class="mr-1 title">{{ currentStudio.name }}</v-toolbar-title>
       </div>
 
       <span v-else>
-        <v-btn :icon="$vuetify.breakpoint.smAndDown" v-for="item in navItems" :key="item.icon" class="mr-2 text-none" text :to="item.url">
+        <v-btn
+          :icon="$vuetify.breakpoint.smAndDown"
+          v-for="item in navItems"
+          :key="item.icon"
+          class="mr-2 text-none"
+          text
+          :to="item.url"
+        >
           <v-icon :left="$vuetify.breakpoint.mdAndUp">{{ item.icon }}</v-icon>
           <span v-if="$vuetify.breakpoint.mdAndUp">{{ item.text }}</span>
         </v-btn>
@@ -25,13 +37,11 @@
         <v-icon>mdi-filter</v-icon>
       </v-btn>
 
-      <template
-        v-slot:extension
-        v-if="$route.name == 'scene-details' || $route.name == 'actor-details'  || $route.name == 'movie-details'"
-      >
+      <template v-slot:extension v-if="showDetailsBar">
         <scene-details-bar v-if="$route.name == 'scene-details'" />
         <actor-details-bar v-else-if="$route.name == 'actor-details'" />
         <movie-details-bar v-else-if="$route.name == 'movie-details'" />
+        <studio-details-bar v-else-if="$route.name == 'studio-details'" />
       </template>
     </v-app-bar>
 
@@ -60,21 +70,37 @@ import { Component, Vue } from "vue-property-decorator";
 import { sceneModule } from "./store/scene";
 import { actorModule } from "./store/actor";
 import { movieModule } from "./store/movie";
+import { studioModule } from "./store/studio";
 import { serverBase } from "./apollo";
 import SceneDetailsBar from "./components/AppBar/SceneDetails.vue";
 import ActorDetailsBar from "./components/AppBar/ActorDetails.vue";
 import MovieDetailsBar from "./components/AppBar/MovieDetails.vue";
+import StudioDetailsBar from "./components/AppBar/StudioDetails.vue";
 import { contextModule } from "./store/context";
 
 @Component({
   components: {
     SceneDetailsBar,
     ActorDetailsBar,
-    MovieDetailsBar
+    MovieDetailsBar,
+    StudioDetailsBar
   }
 })
 export default class App extends Vue {
   navDrawer = false;
+
+  get showDetailsBar() {
+    return (
+      this.$route.name == "scene-details" ||
+      this.$route.name == "actor-details" ||
+      this.$route.name == "studio-details" ||
+      this.$route.name == "movie-details"
+    );
+  }
+
+  get currentStudio() {
+    return studioModule.current;
+  }
 
   get currentActor() {
     return actorModule.current;
@@ -138,11 +164,11 @@ export default class App extends Vue {
       text: "Labels",
       url: "/labels"
     },
-    /* {
+    {
       icon: "mdi-camera",
       text: "Studios",
       url: "/studios"
-    }, */
+    },
     {
       icon: "mdi-image",
       text: "Images",
