@@ -643,7 +643,13 @@ export default class SceneDetails extends Vue {
     return "";
   }
 
-  beforeCreate() {
+  @Watch("$route.params.id")
+  onRouteChange() {
+    movieModule.setCurrent(null);
+    this.onLoad();
+  }
+
+  onLoad() {
     ApolloClient.query({
       query: gql`
         query($id: String!) {
@@ -680,6 +686,10 @@ export default class SceneDetails extends Vue {
       this.actors = res.data.getMovieById.actors;
       document.title = res.data.getMovieById.name;
     });
+  }
+
+  beforeCreate() {
+    this.onLoad();
   }
 }
 </script>
