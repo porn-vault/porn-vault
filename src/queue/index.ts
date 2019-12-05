@@ -153,7 +153,10 @@ class Queue {
 
     scene.studio = extractedStudios[0] || null;
 
-    if (scene.studio) logger.log("Found studio in scene path");
+    if (scene.studio) {
+      // TODO: apply studio labels if enabled
+      logger.log("Found studio in scene path");
+    }
 
     // Thumbnails
     if (config.GENERATE_THUMBNAILS) {
