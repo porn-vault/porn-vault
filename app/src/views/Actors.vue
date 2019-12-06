@@ -59,7 +59,7 @@
           <v-icon>mdi-plus</v-icon>
         </v-btn>
         <v-btn @click="bulkImportDialog = true" icon>
-          <v-icon>mdi-account-multiple-plus</v-icon>
+          <v-icon>mdi-file-import</v-icon>
         </v-btn>
       </div>
       <v-row>
