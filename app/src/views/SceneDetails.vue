@@ -147,15 +147,15 @@
         </v-col>
       </v-row>
 
+      <div class="d-flex align-center">
+        <v-spacer></v-spacer>
+        <h1 class="font-weight-light mr-3">{{ images.length }} Images</h1>
+        <v-btn @click="openUploadDialog" icon>
+          <v-icon>mdi-upload</v-icon>
+        </v-btn>
+        <v-spacer></v-spacer>
+      </div>
       <div v-if="images.length">
-        <div class="d-flex align-center">
-          <v-spacer></v-spacer>
-          <h1 class="font-weight-light mr-3">{{ images.length }} Images</h1>
-          <v-btn @click="openUploadDialog" icon>
-            <v-icon>mdi-upload</v-icon>
-          </v-btn>
-          <v-spacer></v-spacer>
-        </div>
         <v-container fluid>
           <v-row>
             <v-col
