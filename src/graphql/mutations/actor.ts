@@ -38,7 +38,7 @@ export default {
       ) {
         if (config.APPLY_ACTOR_LABELS === true) {
           const sceneLabels = (await Scene.getLabels(scene)).map(l => l._id);
-          Scene.setLabels(scene, sceneLabels.concat(actorLabels));
+          await Scene.setLabels(scene, sceneLabels.concat(actorLabels));
         }
 
         logger.log(`Updated actors of ${scene._id}`);

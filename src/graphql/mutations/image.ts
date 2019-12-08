@@ -12,6 +12,7 @@ import Movie from "../../types/movie";
 import Jimp from "jimp";
 import { statAsync, unlinkAsync } from "../../fs/async";
 import { getConfig } from "../../config";
+import Studio from "../../types/studio";
 
 type IImageUpdateOpts = Partial<{
   name: string;
@@ -56,10 +57,6 @@ export default {
     if (!mimetype.includes("image/")) throw new Error("Invalid file");
 
     const image = new Image(imageName);
-
-    if (args.scene) image.scene = args.scene;
-
-    if (args.studio) image.studio = args.studio;
 
     const outPath = `tmp/${image._id}${ext}`;
 
@@ -128,16 +125,34 @@ export default {
       actors = args.actors;
     }
 
+    let labels = [] as string[];
+    if (args.labels) {
+      labels = args.labels;
+    }
+
+    if (args.scene) {
+      const scene = await Scene.getById(args.scene);
+
+      if (scene) {
+        image.scene = args.scene;
+
+        const sceneActors = (await Scene.getActors(scene)).map(a => a._id);
+        actors.push(...sceneActors);
+        const sceneLabels = (await Scene.getLabels(scene)).map(a => a._id);
+        labels.push(...sceneLabels);
+      }
+    }
+
+    if (args.studio) {
+      const studio = await Studio.getById(args.studio);
+      if (studio) image.studio = args.studio;
+    }
+
     // Extract actors
     const extractedActors = await extractActors(image.path);
     logger.log(`Found ${extractedActors.length} actors in image path.`);
     actors.push(...extractedActors);
     await Image.setActors(image, actors);
-
-    let labels = [] as string[];
-    if (args.labels) {
-      labels = args.labels;
-    }
 
     // Extract labels
     const extractedLabels = await extractLabels(image.path);

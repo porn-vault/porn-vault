@@ -40,7 +40,7 @@ export default {
       ) {
         const labels = (await Scene.getLabels(scene)).map(l => l._id);
         labels.push(label._id);
-        Scene.setLabels(scene, labels);
+        await Scene.setLabels(scene, labels);
         logger.log(`Updated labels of ${scene._id}.`);
       }
     }

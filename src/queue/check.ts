@@ -74,12 +74,12 @@ async function processImage(imagePath: string, readImage = true) {
     // Extract actors
     const extractedActors = await extractActors(image.path);
     logger.log(`Found ${extractedActors.length} actors in image path.`);
-    Image.setActors(image, [...new Set(extractedActors)]);
+    await Image.setActors(image, [...new Set(extractedActors)]);
 
     // Extract labels
     const extractedLabels = await extractLabels(image.path);
     logger.log(`Found ${extractedLabels.length} labels in image path.`);
-    Image.setLabels(image, [...new Set(extractedLabels)]);
+    await Image.setLabels(image, [...new Set(extractedLabels)]);
 
     await database.insert(database.store.images, image);
     logger.success(`Image '${imageName}' done.`);

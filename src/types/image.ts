@@ -41,24 +41,6 @@ export default class Image {
         ? image._id
         : `im_${image._id}`;
 
-      if (image.scene) {
-        const sceneId = image.scene.startsWith("sc_")
-          ? image.scene
-          : `sc_${image.scene}`;
-
-        if (!!(await CrossReference.get(imageId, sceneId))) {
-          logger.log(
-            `Cross reference ${imageId} -> ${sceneId} already exists.`
-          );
-        } else {
-          const cr = new CrossReference(imageId, sceneId);
-          await database.insert(database.store.cross_references, cr);
-          logger.log(
-            `Created cross reference ${cr._id}: ${cr.from} -> ${cr.to}`
-          );
-        }
-      }
-
       if (image.actors && image.actors.length) {
         for (const actor of image.actors) {
           const actorId = actor.startsWith("ac_") ? actor : `ac_${actor}`;

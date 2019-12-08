@@ -183,9 +183,9 @@ class Queue {
           image.path = file.path;
           image.scene = scene._id;
           image.meta.size = file.size;
-          image.actors = scene.actors;
           image.labels = scene.labels;
-          image.studio = scene.studio;
+          await Image.setLabels(image, labels);
+          await Image.setActors(image, actors);
           logger.log(`Creating image with id ${image._id}...`);
           await database.insert(database.store.images, image);
           images.push(image);

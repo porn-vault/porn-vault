@@ -19,6 +19,10 @@ export default {
   async addMovie(_, args: Dictionary<any>) {
     const movie = new Movie(args.name, args.scenes);
     await database.insert(database.store.movies, movie);
+
+    if (args.scenes) {
+      if (Array.isArray(args.scenes)) await Movie.setScenes(movie, args.scenes);
+    }
     return movie;
   },
 
