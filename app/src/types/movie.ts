@@ -13,10 +13,10 @@ export default interface IMovie {
   frontCover: {
     _id: string;
     color: string | null;
-  };
+  } | null;
   backCover: {
     _id: string;
-  };
+  } | null;
   studio: any;
   scenes: IScene[];
   actors: IActor[];

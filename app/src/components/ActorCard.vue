@@ -76,7 +76,7 @@ export default class ActorCard extends Vue {
   @Prop(Object) value!: IActor;
 
   get cardColor() {
-    if (this.value.thumbnail.color)
+    if (this.value.thumbnail && this.value.thumbnail.color)
       return ensureDarkColor(this.value.thumbnail.color);
     return null;
   }

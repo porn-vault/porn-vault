@@ -108,7 +108,7 @@ export default class SceneCard extends Vue {
   playInterval = null as NodeJS.Timeout | null;
 
   get cardColor() {
-    if (this.value.thumbnail.color)
+    if (this.value.thumbnail && this.value.thumbnail.color)
       return ensureDarkColor(this.value.thumbnail.color);
     return null;
   }

@@ -155,6 +155,7 @@ export default class Actor {
 
     const scores = await mapAsync(actors, async actor => {
       const score =
+        (await Scene.getByActor(actor._id)).length / 5 +
         (await Actor.getWatches(actor)).length +
         +actor.favorite * 5 +
         actor.rating;

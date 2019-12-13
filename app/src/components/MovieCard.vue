@@ -90,7 +90,7 @@ export default class MovieCard extends Vue {
   @Prop({ default: 0.71 }) ratio!: number;
 
   get cardColor() {
-    if (this.value.frontCover.color)
+    if (this.value.frontCover && this.value.frontCover.color)
       return ensureDarkColor(this.value.frontCover.color);
     return null;
   }

@@ -17,7 +17,7 @@ export default interface IScene {
   thumbnail: {
     _id: string;
     color: string | null;
-  };
+  } | null;
   meta: {
     size: number;
     duration: number;
