@@ -65,7 +65,7 @@
       <v-row>
         <v-col
           class="pa-1"
-          v-for="actor in actors"
+          v-for="(actor, i) in actors"
           :key="actor._id"
           cols="12"
           sm="6"
@@ -73,13 +73,7 @@
           lg="3"
           xl="2"
         >
-          <actor-card
-            @rate="rate(actor._id, $event)"
-            @bookmark="bookmark(actor._id, $event)"
-            @favorite="favorite(actor._id, $event)"
-            :actor="actor"
-            style="height: 100%"
-          />
+          <actor-card v-model="actors[i]" style="height: 100%" />
         </v-col>
       </v-row>
     </div>
@@ -415,36 +409,6 @@ export default class SceneList extends Vue {
 
   openCreateDialog() {
     this.createActorDialog = true;
-  }
-
-  rate(id: any, rating: number) {
-    const index = this.actors.findIndex(ac => ac._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.rating = rating;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  favorite(id: any, favorite: boolean) {
-    const index = this.actors.findIndex(ac => ac._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.favorite = favorite;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  bookmark(id: any, bookmark: boolean) {
-    const index = this.actors.findIndex(ac => ac._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.actors, index, actor);
-    }
   }
 
   actorLabels(actor: any) {

@@ -1,6 +1,6 @@
 <template>
-  <v-card v-if="actor" outlined>
-    <a :href="`#/actor/${actor._id}`">
+  <v-card v-if="value" outlined>
+    <a :href="`#/actor/${value._id}`">
       <v-img :aspect-ratio="aspectRatio" class="hover" v-ripple eager :src="thumbnail">
         <div class="corner-actions">
           <v-btn
@@ -11,8 +11,8 @@
             style="background: #fafafa;"
           >
             <v-icon
-              :color="actor.favorite ? 'red' : undefined"
-            >{{ actor.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+              :color="value.favorite ? 'red' : undefined"
+            >{{ value.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
           </v-btn>
           <v-btn
             light
@@ -21,26 +21,29 @@
             icon
             style="background: #fafafa;"
           >
-            <v-icon>{{ actor.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
+            <v-icon>{{ value.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
           </v-btn>
         </div>
       </v-img>
     </a>
 
     <v-card-title>
-      <span :title="actor.name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
-        {{ actor.name }}
-        <span class="subtitle-1 med--text" v-if="actor.bornOn">({{ age }})</span>
+      <span
+        :title="value.name"
+        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+      >
+        {{ value.name }}
+        <span class="subtitle-1 med--text" v-if="value.bornOn">({{ age }})</span>
       </span>
     </v-card-title>
     <v-card-subtitle
       class="pb-0"
-    >{{ actor.numScenes }} {{ actor.numScenes == 1 ? 'scene' : 'scenes' }}</v-card-subtitle>
+    >{{ value.numScenes }} {{ value.numScenes == 1 ? 'scene' : 'scenes' }}</v-card-subtitle>
     <v-rating
       half-increments
       @input="rate"
       class="ml-3 mb-2"
-      :value="actor.rating / 2"
+      :value="value.rating / 2"
       background-color="grey"
       color="amber"
       dense
@@ -65,14 +68,15 @@ import gql from "graphql-tag";
 import IActor from "../types/actor";
 import { contextModule } from "../store/context";
 import moment from "moment";
+import { copy } from "../util/object";
 
 @Component
 export default class ActorCard extends Vue {
-  @Prop(Object) actor!: IActor;
+  @Prop(Object) value!: IActor;
 
   get age() {
-    if (this.actor.bornOn) {
-      return moment().diff(this.actor.bornOn, "years");
+    if (this.value.bornOn) {
+      return moment().diff(this.value.bornOn, "years");
     }
   }
 
@@ -92,13 +96,15 @@ export default class ActorCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.actor._id],
+        ids: [this.value._id],
         opts: {
           rating
         }
       }
     }).then(res => {
-      this.$emit("rate", res.data.updateActors[0].rating);
+      const actor = copy(this.value);
+      actor.rating = res.data.updateActors[0].rating;
+      this.$emit("input", actor);
     });
   }
 
@@ -112,13 +118,15 @@ export default class ActorCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.actor._id],
+        ids: [this.value._id],
         opts: {
-          favorite: !this.actor.favorite
+          favorite: !this.value.favorite
         }
       }
     }).then(res => {
-      this.$emit("favorite", res.data.updateActors[0].favorite);
+      const actor = copy(this.value);
+      actor.favorite = res.data.updateActors[0].favorite;
+      this.$emit("input", actor);
     });
   }
 
@@ -132,24 +140,26 @@ export default class ActorCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.actor._id],
+        ids: [this.value._id],
         opts: {
-          bookmark: !this.actor.bookmark
+          bookmark: !this.value.bookmark
         }
       }
     }).then(res => {
-      this.$emit("bookmark", res.data.updateActors[0].bookmark);
+      const actor = copy(this.value);
+      actor.bookmark = res.data.updateActors[0].bookmark;
+      this.$emit("input", actor);
     });
   }
 
   get labelNames() {
-    return this.actor.labels.map(l => l.name).sort();
+    return this.value.labels.map(l => l.name).sort();
   }
 
   get thumbnail() {
-    if (this.actor.thumbnail)
+    if (this.value.thumbnail)
       return `${serverBase}/image/${
-        this.actor.thumbnail._id
+        this.value.thumbnail._id
       }?password=${localStorage.getItem("password")}`;
     return ``;
   }

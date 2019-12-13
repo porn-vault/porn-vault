@@ -128,20 +128,14 @@
           <v-row>
             <v-col
               class="pa-1"
-              v-for="actor in actors"
+              v-for="(actor, i) in actors"
               :key="actor._id"
               cols="12"
               sm="6"
               md="4"
               lg="3"
             >
-              <actor-card
-                style="height: 100%"
-                @rate="rateActor(actor._id, $event)"
-                @bookmark="bookmarkActor(actor._id, $event)"
-                @favorite="favoriteActor(actor._id, $event)"
-                :actor="actor"
-              />
+              <actor-card style="height: 100%" v-model="actors[i]" />
             </v-col>
           </v-row>
         </v-col>
@@ -679,36 +673,6 @@ export default class SceneDetails extends Vue {
     }).then(res => {
       sceneModule.setRating(rating);
     });
-  }
-
-  rateActor(id: any, rating: number) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.rating = rating;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  favoriteActor(id: any, favorite: boolean) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.favorite = favorite;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  bookmarkActor(id: any, bookmark: boolean) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.actors, index, actor);
-    }
   }
 
   get labelNames() {

@@ -66,7 +66,7 @@
       <v-row>
         <v-col
           class="pa-1"
-          v-for="movie in movies"
+          v-for="(movie, i) in movies"
           :key="movie._id"
           cols="6"
           sm="6"
@@ -78,8 +78,7 @@
             :ratio="useDVDCoverRatio ? undefined : 1"
             :movie="movie"
             style="height: 100%"
-            @bookmark="bookmark(movie._id, $event)"
-            @favorite="favorite(movie._id, $event)"
+            v-model="movies[i]"
           />
         </v-col>
       </v-row>

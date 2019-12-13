@@ -103,7 +103,7 @@
           <v-row>
             <v-col
               class="pa-1"
-              v-for="scene in scenes"
+              v-for="(scene, i) in scenes"
               :key="scene._id"
               cols="12"
               sm="6"
@@ -111,13 +111,7 @@
               lg="3"
               xl="2"
             >
-              <scene-card
-                style="height: 100%"
-                @rate="rateScene(scene._id, $event)"
-                @bookmark="bookmarkScene(scene._id, $event)"
-                @favorite="favoriteScene(scene._id, $event)"
-                :scene="scene"
-              />
+              <scene-card style="height: 100%" v-model="scenes[i]" />
             </v-col>
           </v-row>
         </v-col>
@@ -130,7 +124,7 @@
           <v-row>
             <v-col
               class="pa-1"
-              v-for="actor in actors"
+              v-for="(actor, i) in actors"
               :key="actor._id"
               cols="12"
               sm="6"
@@ -138,13 +132,7 @@
               lg="3"
               xl="2"
             >
-              <actor-card
-                style="height: 100%"
-                @rate="rateActor(actor._id, $event)"
-                @bookmark="bookmarkActor(actor._id, $event)"
-                @favorite="favoriteActor(actor._id, $event)"
-                :actor="actor"
-              />
+              <actor-card style="height: 100%" v-model="actors[i]" />
             </v-col>
           </v-row>
         </v-col>
@@ -546,36 +534,6 @@ export default class SceneDetails extends Vue {
     )}`;
   }
 
-  rateActor(id: any, rating: number) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.rating = rating;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  favoriteActor(id: any, favorite: boolean) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.favorite = favorite;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  bookmarkActor(id: any, bookmark: boolean) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
   refreshLabels() {
     if (!this.currentMovie) return;
 
@@ -615,38 +573,6 @@ export default class SceneDetails extends Vue {
     }).then(res => {
       movieModule.setRating(res.data.getMovieById.rating);
     });
-  }
-
-  rateScene(id: any, rating: number) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.rating = rating;
-      Vue.set(this.scenes, index, actor);
-    }
-
-    this.refreshRating();
-  }
-
-  favoriteScene(id: any, favorite: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.favorite = favorite;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
-  bookmarkScene(id: any, bookmark: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.scenes, index, actor);
-    }
   }
 
   get labelNames() {

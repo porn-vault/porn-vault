@@ -94,7 +94,7 @@
           <v-row>
             <v-col
               class="pa-1"
-              v-for="scene in scenes"
+              v-for="(scene, i) in scenes"
               :key="scene._id"
               cols="12"
               sm="6"
@@ -103,10 +103,7 @@
               xl="2"
             >
               <scene-card
-                @rate="rateScene(scene._id, $event)"
-                @bookmark="bookmarkScene(scene._id, $event)"
-                @favorite="favoriteScene(scene._id, $event)"
-                :scene="scene"
+                v-model="scenes[i]"
                 style="height: 100%"
               />
             </v-col>
@@ -640,36 +637,6 @@ export default class ActorDetails extends Vue {
         this.currentActor.thumbnail._id
       }?password=${localStorage.getItem("password")}`;
     return "";
-  }
-
-  rateScene(id: any, rating: number) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.rating = rating;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
-  favoriteScene(id: any, favorite: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.favorite = favorite;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
-  bookmarkScene(id: any, bookmark: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.scenes, index, actor);
-    }
   }
 
   @Watch("$route.params.id")

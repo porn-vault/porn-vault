@@ -1,48 +1,70 @@
 <template>
-  <v-card v-if="scene" outlined>
-    <a :href="`#/scene/${scene._id}`">
-      <v-img :aspect-ratio="aspectRatio" class="hover" v-ripple eager :src="thumbnail">
-        <div
-          class="white--text body-2 font-weight-bold duration-stamp"
-          v-if="scene.meta.duration"
-        >{{ videoDuration }}</div>
+  <v-card v-if="value" outlined>
+    <a :href="`#/scene/${value._id}`">
+      <v-hover>
+        <template v-slot:default="{ hover }">
+          <v-img :aspect-ratio="aspectRatio" class="hover" v-ripple eager :src="thumbnail">
+            <v-fade-transition>
+              <div
+                @mouseenter="mouseenter"
+                @mouseleave="mouseleave"
+                v-if="hover"
+                style="position: absolute: top: 0; left: 0; width: 100%; height: 100%"
+              >
+                <video
+                  ref="video"
+                  style="object-fit: cover;width: 100%; height: 100%"
+                  autoplay
+                  muted
+                  :src="videoPath"
+                ></video>
+              </div>
+            </v-fade-transition>
 
-        <div class="corner-slot">
-          <slot name="action"></slot>
-        </div>
+            <div
+              style="z-index: 6"
+              class="white--text body-2 font-weight-bold duration-stamp"
+              v-if="value.meta.duration"
+            >{{ videoDuration }}</div>
 
-        <div class="corner-actions">
-          <v-btn
-            light
-            class="elevation-2 mr-1"
-            @click.stop.prevent="favorite"
-            icon
-            style="background: #fafafa;"
-          >
-            <v-icon
-              :color="scene.favorite ? 'red' : undefined"
-            >{{ scene.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
-          </v-btn>
-          <v-btn
-            light
-            class="elevation-2"
-            @click.stop.prevent="bookmark"
-            icon
-            style="background: #fafafa;"
-          >
-            <v-icon>{{ scene.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
-          </v-btn>
-        </div>
-      </v-img>
+            <div class="corner-slot" style="z-index: 6">
+              <slot name="action"></slot>
+            </div>
+
+            <div class="corner-actions" style="z-index: 6">
+              <v-btn
+                light
+                class="elevation-2 mr-1"
+                @click.stop.prevent="favorite"
+                icon
+                style="background: #fafafa;"
+              >
+                <v-icon
+                  :color="value.favorite ? 'red' : undefined"
+                >{{ value.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+              </v-btn>
+              <v-btn
+                light
+                class="elevation-2"
+                @click.stop.prevent="bookmark"
+                icon
+                style="background: #fafafa;"
+              >
+                <v-icon>{{ value.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
+              </v-btn>
+            </div>
+          </v-img>
+        </template>
+      </v-hover>
     </a>
 
     <v-card-title>
       <span
-        :title="scene.name"
+        :title="value.name"
         style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
-      >{{ scene.name }}</span>
+      >{{ value.name }}</span>
     </v-card-title>
-    <v-card-subtitle v-if="scene.actors.length" class="pb-1">
+    <v-card-subtitle v-if="value.actors.length" class="pb-1">
       Featuring
       <span v-html="actorLinks"></span>
     </v-card-subtitle>
@@ -50,7 +72,7 @@
       half-increments
       @input="rate"
       class="ml-3 mb-2"
-      :value="scene.rating / 2"
+      :value="value.rating / 2"
       background-color="grey"
       color="amber"
       dense
@@ -75,21 +97,53 @@ import gql from "graphql-tag";
 import IScene from "../types/scene";
 import moment from "moment";
 import { contextModule } from "../store/context";
+import { copy } from "../util/object";
 
 @Component
 export default class SceneCard extends Vue {
-  @Prop(Object) scene!: IScene;
+  @Prop(Object) value!: IScene;
+
+  playIndex = 0;
+  playInterval = null as NodeJS.Timeout | null;
+
+  mouseenter() {
+    console.log("playing video");
+
+    if (this.playInterval) clearInterval(this.playInterval);
+
+    this.playIndex = 60;
+    // @ts-ignore
+    this.$refs.video.currentTime = this.playIndex;
+
+    this.playInterval = setInterval(() => {
+      this.playIndex += 180;
+
+      if (this.playIndex > this.value.meta.duration) this.playIndex = 0;
+      // @ts-ignore
+      if (this.$refs.video) this.$refs.video.currentTime = this.playIndex;
+    }, 5000);
+  }
+
+  mouseleave() {
+    console.log("stopping video");
+    if (this.playInterval) clearInterval(this.playInterval);
+  }
+
+  destroyed() {
+    console.log("stopping video");
+    if (this.playInterval) clearInterval(this.playInterval);
+  }
 
   get aspectRatio() {
     return contextModule.sceneAspectRatio;
   }
 
   get videoDuration() {
-    if (this.scene)
+    if (this.value)
       return moment()
         .startOf("day")
-        .seconds(this.scene.meta.duration)
-        .format("H:mm:ss");
+        .seconds(this.value.meta.duration)
+        .format(this.value.meta.duration < 3600 ? "mm:ss" : "H:mm:ss");
     return "";
   }
 
@@ -105,13 +159,15 @@ export default class SceneCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.scene._id],
+        ids: [this.value._id],
         opts: {
           rating
         }
       }
     }).then(res => {
-      this.$emit("rate", res.data.updateScenes[0].rating);
+      const scene = copy(this.value);
+      scene.rating = res.data.updateScenes[0].rating;
+      this.$emit("input", scene);
     });
   }
 
@@ -125,13 +181,15 @@ export default class SceneCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.scene._id],
+        ids: [this.value._id],
         opts: {
-          favorite: !this.scene.favorite
+          favorite: !this.value.favorite
         }
       }
     }).then(res => {
-      this.$emit("favorite", res.data.updateScenes[0].favorite);
+      const scene = copy(this.value);
+      scene.favorite = res.data.updateScenes[0].favorite;
+      this.$emit("input", scene);
     });
   }
 
@@ -145,22 +203,24 @@ export default class SceneCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.scene._id],
+        ids: [this.value._id],
         opts: {
-          bookmark: !this.scene.bookmark
+          bookmark: !this.value.bookmark
         }
       }
     }).then(res => {
-      this.$emit("bookmark", res.data.updateScenes[0].bookmark);
+      const scene = copy(this.value);
+      scene.bookmark = res.data.updateScenes[0].bookmark;
+      this.$emit("input", scene);
     });
   }
 
   get labelNames() {
-    return this.scene.labels.map(l => l.name).sort();
+    return this.value.labels.map(l => l.name).sort();
   }
 
   get actorLinks() {
-    const names = this.scene.actors.map(
+    const names = this.value.actors.map(
       a => `<a class="accent--text" href="#/actor/${a._id}">${a.name}</a>`
     );
     names.sort();
@@ -168,11 +228,18 @@ export default class SceneCard extends Vue {
   }
 
   get thumbnail() {
-    if (this.scene.thumbnail)
+    if (this.value.thumbnail)
       return `${serverBase}/image/${
-        this.scene.thumbnail._id
+        this.value.thumbnail._id
       }?password=${localStorage.getItem("password")}`;
     return ``;
+  }
+
+  get videoPath() {
+    if (this.value)
+      return `${serverBase}/scene/${
+        this.value._id
+      }?password=${localStorage.getItem("password")}`;
   }
 }
 </script>

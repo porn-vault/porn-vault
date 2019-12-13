@@ -80,7 +80,7 @@
           <v-row>
             <v-col
               class="pa-1"
-              v-for="movie in movies"
+              v-for="(movie, i) in movies"
               :key="movie._id"
               cols="12"
               sm="6"
@@ -88,13 +88,7 @@
               lg="3"
               xl="2"
             >
-              <movie-card
-                @rate="rateScene(movie._id, $event)"
-                @bookmark="bookmarkScene(movie._id, $event)"
-                @favorite="favoriteScene(movie._id, $event)"
-                :movie="movie"
-                style="height: 100%"
-              />
+              <movie-card v-model="movies[i]" style="height: 100%" />
             </v-col>
           </v-row>
         </v-col>
@@ -107,7 +101,7 @@
           <v-row>
             <v-col
               class="pa-1"
-              v-for="scene in scenes"
+              v-for="(scene, i) in scenes"
               :key="scene._id"
               cols="12"
               sm="6"
@@ -115,13 +109,7 @@
               lg="3"
               xl="2"
             >
-              <scene-card
-                @rate="rateScene(scene._id, $event)"
-                @bookmark="bookmarkScene(scene._id, $event)"
-                @favorite="favoriteScene(scene._id, $event)"
-                :scene="scene"
-                style="height: 100%"
-              />
+              <scene-card v-model="scenes[i]" style="height: 100%" />
             </v-col>
           </v-row>
         </v-col>
@@ -316,36 +304,6 @@ export default class StudioDetails extends Vue {
     return studioModule.current;
   }
 
-  rateScene(id: any, rating: number) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.rating = rating;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
-  favoriteScene(id: any, favorite: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.favorite = favorite;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
-  bookmarkScene(id: any, bookmark: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
   async fetchPage() {
     if (!this.currentStudio) return;
 
@@ -488,42 +446,6 @@ export default class StudioDetails extends Vue {
       this.labelSelectorDialog = true;
     }
   }
-
-  /* imageLink(image: any) {
-    return `${serverBase}/image/${image._id}?password=${localStorage.getItem(
-      "password"
-    )}`;
-  } */
-
-  /*  rateActor(id: any, rating: number) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.rating = rating;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  favoriteActor(id: any, favorite: boolean) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.favorite = favorite;
-      Vue.set(this.actors, index, actor);
-    }
-  }
-
-  bookmarkActor(id: any, bookmark: boolean) {
-    const index = this.actors.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.actors[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.actors, index, actor);
-    }
-  } */
 
   get labelNames() {
     if (!this.currentStudio) return [];

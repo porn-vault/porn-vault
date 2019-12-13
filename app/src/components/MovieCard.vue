@@ -1,7 +1,7 @@
 <template>
-  <v-card v-if="movie" outlined>
+  <v-card v-if="value" outlined>
     <v-hover v-slot:default="{ hover }">
-      <a :href="`#/movie/${movie._id}`">
+      <a :href="`#/movie/${value._id}`">
         <v-img
           contain
           :aspect-ratio="ratio"
@@ -10,6 +10,12 @@
           eager
           :src="hover ? backCover : frontCover"
         >
+          <div
+            style="z-index: 6"
+            class="white--text body-2 font-weight-bold duration-stamp"
+            v-if="value.duration"
+          >{{ movieDuration }}</div>
+
           <div class="corner-actions">
             <v-btn
               light
@@ -19,8 +25,8 @@
               style="background: #fafafa;"
             >
               <v-icon
-                :color="movie.favorite ? 'red' : undefined"
-              >{{ movie.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+                :color="value.favorite ? 'red' : undefined"
+              >{{ value.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
             </v-btn>
             <v-btn
               light
@@ -29,7 +35,7 @@
               icon
               style="background: #fafafa;"
             >
-              <v-icon>{{ movie.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
+              <v-icon>{{ value.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
             </v-btn>
           </div>
         </v-img>
@@ -38,19 +44,19 @@
 
     <v-card-title>
       <span
-        :title="movie.name"
+        :title="value.name"
         style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
-      >{{ movie.name }}</span>
+      >{{ value.name }}</span>
     </v-card-title>
-    <v-card-subtitle v-if="movie.actors.length" class="pt-0 pb-0">
+    <v-card-subtitle v-if="value.actors.length" class="pt-0 pb-0">
       Featuring
       <span v-html="actorLinks"></span>
     </v-card-subtitle>
-    <v-card-subtitle class="pt-0 pb-0">{{ movie.scenes.length }} scenes</v-card-subtitle>
+    <v-card-subtitle class="pt-0 pb-0">{{ value.scenes.length }} scenes</v-card-subtitle>
     <v-rating
       half-increments
       class="ml-3 mb-2"
-      :value="movie.rating / 2"
+      :value="value.rating / 2"
       background-color="grey"
       color="amber"
       dense
@@ -74,11 +80,22 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import ApolloClient, { serverBase } from "../apollo";
 import gql from "graphql-tag";
 import IMovie from "../types/movie";
+import { copy } from "../util/object";
+import moment from "moment";
 
 @Component
 export default class MovieCard extends Vue {
-  @Prop(Object) movie!: IMovie;
+  @Prop(Object) value!: IMovie;
   @Prop({ default: 0.71 }) ratio!: number;
+
+  get movieDuration() {
+    if (this.value && this.value.duration)
+      return moment()
+        .startOf("day")
+        .seconds(this.value.duration)
+        .format(this.value.duration < 3600 ? "mm:ss" : "H:mm:ss");
+    return "";
+  }
 
   favorite() {
     ApolloClient.mutate({
@@ -90,13 +107,15 @@ export default class MovieCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.movie._id],
+        ids: [this.value._id],
         opts: {
-          favorite: !this.movie.favorite
+          favorite: !this.value.favorite
         }
       }
     }).then(res => {
-      this.$emit("favorite", res.data.updateMovies[0].favorite);
+      const movie = copy(this.value);
+      movie.favorite = res.data.updateMovies[0].favorite;
+      this.$emit("input", movie);
     });
   }
 
@@ -110,22 +129,24 @@ export default class MovieCard extends Vue {
         }
       `,
       variables: {
-        ids: [this.movie._id],
+        ids: [this.value._id],
         opts: {
-          bookmark: !this.movie.bookmark
+          bookmark: !this.value.bookmark
         }
       }
     }).then(res => {
-      this.$emit("bookmark", res.data.updateMovies[0].bookmark);
+      const movie = copy(this.value);
+      movie.bookmark = res.data.updateMovies[0].bookmark;
+      this.$emit("input", movie);
     });
   }
 
   get labelNames() {
-    return this.movie.labels.map(l => l.name).sort();
+    return this.value.labels.map(l => l.name).sort();
   }
 
   get actorLinks() {
-    const names = this.movie.actors.map(
+    const names = this.value.actors.map(
       a => `<a class="accent--text" href="#/actor/${a._id}">${a.name}</a>`
     );
     names.sort();
@@ -133,17 +154,17 @@ export default class MovieCard extends Vue {
   }
 
   get frontCover() {
-    if (this.movie.frontCover)
+    if (this.value.frontCover)
       return `${serverBase}/image/${
-        this.movie.frontCover._id
+        this.value.frontCover._id
       }?password=${localStorage.getItem("password")}`;
     return ``;
   }
 
   get backCover() {
-    if (this.movie.backCover)
+    if (this.value.backCover)
       return `${serverBase}/image/${
-        this.movie.backCover._id
+        this.value.backCover._id
       }?password=${localStorage.getItem("password")}`;
     return this.frontCover;
   }
@@ -151,6 +172,15 @@ export default class MovieCard extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.duration-stamp {
+  padding: 4px;
+  border-radius: 4px;
+  background: #000000a0;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+
 .corner-actions {
   position: absolute;
   bottom: 5px;
