@@ -12,5 +12,6 @@ export default interface IActor {
   }[];
   thumbnail: {
     _id: string;
+    color: string | null;
   };
 }

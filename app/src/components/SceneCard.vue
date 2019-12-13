@@ -1,5 +1,5 @@
 <template>
-  <v-card :color="value.thumbnail.color" v-if="value" outlined>
+  <v-card dark tile :color="cardColor" v-if="value">
     <a :href="`#/scene/${value._id}`">
       <v-hover>
         <template v-slot:default="{ hover }">
@@ -98,6 +98,7 @@ import IScene from "../types/scene";
 import moment from "moment";
 import { contextModule } from "../store/context";
 import { copy } from "../util/object";
+import { ensureDarkColor } from "../util/color";
 
 @Component
 export default class SceneCard extends Vue {
@@ -105,6 +106,12 @@ export default class SceneCard extends Vue {
 
   playIndex = 0;
   playInterval = null as NodeJS.Timeout | null;
+
+  get cardColor() {
+    if (this.value.thumbnail.color)
+      return ensureDarkColor(this.value.thumbnail.color);
+    return null;
+  }
 
   mouseenter() {
     console.log("playing video");

@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="studio" outlined>
+  <v-card tile v-if="studio">
     <router-link :to="`/studio/${studio._id}`">
       <div class="pa-2" v-ripple>
         <v-img contain aspect-ratio="2" :src="thumbnail"></v-img>

@@ -1,5 +1,5 @@
 <template>
-  <v-card dark :color="value.thumbnail.color" v-if="value" outlined>
+  <v-card dark :color="cardColor" v-if="value" tile>
     <a :href="`#/actor/${value._id}`">
       <v-img :aspect-ratio="aspectRatio" class="hover" v-ripple eager :src="thumbnail">
         <div class="corner-actions">
@@ -69,10 +69,17 @@ import IActor from "../types/actor";
 import { contextModule } from "../store/context";
 import moment from "moment";
 import { copy } from "../util/object";
+import { ensureDarkColor } from "../util/color";
 
 @Component
 export default class ActorCard extends Vue {
   @Prop(Object) value!: IActor;
+
+  get cardColor() {
+    if (this.value.thumbnail.color)
+      return ensureDarkColor(this.value.thumbnail.color);
+    return null;
+  }
 
   get age() {
     if (this.value.bornOn) {

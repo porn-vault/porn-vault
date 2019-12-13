@@ -12,6 +12,7 @@ export default interface IMovie {
 
   frontCover: {
     _id: string;
+    color: string | null;
   };
   backCover: {
     _id: string;

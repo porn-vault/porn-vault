@@ -1,5 +1,5 @@
 <template>
-  <v-card :color="value.frontCover.color" v-if="value" outlined>
+  <v-card dark :color="cardColor" v-if="value" tile>
     <v-hover v-slot:default="{ hover }">
       <a :href="`#/movie/${value._id}`">
         <v-img
@@ -82,11 +82,18 @@ import gql from "graphql-tag";
 import IMovie from "../types/movie";
 import { copy } from "../util/object";
 import moment from "moment";
+import { ensureDarkColor } from "../util/color";
 
 @Component
 export default class MovieCard extends Vue {
   @Prop(Object) value!: IMovie;
   @Prop({ default: 0.71 }) ratio!: number;
+
+  get cardColor() {
+    if (this.value.frontCover.color)
+      return ensureDarkColor(this.value.frontCover.color);
+    return null;
+  }
 
   get movieDuration() {
     if (this.value && this.value.duration)
