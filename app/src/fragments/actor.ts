@@ -16,6 +16,7 @@ export default gql`
     }
     thumbnail {
       _id
+      color
     }
     watches
   }

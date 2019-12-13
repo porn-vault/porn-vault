@@ -6,6 +6,7 @@ import * as logger from "../logger/index";
 import { unlinkAsync } from "../fs/async";
 import { mapAsync } from "./utility";
 import CrossReference from "./cross_references";
+import Vibrant from "node-vibrant";
 
 export class ImageDimensions {
   width: number | null = null;
@@ -32,6 +33,38 @@ export default class Image {
   actors?: string[];
   studio: string | null = null;
   hash: string | null = null;
+  color: string | null = null;
+
+  static async color(image: Image) {
+    if (!image.path) return null;
+
+    if (image.color) return image.color;
+
+    try {
+      const palette = await Vibrant.from(image.path).getPalette();
+
+      const color =
+        palette.DarkVibrant?.getHex() ||
+        palette.DarkMuted?.getHex() ||
+        palette.Vibrant?.getHex() ||
+        palette.Vibrant?.getHex();
+
+      if (color) {
+        database
+          .update(
+            database.store.images,
+            { _id: image._id },
+            { $set: { color } }
+          )
+          .catch(err => {});
+      }
+
+      return color;
+    } catch (error) {
+      logger.error(error);
+      return null;
+    }
+  }
 
   static async checkIntegrity() {
     const allImages = await Image.getAll();

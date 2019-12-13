@@ -15,9 +15,11 @@ export default gql`
     }
     frontCover {
       _id
+      color
     }
     backCover {
       _id
+      color
     }
     duration
     size

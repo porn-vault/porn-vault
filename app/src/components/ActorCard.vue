@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="value" outlined>
+  <v-card dark :color="value.thumbnail.color" v-if="value" outlined>
     <a :href="`#/actor/${value._id}`">
       <v-img :aspect-ratio="aspectRatio" class="hover" v-ripple eager :src="thumbnail">
         <div class="corner-actions">
