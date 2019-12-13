@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="value" outlined>
+  <v-card :color="value.frontCover.color" v-if="value" outlined>
     <v-hover v-slot:default="{ hover }">
       <a :href="`#/movie/${value._id}`">
         <v-img

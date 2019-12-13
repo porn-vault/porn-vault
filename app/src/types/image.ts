@@ -15,4 +15,5 @@ export default interface IImage {
   bookmark: boolean;
   favorite: boolean;
   rating: number | null;
+  color?: string | null;
 }

@@ -123,6 +123,7 @@ type Image {
   labels: [Label!]!
   thumbnail: Image
   studio: Studio
+  color: String
 }
 
 type Movie {

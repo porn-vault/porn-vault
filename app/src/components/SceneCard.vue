@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="value" outlined>
+  <v-card :color="value.thumbnail.color" v-if="value" outlined>
     <a :href="`#/scene/${value._id}`">
       <v-hover>
         <template v-slot:default="{ hover }">
