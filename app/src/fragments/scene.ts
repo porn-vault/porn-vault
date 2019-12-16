@@ -15,6 +15,7 @@ export default gql`
     }
     thumbnail {
       _id
+      color
     }
     meta {
       size

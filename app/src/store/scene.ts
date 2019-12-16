@@ -44,7 +44,8 @@ class SceneModule extends VuexModule {
   @Mutation
   setThumbnail(id: string) {
     if (this.current) {
-      if (!this.current.thumbnail) this.current.thumbnail = { _id: id };
+      if (!this.current.thumbnail)
+        this.current.thumbnail = { _id: id, color: null };
       else this.current.thumbnail._id = id;
     }
   }

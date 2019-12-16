@@ -94,7 +94,7 @@
           <v-row>
             <v-col
               class="pa-1"
-              v-for="scene in scenes"
+              v-for="(scene, i) in scenes"
               :key="scene._id"
               cols="12"
               sm="6"
@@ -102,13 +102,7 @@
               lg="3"
               xl="2"
             >
-              <scene-card
-                @rate="rateScene(scene._id, $event)"
-                @bookmark="bookmarkScene(scene._id, $event)"
-                @favorite="favoriteScene(scene._id, $event)"
-                :scene="scene"
-                style="height: 100%"
-              />
+              <scene-card v-model="scenes[i]" style="height: 100%" />
             </v-col>
           </v-row>
         </v-col>
@@ -642,36 +636,6 @@ export default class ActorDetails extends Vue {
     return "";
   }
 
-  rateScene(id: any, rating: number) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.rating = rating;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
-  favoriteScene(id: any, favorite: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.favorite = favorite;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
-  bookmarkScene(id: any, bookmark: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const actor = this.scenes[index];
-      actor.bookmark = bookmark;
-      Vue.set(this.scenes, index, actor);
-    }
-  }
-
   @Watch("$route.params.id")
   onRouteChange() {
     actorModule.setCurrent(null);
@@ -715,6 +679,18 @@ export default class ActorDetails extends Vue {
 
   beforeMount() {
     this.onLoad();
+  }
+
+  mounted() {
+    window.addEventListener("keydown", ev => {
+      if (ev.keyCode >= 48 && ev.keyCode <= 53) {
+        const rating = ev.keyCode - 48;
+        this.rate(rating);
+      } else if (ev.keyCode >= 96 && ev.keyCode <= 101) {
+        const rating = ev.keyCode - 96;
+        this.rate(rating);
+      }
+    });
   }
 }
 </script>

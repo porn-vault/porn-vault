@@ -1,6 +1,5 @@
 import Scene from "../../types/scene";
 import Image from "../../types/image";
-import Actor from "../../types/actor";
 import Studio from "../../types/studio";
 
 export default {
@@ -14,9 +13,11 @@ export default {
   async labels(image: Image) {
     return await Image.getLabels(image);
   },
-
   async studio(image: Image) {
     if (image.studio) return Studio.getById(image.studio);
     return null;
+  },
+  async color(image: Image) {
+    return (await Image.color(image)) || null;
   }
 };

@@ -78,7 +78,7 @@
       <v-row>
         <v-col
           class="pa-1"
-          v-for="scene in scenes"
+          v-for="(scene, i) in scenes"
           :key="scene._id"
           cols="12"
           sm="6"
@@ -86,13 +86,7 @@
           lg="3"
           xl="2"
         >
-          <scene-card
-            @rate="rate(scene._id, $event)"
-            @bookmark="bookmark(scene._id, $event)"
-            @favorite="favorite(scene._id, $event)"
-            :scene="scene"
-            style="height: 100%"
-          >
+          <scene-card v-model="scenes[i]" style="height: 100%">
             <template v-slot:action>
               <v-checkbox
                 color="accent"
@@ -426,36 +420,6 @@ export default class SceneList extends Vue {
 
   openCreateDialog() {
     this.createSceneDialog = true;
-  }
-
-  rate(id: any, rating: number) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const scene = this.scenes[index];
-      scene.rating = rating;
-      Vue.set(this.scenes, index, scene);
-    }
-  }
-
-  favorite(id: any, favorite: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const scene = this.scenes[index];
-      scene.favorite = favorite;
-      Vue.set(this.scenes, index, scene);
-    }
-  }
-
-  bookmark(id: any, bookmark: boolean) {
-    const index = this.scenes.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const scene = this.scenes[index];
-      scene.bookmark = bookmark;
-      Vue.set(this.scenes, index, scene);
-    }
   }
 
   sceneLabels(scene: any) {

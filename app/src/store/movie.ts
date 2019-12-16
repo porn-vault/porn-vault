@@ -40,7 +40,8 @@ class MovieModule extends VuexModule {
   @Mutation
   setFrontCover(id: string) {
     if (this.current) {
-      if (!this.current.frontCover) this.current.frontCover = { _id: id };
+      if (!this.current.frontCover)
+        this.current.frontCover = { _id: id, color: null };
       else this.current.frontCover._id = id;
     }
   }
