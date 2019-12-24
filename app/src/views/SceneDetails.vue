@@ -429,6 +429,7 @@ export default class SceneDetails extends Vue {
           }
         }
         ${imageFragment}
+        ${actorFragment}
       `,
       variables: {
         file: this.selectedThumbnail,
