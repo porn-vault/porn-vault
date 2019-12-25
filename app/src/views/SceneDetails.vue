@@ -477,9 +477,17 @@ export default class SceneDetails extends Vue {
             scene: $scene
           ) {
             ...ImageFragment
+            actors {
+              ...ActorFragment
+            }
+            scene {
+              _id
+              name
+            }
           }
         }
         ${imageFragment}
+        ${actorFragment}
       `,
       variables: {
         file: this.selectedThumbnail,

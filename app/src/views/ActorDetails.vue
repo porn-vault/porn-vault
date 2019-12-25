@@ -377,9 +377,17 @@ export default class ActorDetails extends Vue {
             labels: $labels
           ) {
             ...ImageFragment
+            actors {
+              ...ActorFragment
+            }
+            scene {
+              _id
+              name
+            }
           }
         }
         ${imageFragment}
+        ${actorFragment}
       `,
       variables: {
         file: this.selectedThumbnail,
