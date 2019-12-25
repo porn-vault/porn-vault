@@ -13,7 +13,7 @@ import CrossReference from "./cross_references";
 import path from "path";
 import { existsSync } from "fs";
 import Jimp from "jimp";
-import nsg from "node-sprite-generator";
+import mergeImg from "merge-img";
 
 export type ThumbnailFile = {
   name: string;
@@ -312,7 +312,7 @@ export default class Scene {
       const options = {
         file: scene.path,
         pattern: `${scene._id}-{{index}}.jpg`,
-        count: 100 + 1,
+        count: 100 + 1, // Don't ask why +1, just accept it
         thumbnailPath: tmpFolder,
         quality: "60"
       };
@@ -371,40 +371,30 @@ export default class Scene {
 
       if (!existsSync(tmp)) mkdirp.sync(tmp);
 
-      logger.log(`Created preview for ${scene._id}`);
-      nsg(
-        {
-          src: [tmp + "/*.jpg"],
-          spritePath: tmp + "/sprite.png",
-          stylesheetPath: tmp + "/sprite.css",
-          layout: "horizontal",
-          compositor: "jimp"
-        },
-        async (err: Error) => {
-          if (err) {
-            logger.error(err);
-            resolve();
-          } else {
-            try {
-              const file = path.join(
-                await libraryPath("previews/"),
-                `${scene._id}`
-              );
-              const lenna = await Jimp.read(tmp + "/sprite.png");
-              await lenna.quality(parseInt(options.quality)).writeAsync(file);
+      logger.log(`Created 100 small thumbnails for ${scene._id}.`);
 
-              await rimrafAsync(tmp);
-
-              logger.log("Finished generating preview");
-              resolve(file);
-            } catch (err) {
-              logger.error("Preview error");
-              logger.error(err);
-              resolve();
-            }
-          }
-        }
+      const files = (await readdirAsync(tmp, "utf-8")).map(fileName =>
+        path.join(tmp, fileName)
       );
+      logger.log(files);
+
+      logger.log(`Creating preview strip for ${scene._id}...`);
+
+      const img = (await mergeImg(files)) as Jimp;
+
+      const file = path.join(
+        await libraryPath("previews/"),
+        `${scene._id}.jpg`
+      );
+
+      logger.log(`Writing to file ${file}...`);
+
+      img.write(file, async () => {
+        logger.log("Finished generating preview.");
+
+        await rimrafAsync(tmp);
+        resolve(file);
+      });
     });
   }
 

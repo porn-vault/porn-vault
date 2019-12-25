@@ -114,6 +114,10 @@
             <v-subheader>Video duration</v-subheader>
             {{ videoDuration }}
           </div>
+          <div v-if="currentScene.path" class="px-2 pt-2 d-flex align-center">
+            <v-subheader>Filesystem path</v-subheader>
+            {{ currentScene.path}}
+          </div>
           <div v-if="currentScene.meta.dimensions.width" class="px-2 d-flex align-center">
             <v-subheader>Video dimensions</v-subheader>
             {{ currentScene.meta.dimensions.width }}x{{ currentScene.meta.dimensions.height }}
