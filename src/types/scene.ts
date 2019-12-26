@@ -14,6 +14,7 @@ import path from "path";
 import { existsSync } from "fs";
 import Jimp from "jimp";
 import mergeImg from "merge-img";
+import Marker from "./marker";
 
 export type ThumbnailFile = {
   name: string;
@@ -230,6 +231,16 @@ export default class Scene {
     name = name.toLowerCase().trim();
     const allScenes = await Scene.getAll();
     return allScenes.filter(scene => scene.name.toLowerCase() == name);
+  }
+
+  static async getMarkers(scene: Scene) {
+    const references = await CrossReference.getBySource(scene._id);
+    return (
+      await mapAsync(
+        references.filter(r => r.to.startsWith("mk_")),
+        r => Marker.getById(r.to)
+      )
+    ).filter(Boolean) as Marker[];
   }
 
   static async getActors(scene: Scene) {

@@ -106,6 +106,7 @@ type Scene {
   actors: [Actor!]!
   labels: [Label!]!
   studio: Studio
+  markers: [Marker!]!
 }
 
 type Image {
@@ -168,6 +169,12 @@ type Studio {
   labels: [Label!]! # Inferred from scene labels
   actors: [Actor!]! # Inferred from scene actors
   movies: [Movie!]!
+}
+
+type Marker {
+  _id: String!
+  name: String!
+  time: Int!
 }
 
 input ActorUpdateOpts {
@@ -269,5 +276,8 @@ type Mutation {
   addStudio(name: String!): Studio!
   updateStudios(ids: [String!]!, opts: StudioUpdateOpts!): [Studio!]!
   removeStudios(ids: [String!]!): Boolean!
+
+  createMarker(scene: String!, name: String!, time: Int!): Marker!
+  removeMarkers(ids: [String!]!): Boolean!
 }
 `;

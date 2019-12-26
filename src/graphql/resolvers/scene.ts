@@ -1,6 +1,7 @@
 import Scene from "../../types/scene";
 import Image from "../../types/image";
 import Studio from "../../types/studio";
+import Marker from "types/marker";
 
 export default {
   async actors(scene: Scene) {
@@ -23,5 +24,8 @@ export default {
   async studio(scene: Scene) {
     if (scene.studio) return Studio.getById(scene.studio);
     return null;
+  },
+  async markers(scene: Scene) {
+    return await Scene.getMarkers(scene);
   }
 };

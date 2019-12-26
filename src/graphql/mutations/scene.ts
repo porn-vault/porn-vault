@@ -13,6 +13,7 @@ import ProcessingQueue from "../../queue/index";
 import { extname } from "path";
 import { getConfig } from "../../config/index";
 import Studio from "../../types/studio";
+import Marker from "../../types/marker";
 
 type ISceneUpdateOpts = Partial<{
   favorite: boolean;
@@ -258,6 +259,7 @@ export default {
             await database.remove(database.store.cross_references, {
               to: image._id
             });
+            await Marker.removeByScene(scene);
           }
           logger.success("Deleted images of scene " + scene._id);
         }

@@ -8,6 +8,18 @@
           </v-container>
         </v-col>
       </v-row>
+      <div>
+        <v-btn class="text-none" color="accent" text @click="openMarkerDialog">Create marker</v-btn>
+        <div class="mt-3">
+          <div v-for="marker in markers" :key="marker._id">
+            {{ marker.name }} ({{ formatTime(marker.time) }})
+            <span
+              class="hover accent--text"
+              @click="moveToTime(marker.time, marker.name)"
+            >Jump</span>
+          </div>
+        </div>
+      </div>
       <v-row>
         <!-- <v-col cols="12" sm="4" md="4" lg="3" xl="2">
           <v-container>
@@ -322,6 +334,19 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="markerDialog" max-width="400px">
+      <v-card v-if="currentScene">
+        <v-card-title>Create marker at {{ currentTimeFormatted() }}</v-card-title>
+        <v-card-text>
+          <v-text-field placeholder="Marker title" color="accent" v-model="markerName"></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="accent" text @click="createMarker" class="text-none">Create</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -400,6 +425,83 @@ export default class SceneDetails extends Vue {
   uploadDialog = false;
   isUploading = false;
 
+  dp = null as any;
+
+  markers = [] as { _id: string; name: string; time: number }[];
+  markerName = "" as string | null;
+  markerDialog = false;
+
+  removeMarker(id: string) {
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($ids: [String!]!) {
+          removeMarkers(ids: $ids)
+        }
+      `,
+      variables: {
+        ids: [id]
+      }
+    }).then(res => {
+      this.markers = this.markers.filter(m => m._id != id);
+    });
+  }
+
+  createMarker() {
+    if (!this.currentScene) return;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($scene: String!, $name: String!, $time: Int!) {
+          createMarker(scene: $scene, name: $name, time: $time) {
+            _id
+            name
+            time
+          }
+        }
+      `,
+      variables: {
+        scene: this.currentScene._id,
+        name: this.markerName,
+        time: this.currentTime()
+      }
+    }).then(res => {
+      this.markers.unshift(res.data.createMarker);
+
+      this.markers.sort((a, b) => a.time - b.time);
+      this.markerName = "";
+      this.markerDialog = false;
+    });
+  }
+
+  formatTime(secs: number) {
+    return moment()
+      .startOf("day")
+      .seconds(secs)
+      .format("H:mm:ss");
+  }
+
+  currentTimeFormatted() {
+    return this.formatTime(this.currentTime());
+  }
+
+  currentTime() {
+    if (this.dp) return Math.round(this.dp.video.currentTime);
+    return 0;
+  }
+
+  moveToTime(time: number, text?: string) {
+    if (this.dp) {
+      this.dp.seek(time);
+      this.dp.play();
+      if (text) this.dp.notice(text, 2000, 0.8);
+    }
+  }
+
+  openMarkerDialog() {
+    this.dp.pause();
+    this.markerDialog = true;
+  }
+
   async unwatchScene() {
     if (this.currentScene) await unwatch(this.currentScene);
   }
@@ -434,15 +536,15 @@ export default class SceneDetails extends Vue {
             ? this.imageLink(this.currentScene.preview)
             : null
         },
-        highlight: [
-          /*  {
-            text: "marker for 20s",
-            time: 20
-          },
+        highlight: this.markers.map(m => ({
+          text: m.name,
+          time: m.time
+        })),
+        contextmenu: [
           {
-            text: "marker for 2mins",
-            time: 120
-          } */
+            text: "Follow on GitHub",
+            link: "https://github.com/boi123212321/porn-manager"
+          }
         ]
       };
     }
@@ -733,10 +835,7 @@ export default class SceneDetails extends Vue {
 
   get videoDuration() {
     if (this.currentScene)
-      return moment()
-        .startOf("day")
-        .seconds(this.currentScene.meta.duration)
-        .format("H:mm:ss");
+      return this.formatTime(this.currentScene.meta.duration);
     return "";
   }
 
@@ -807,6 +906,11 @@ export default class SceneDetails extends Vue {
             studio {
               ...StudioFragment
             }
+            markers {
+              _id
+              name
+              time
+            }
           }
         }
         ${sceneFragment}
@@ -819,10 +923,11 @@ export default class SceneDetails extends Vue {
     }).then(res => {
       sceneModule.setCurrent(res.data.getSceneById);
       this.actors = res.data.getSceneById.actors;
+      this.markers = res.data.getSceneById.markers;
       document.title = res.data.getSceneById.name;
 
       setTimeout(() => {
-        const dp = new DPlayer(this.dplayerOptions);
+        this.dp = new DPlayer(this.dplayerOptions);
       }, 100);
     });
   }

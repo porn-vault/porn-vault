@@ -22,6 +22,7 @@ let store = {} as {
   movies: DataStore;
   studios: DataStore;
   queue: DataStore;
+  markers: DataStore;
 };
 
 function buildIndex(store: DataStore, opts: EnsureIndexOptions) {
@@ -68,7 +69,8 @@ export async function loadStores() {
     labels: await loadStore(await libraryPath("labels.db")),
     movies: await loadStore(await libraryPath("movies.db")),
     studios: await loadStore(await libraryPath("studios.db")),
-    queue: await loadStore(await libraryPath("queue.db"))
+    queue: await loadStore(await libraryPath("queue.db")),
+    markers: await loadStore(await libraryPath("markers.db"))
   };
 
   await buildIndex(store.cross_references, {
@@ -91,6 +93,9 @@ export async function loadStores() {
   });
   await buildIndex(store.studios, {
     fieldName: "parent"
+  });
+  await buildIndex(store.markers, {
+    fieldName: "scene"
   });
 
   const loader = ora(

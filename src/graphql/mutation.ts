@@ -4,6 +4,7 @@ import SceneMutations from "./mutations/scene";
 import ImageMutations from "./mutations/image";
 import MovieMutations from "./mutations/movie";
 import StudioMutations from "./mutations/studio";
+import MarkerMutations from "./mutations/marker";
 
 export default {
   ...ImageMutations,
@@ -11,5 +12,6 @@ export default {
   ...LabelMutations,
   ...SceneMutations,
   ...MovieMutations,
-  ...StudioMutations
+  ...StudioMutations,
+  ...MarkerMutations
 };
