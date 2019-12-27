@@ -2,7 +2,30 @@
   <div>
     <div v-if="currentScene">
       <v-row>
-        <v-col cols="12" sm="4" md="4" lg="3" xl="2">
+        <v-col cols="12">
+          <div id="dplayer" ref="dplayer"></div>
+        </v-col>
+      </v-row>
+      <div>
+        <v-btn class="text-none" color="accent" text @click="openMarkerDialog">Create marker</v-btn>
+        <div class="mt-3">
+          <v-row>
+            <v-col cols="12" sm="8" md="6">
+              <MarkerItem
+                style="width: 100%"
+                @jump="moveToTime(marker.time, marker.name)"
+                @delete="removeMarker(marker._id)"
+                :marker="marker"
+                v-for="marker in markers"
+                :key="marker._id"
+              />
+            </v-col>
+          </v-row>
+        </div>
+      </div>
+      <v-divider></v-divider>
+      <v-row>
+        <!-- <v-col cols="12" sm="4" md="4" lg="3" xl="2">
           <v-container>
             <v-hover>
               <template v-slot:default="{ hover }">
@@ -23,11 +46,17 @@
               </template>
             </v-hover>
           </v-container>
-        </v-col>
-        <v-col cols="12" sm="8" md="8" lg="9" xl="10">
-          <div class="d-flex" v-if="currentScene.studio">
+        </v-col>-->
+        <v-col cols="12">
+          <div class="d-flex align-center">
+            <v-btn
+              text
+              class="text-none"
+              color="accent"
+              @click="openThumbnailDialog"
+            >Change thumbnail</v-btn>
             <v-spacer></v-spacer>
-            <router-link :to="`/studio/${currentScene.studio._id}`">
+            <router-link v-if="currentScene.studio" :to="`/studio/${currentScene.studio._id}`">
               <v-img v-ripple max-width="200px" :src="studioLogo"></v-img>
             </router-link>
           </div>
@@ -99,6 +128,10 @@
             <v-subheader>Video duration</v-subheader>
             {{ videoDuration }}
           </div>
+          <div v-if="currentScene.path" class="px-2 pt-2 d-flex align-center">
+            <v-subheader>Filesystem path</v-subheader>
+            {{ currentScene.path}}
+          </div>
           <div v-if="currentScene.meta.dimensions.width" class="px-2 d-flex align-center">
             <v-subheader>Video dimensions</v-subheader>
             {{ currentScene.meta.dimensions.width }}x{{ currentScene.meta.dimensions.height }}
@@ -109,11 +142,31 @@
           </div>
           <div v-if="currentScene.meta.size" class="px-2 d-flex align-center">
             <v-subheader>Video size</v-subheader>
-            {{ (currentScene.meta.size /1000/ 1000).toFixed(0) }} MB
+            {{ (currentScene.meta.size / 1000 / 1000).toFixed(0) }} MB
           </div>
           <div class="px-2 d-flex align-center">
             <v-subheader>View counter</v-subheader>
             {{ currentScene.watches.length }}
+            <v-btn
+              :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
+              fab
+              color="primary"
+              class="mx-3"
+              x-small
+              @click="watchScene"
+            >
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+            <v-btn
+              :disabled="!currentScene || !currentScene.watches.length"
+              :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
+              fab
+              color="primary"
+              x-small
+              @click="unwatchScene"
+            >
+              <v-icon>mdi-minus</v-icon>
+            </v-btn>
           </div>
           <div v-if="currentScene.watches.length" class="px-2 d-flex align-center">
             <v-subheader>Last time watched</v-subheader>
@@ -283,6 +336,19 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="markerDialog" max-width="400px">
+      <v-card v-if="currentScene">
+        <v-card-title>Create marker at {{ currentTimeFormatted() }}</v-card-title>
+        <v-card-text>
+          <v-text-field placeholder="Marker title" color="accent" v-model="markerName"></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="accent" text @click="createMarker" class="text-none">Create</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -308,6 +374,11 @@ import IActor from "../types/actor";
 import IImage from "../types/image";
 import ILabel from "../types/label";
 import { contextModule } from "../store/context";
+import { watch, unwatch } from "../util/scene";
+import MarkerItem from "../components/MarkerItem.vue";
+
+import "dplayer/dist/DPlayer.min.css";
+import DPlayer from "dplayer";
 
 interface ICropCoordinates {
   left: number;
@@ -328,7 +399,8 @@ interface ICropResult {
     ImageCard,
     InfiniteLoading,
     Cropper,
-    ImageUploader
+    ImageUploader,
+    MarkerItem
   },
   beforeRouteLeave(_to, _from, next) {
     sceneModule.setCurrent(null);
@@ -357,8 +429,129 @@ export default class SceneDetails extends Vue {
   uploadDialog = false;
   isUploading = false;
 
+  dp = null as any;
+
+  markers = [] as { _id: string; name: string; time: number }[];
+  markerName = "" as string | null;
+  markerDialog = false;
+
+  removeMarker(id: string) {
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($ids: [String!]!) {
+          removeMarkers(ids: $ids)
+        }
+      `,
+      variables: {
+        ids: [id]
+      }
+    }).then(res => {
+      this.markers = this.markers.filter(m => m._id != id);
+    });
+  }
+
+  createMarker() {
+    if (!this.currentScene) return;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($scene: String!, $name: String!, $time: Int!) {
+          createMarker(scene: $scene, name: $name, time: $time) {
+            _id
+            name
+            time
+          }
+        }
+      `,
+      variables: {
+        scene: this.currentScene._id,
+        name: this.markerName,
+        time: this.currentTime()
+      }
+    }).then(res => {
+      this.markers.unshift(res.data.createMarker);
+
+      this.markers.sort((a, b) => a.time - b.time);
+      this.markerName = "";
+      this.markerDialog = false;
+    });
+  }
+
+  formatTime(secs: number) {
+    return moment()
+      .startOf("day")
+      .seconds(secs)
+      .format("H:mm:ss");
+  }
+
+  currentTimeFormatted() {
+    return this.formatTime(this.currentTime());
+  }
+
+  currentTime() {
+    if (this.dp) return Math.round(this.dp.video.currentTime);
+    return 0;
+  }
+
+  moveToTime(time: number, text?: string) {
+    if (this.dp) {
+      this.dp.seek(time);
+      this.dp.play();
+      if (text) this.dp.notice(text, 2000, 0.8);
+    }
+  }
+
+  openMarkerDialog() {
+    this.dp.pause();
+    this.markerDialog = true;
+  }
+
+  async unwatchScene() {
+    if (this.currentScene) await unwatch(this.currentScene);
+  }
+
+  async watchScene() {
+    if (this.currentScene) await watch(this.currentScene);
+  }
+
   get aspectRatio() {
     return contextModule.sceneAspectRatio;
+  }
+
+  get videoPath() {
+    if (this.currentScene)
+      return `${serverBase}/scene/${
+        this.currentScene._id
+      }?password=${localStorage.getItem("password")}`;
+  }
+
+  get dplayerOptions() {
+    if (this.currentScene) {
+      return {
+        container: this.$refs.dplayer,
+        autoplay: false,
+        preload: true,
+        video: {
+          url: this.videoPath,
+          poster: this.thumbnail,
+          pic: this.thumbnail,
+          type: "normal",
+          thumbnails: this.currentScene.preview
+            ? this.imageLink(this.currentScene.preview)
+            : null
+        },
+        highlight: this.markers.map(m => ({
+          text: m.name,
+          time: m.time
+        })),
+        contextmenu: [
+          {
+            text: "Follow on GitHub",
+            link: "https://github.com/boi123212321/porn-manager"
+          }
+        ]
+      };
+    }
   }
 
   @Watch("currentScene.actors", { deep: true })
@@ -646,10 +839,7 @@ export default class SceneDetails extends Vue {
 
   get videoDuration() {
     if (this.currentScene)
-      return moment()
-        .startOf("day")
-        .seconds(this.currentScene.meta.duration)
-        .format("H:mm:ss");
+      return this.formatTime(this.currentScene.meta.duration);
     return "";
   }
 
@@ -720,6 +910,11 @@ export default class SceneDetails extends Vue {
             studio {
               ...StudioFragment
             }
+            markers {
+              _id
+              name
+              time
+            }
           }
         }
         ${sceneFragment}
@@ -732,7 +927,13 @@ export default class SceneDetails extends Vue {
     }).then(res => {
       sceneModule.setCurrent(res.data.getSceneById);
       this.actors = res.data.getSceneById.actors;
+      this.markers = res.data.getSceneById.markers;
+      this.markers.sort((a, b) => a.time - b.time);
       document.title = res.data.getSceneById.name;
+
+      setTimeout(() => {
+        this.dp = new DPlayer(this.dplayerOptions);
+      }, 100);
     });
   }
 
@@ -742,14 +943,14 @@ export default class SceneDetails extends Vue {
 
   mounted() {
     /* window.addEventListener("keydown", ev => {
-      if (ev.keyCode >= 48 && ev.keyCode <= 53) {
-        const rating = ev.keyCode - 48;
-        this.rate(rating);
-      } else if (ev.keyCode >= 96 && ev.keyCode <= 101) {
-        const rating = ev.keyCode - 96;
-        this.rate(rating);
-      }
-    }); */
+          if (ev.keyCode >= 48 && ev.keyCode <= 53) {
+            const rating = ev.keyCode - 48;
+            this.rate(rating);
+          } else if (ev.keyCode >= 96 && ev.keyCode <= 101) {
+            const rating = ev.keyCode - 96;
+            this.rate(rating);
+          }
+        }); */
   }
 }
 </script>

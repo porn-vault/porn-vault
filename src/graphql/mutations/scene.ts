@@ -13,6 +13,7 @@ import ProcessingQueue from "../../queue/index";
 import { extname } from "path";
 import { getConfig } from "../../config/index";
 import Studio from "../../types/studio";
+import Marker from "../../types/marker";
 
 type ISceneUpdateOpts = Partial<{
   favorite: boolean;
@@ -29,6 +30,16 @@ type ISceneUpdateOpts = Partial<{
 }>;
 
 export default {
+  async unwatchScene(_, { id }: { id: string }) {
+    const scene = await Scene.getById(id);
+
+    if (scene) {
+      await Scene.unwatch(scene);
+      return scene;
+    }
+    return null;
+  },
+
   async watchScene(_, { id }: { id: string }) {
     const scene = await Scene.getById(id);
 
@@ -248,6 +259,7 @@ export default {
             await database.remove(database.store.cross_references, {
               to: image._id
             });
+            await Marker.removeByScene(scene);
           }
           logger.success("Deleted images of scene " + scene._id);
         }

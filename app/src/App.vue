@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar clipped-left elevate-on-scroll app color="primary">
+    <v-app-bar style="z-index: 13" clipped-left elevate-on-scroll app color="primary">
       <div
         style="overflow: hidden; text-overflow: ellipsis"
         class="d-flex align-center"
@@ -223,8 +223,10 @@ export default class App extends Vue {
 }
 
 .hover {
+  transition: filter 0.1s ease-in-out;
   &:hover {
     cursor: pointer;
+    filter: brightness(0.75);
   }
 }
 

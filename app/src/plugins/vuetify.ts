@@ -17,16 +17,16 @@ export default new Vuetify({
         error: colors.red.accent3,
         info: colors.blue.darken2,
         success: colors.green.base,
-        warning: colors.amber.accent3
+        warning: colors.orange.darken2
       },
       dark: {
         primary: "#221015",
         secondary: colors.deepOrange.lighten4,
         accent: colors.blue.lighten3,
-        error: colors.red.lighten3,
+        error: colors.red.accent2,
         info: colors.blue.darken2,
         success: colors.green.base,
-        warning: colors.amber.accent3
+        warning: colors.orange.lighten2
       }
     }
   }

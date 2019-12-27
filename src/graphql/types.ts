@@ -52,6 +52,11 @@ type Query {
   getStudioById(id: String!): Studio
 
   getQueueInfo: QueueInfo!
+
+  getActorsWithoutScenes(num: Int): [Actor!]!
+  getActorsWithoutLabels(num: Int): [Actor!]!
+  getScenesWithoutActors(num: Int): [Scene!]!
+  getScenesWithoutLabels(num: Int): [Scene!]!
 }
 
 type Actor {
@@ -101,10 +106,12 @@ type Scene {
   
   # Resolvers
   thumbnail: Image
+  preview: Image
   images: [Image!]!
   actors: [Actor!]!
   labels: [Label!]!
   studio: Studio
+  markers: [Marker!]!
 }
 
 type Image {
@@ -167,6 +174,12 @@ type Studio {
   labels: [Label!]! # Inferred from scene labels
   actors: [Actor!]! # Inferred from scene actors
   movies: [Movie!]!
+}
+
+type Marker {
+  _id: String!
+  name: String!
+  time: Int!
 }
 
 input ActorUpdateOpts {
@@ -256,6 +269,7 @@ type Mutation {
   
   addScene(name: String!, actors: [String!], labels: [String!]): Scene!
   watchScene(id: String!): Scene!
+  unwatchScene(id: String!): Scene!
   uploadScene(file: Upload!, name: String, actors: [String!], labels: [String!]): Boolean!
   updateScenes(ids: [String!]!, opts: SceneUpdateOpts!): [Scene!]!
   removeScenes(ids: [String!]!, deleteImages: Boolean): Boolean!
@@ -267,5 +281,8 @@ type Mutation {
   addStudio(name: String!): Studio!
   updateStudios(ids: [String!]!, opts: StudioUpdateOpts!): [Studio!]!
   removeStudios(ids: [String!]!): Boolean!
+
+  createMarker(scene: String!, name: String!, time: Int!): Marker!
+  removeMarkers(ids: [String!]!): Boolean!
 }
 `;
