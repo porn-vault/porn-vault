@@ -35,6 +35,14 @@ export default class Image {
   hash: string | null = null;
   color: string | null = null;
 
+  static async filterCustomField(fieldId: string) {
+    await database.update(
+      database.store.images,
+      {},
+      { $unset: { [`customFields.${fieldId}`]: true } }
+    );
+  }
+
   static async color(image: Image) {
     if (!image.path) return null;
     if (image.color) return image.color;

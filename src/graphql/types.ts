@@ -1,5 +1,6 @@
 export default `
 scalar Long
+scalar Object
 
 type Dimensions {
   width: Long
@@ -61,7 +62,7 @@ type Actor {
   favorite: Boolean!
   bookmark: Boolean!
   rating: Int
-  #customFields
+  customFields: Object!
   
   # Resolvers
   watches: [Long!]!
@@ -95,7 +96,7 @@ type Scene {
   streamLinks: [String!]!
   watches: [Long!]!
   meta: SceneMeta!
-  #customFields
+  customFields: Object!
   
   # Resolvers
   thumbnail: Image
@@ -114,7 +115,7 @@ type Image {
   favorite: Boolean!
   bookmark: Boolean!
   rating: Int
-  #customFields
+  customFields: Object!
   meta: ImageMeta!
   
   # Resolvers
@@ -134,7 +135,7 @@ type Movie {
   releaseDate: Long
   favorite: Boolean!
   bookmark: Boolean!
-  #customFields
+  customFields: Object!
   
   # Resolvers
   rating: Int # Inferred from scene ratings
@@ -155,7 +156,7 @@ type Studio {
   addedOn: Long!
   favorite: Boolean!
   bookmark: Boolean!
-  #customFields
+  customFields: Object!
   
   # Resolvers
   parent: Studio
@@ -199,6 +200,7 @@ input ActorUpdateOpts {
   favorite: Boolean
   bookmark: Boolean
   bornOn: Long
+  customFields: Object
 }
 
 input ImageUpdateOpts {
@@ -210,6 +212,7 @@ input ImageUpdateOpts {
   bookmark: Boolean
   studio: String
   scene: String
+  customFields: Object
 }
 
 input LabelUpdateOpts {
@@ -230,6 +233,7 @@ input SceneUpdateOpts {
   thumbnail: String
   releaseDate: Long
   studio: String
+  customFields: Object
 }
 
 input MovieUpdateOpts {
@@ -243,6 +247,7 @@ input MovieUpdateOpts {
   rating: Int
   scenes: [String!]
   studio: String
+  customFields: Object
 }
 
 input StudioUpdateOpts {

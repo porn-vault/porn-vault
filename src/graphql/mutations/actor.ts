@@ -15,6 +15,7 @@ type IActorUpdateOpts = Partial<{
   favorite: boolean;
   bookmark: boolean;
   bornOn: number;
+  customFields: Dictionary<string>;
 }>;
 
 export default {
@@ -81,6 +82,14 @@ export default {
         if (typeof opts.rating == "number") actor.rating = opts.rating;
 
         if (opts.bornOn !== undefined) actor.bornOn = opts.bornOn;
+
+        if (opts.customFields) {
+          for (const key in opts.customFields) {
+            const value = opts.customFields[key];
+            logger.log(`Set scene custom.${key} to ${value}`);
+          }
+          actor.customFields = opts.customFields;
+        }
 
         await database.update(database.store.actors, { _id: actor._id }, actor);
 

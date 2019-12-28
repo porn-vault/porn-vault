@@ -27,6 +27,7 @@ type ISceneUpdateOpts = Partial<{
   thumbnail: string;
   releaseDate: number;
   studio: string | null;
+  customFields: Dictionary<string>;
 }>;
 
 export default {
@@ -229,6 +230,14 @@ export default {
 
         if (opts.releaseDate !== undefined)
           scene.releaseDate = opts.releaseDate;
+
+        if (opts.customFields) {
+          for (const key in opts.customFields) {
+            const value = opts.customFields[key];
+            logger.log(`Set scene custom.${key} to ${value}`);
+          }
+          scene.customFields = opts.customFields;
+        }
 
         await database.update(database.store.scenes, { _id: scene._id }, scene);
         updatedScenes.push(scene);

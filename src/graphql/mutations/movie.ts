@@ -1,6 +1,7 @@
 import * as database from "../../database";
 import Movie from "../../types/movie";
 import { Dictionary } from "../../types/utility";
+import * as logger from "../../logger";
 
 type IMovieUpdateOpts = Partial<{
   name: string;
@@ -13,6 +14,7 @@ type IMovieUpdateOpts = Partial<{
   rating: number;
   scenes: string[];
   studio: string | null;
+  customFields: Dictionary<string>;
 }>;
 
 export default {
@@ -76,6 +78,14 @@ export default {
 
         if (opts.releaseDate !== undefined)
           movie.releaseDate = opts.releaseDate;
+
+        if (opts.customFields) {
+          for (const key in opts.customFields) {
+            const value = opts.customFields[key];
+            logger.log(`Set scene custom.${key} to ${value}`);
+          }
+          movie.customFields = opts.customFields;
+        }
 
         await database.update(database.store.movies, { _id: movie._id }, movie);
         updatedScenes.push(movie);

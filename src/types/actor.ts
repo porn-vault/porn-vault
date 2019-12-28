@@ -20,6 +20,14 @@ export default class Actor {
   labels?: string[]; // backwards compatibility
   studio: string | null = null;
 
+  static async filterCustomField(fieldId: string) {
+    await database.update(
+      database.store.actors,
+      {},
+      { $unset: { [`customFields.${fieldId}`]: true } }
+    );
+  }
+
   static async checkIntegrity() {
     const allActors = await Actor.getAll();
 

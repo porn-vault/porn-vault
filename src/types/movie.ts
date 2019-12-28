@@ -22,6 +22,14 @@ export default class Movie {
   customFields: any = {};
   studio: string | null = null;
 
+  static async filterCustomField(fieldId: string) {
+    await database.update(
+      database.store.movies,
+      {},
+      { $unset: { [`customFields.${fieldId}`]: true } }
+    );
+  }
+
   static async checkIntegrity() {
     const allMovies = await Movie.getAll();
 

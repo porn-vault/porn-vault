@@ -190,6 +190,14 @@ export default class Scene {
     }
   }
 
+  static async filterCustomField(fieldId: string) {
+    await database.update(
+      database.store.scenes,
+      {},
+      { $unset: { [`customFields.${fieldId}`]: true } }
+    );
+  }
+
   static async filterStudio(studioId: string) {
     await database.update(
       database.store.scenes,

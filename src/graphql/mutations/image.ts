@@ -23,6 +23,7 @@ type IImageUpdateOpts = Partial<{
   bookmark: boolean;
   studio: string | null;
   scene: string | null;
+  customFields: Dictionary<string>;
 }>;
 
 export default {
@@ -227,6 +228,14 @@ export default {
         if (opts.studio !== undefined) image.studio = opts.studio;
 
         if (opts.scene !== undefined) image.scene = opts.scene;
+
+        if (opts.customFields) {
+          for (const key in opts.customFields) {
+            const value = opts.customFields[key];
+            logger.log(`Set scene custom.${key} to ${value}`);
+          }
+          image.customFields = opts.customFields;
+        }
 
         await database.update(database.store.images, { _id: image._id }, image);
         updatedImages.push(image);
