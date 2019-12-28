@@ -99,10 +99,10 @@ export default {
 
       if (actor) {
         await Actor.remove(actor);
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           from: actor._id
         });
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           to: actor._id
         });
       }

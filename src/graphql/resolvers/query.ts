@@ -11,6 +11,7 @@ import ProcessingQueue from "../../queue/index";
 import Studio from "../../types/studio";
 import { getConfig } from "../../config";
 import * as database from "../../database/index";
+import CustomField from "../../types/custom_field";
 
 const PAGE_SIZE = 24;
 const FALLBACK_FUZZINESS = 0.25;
@@ -835,10 +836,10 @@ export default {
   async getLabelById(_, args: Dictionary<any>) {
     return await Label.getById(args.id);
   },
-  /* async getCustomFields() {
-    const fields = await Label.getAll();
+  async getCustomFields() {
+    const fields = await CustomField.getAll();
     return fields.sort((a, b) => a.name.localeCompare(b.name));
-  }, */
+  },
   async getLabels() {
     const labels = await Label.getAll();
     return labels.sort((a, b) => a.name.localeCompare(b.name));

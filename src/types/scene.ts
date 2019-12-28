@@ -90,7 +90,7 @@ export default class Scene {
             );
           } else {
             const cr = new CrossReference(sceneId, actorId);
-            await database.insert(database.store.cross_references, cr);
+            await database.insert(database.store.crossReferences, cr);
             logger.log(
               `Created cross reference ${cr._id}: ${cr.from} -> ${cr.to}`
             );
@@ -108,7 +108,7 @@ export default class Scene {
             );
           } else {
             const cr = new CrossReference(sceneId, labelId);
-            await database.insert(database.store.cross_references, cr);
+            await database.insert(database.store.crossReferences, cr);
             logger.log(
               `Created cross reference ${cr._id}: ${cr.from} -> ${cr.to}`
             );
@@ -261,13 +261,13 @@ export default class Scene {
       .map(r => r._id);
 
     for (const id of oldActorReferences) {
-      await database.remove(database.store.cross_references, { _id: id });
+      await database.remove(database.store.crossReferences, { _id: id });
     }
 
     for (const id of [...new Set(actorIds)]) {
       const crossReference = new CrossReference(scene._id, id);
       logger.log("Adding actor to scene: " + JSON.stringify(crossReference));
-      await database.insert(database.store.cross_references, crossReference);
+      await database.insert(database.store.crossReferences, crossReference);
     }
   }
 
@@ -279,13 +279,13 @@ export default class Scene {
       .map(r => r._id);
 
     for (const id of oldLabelReferences) {
-      await database.remove(database.store.cross_references, { _id: id });
+      await database.remove(database.store.crossReferences, { _id: id });
     }
 
     for (const id of [...new Set(labelIds)]) {
       const crossReference = new CrossReference(scene._id, id);
       logger.log("Adding label to scene: " + JSON.stringify(crossReference));
-      await database.insert(database.store.cross_references, crossReference);
+      await database.insert(database.store.crossReferences, crossReference);
     }
   }
 

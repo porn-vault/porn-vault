@@ -248,10 +248,10 @@ export default {
         await Scene.filterImage(image._id);
         await Label.filterImage(image._id);
         await Movie.filterImage(image._id);
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           from: image._id
         });
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           to: image._id
         });
       }

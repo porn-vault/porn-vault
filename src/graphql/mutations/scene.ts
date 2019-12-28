@@ -253,10 +253,10 @@ export default {
         if (deleteImages === true) {
           for (const image of await Image.getByScene(scene._id)) {
             await Image.remove(image);
-            await database.remove(database.store.cross_references, {
+            await database.remove(database.store.crossReferences, {
               from: image._id
             });
-            await database.remove(database.store.cross_references, {
+            await database.remove(database.store.crossReferences, {
               to: image._id
             });
             await Marker.removeByScene(scene);
@@ -265,10 +265,10 @@ export default {
         }
         logger.success("Deleted scene " + scene._id);
 
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           from: scene._id
         });
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           to: scene._id
         });
       }

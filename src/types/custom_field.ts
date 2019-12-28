@@ -1,4 +1,5 @@
 import { generateHash } from "../hash";
+import * as database from "../database";
 
 export enum CustomFieldType {
   INTEGER = "INTEGER",
@@ -19,5 +20,22 @@ export default class CustomField {
     this._id = "cf_" + generateHash();
     this.name = name;
     this.type = type;
+  }
+
+  static async remove(_id: string) {
+    await database.remove(database.store.customFields, { _id });
+  }
+
+  static async getById(_id: string) {
+    return (await database.findOne(database.store.customFields, {
+      _id
+    })) as CustomField | null;
+  }
+
+  static async getAll() {
+    return (await database.find(
+      database.store.customFields,
+      {}
+    )) as CustomField[];
   }
 }

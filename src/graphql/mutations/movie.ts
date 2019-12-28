@@ -32,10 +32,10 @@ export default {
 
       if (movie) {
         await Movie.remove(movie._id);
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           from: movie._id
         });
-        await database.remove(database.store.cross_references, {
+        await database.remove(database.store.crossReferences, {
           to: movie._id
         });
       }
