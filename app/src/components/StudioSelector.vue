@@ -1,40 +1,31 @@
 <template>
-  <div>
-    <v-row>
-      <v-col cols="3">
-        <v-subheader>Studio:</v-subheader>
-      </v-col>
-      <v-col cols="9">
-        <v-autocomplete
-          dense
-          solo 
-          flat
-          color="accent"
-          v-model="innerValue"
-          :loading="loading"
-          :items="studios"
-          :search-input.sync="searchQuery"
-          cache-items
-          hide-no-data
-          :label="multiple ? 'Select studios' : 'Select studio'"
-          :multiple="multiple"
-          item-text="name"
-          item-value="_id"
-          clearable
-          @change="onInnerValueChange"
-          hide-details
-        >
-          <template v-slot:item="{ item }">
-            <template>
-              <v-list-item-content>
-                <v-list-item-title v-html="item.name"></v-list-item-title>
-              </v-list-item-content>
-            </template>
-          </template>
-        </v-autocomplete>
-      </v-col>
-    </v-row>
-  </div>
+  <v-autocomplete
+    dense
+    solo
+    flat
+    color="accent"
+    v-model="innerValue"
+    :loading="loading"
+    :items="studios"
+    :search-input.sync="searchQuery"
+    cache-items
+    hide-no-data
+    :label="multiple ? 'Select studios' : 'Select studio'"
+    :multiple="multiple"
+    item-text="name"
+    item-value="_id"
+    clearable
+    @change="onInnerValueChange"
+    hide-details
+  >
+    <template v-slot:item="{ item }">
+      <template>
+        <v-list-item-content>
+          <v-list-item-title v-html="item.name"></v-list-item-title>
+        </v-list-item-content>
+      </template>
+    </template>
+  </v-autocomplete>
 </template>
 
 <script lang="ts">
@@ -125,5 +116,4 @@ export default class StudioSelector extends Vue {
 </script>
 
 <style lang="scss" scoped>
-
 </style>

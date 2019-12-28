@@ -1,66 +1,18 @@
 <template>
   <div>
     <div v-if="currentScene">
-
       <v-row>
-        <v-col cols="2">
-          <router-link v-if="currentScene.studio" :to="`/studio/${currentScene.studio._id}`">
-              <v-img v-ripple max-width="200px" :src="studioLogo"></v-img>
-          </router-link>
+        <v-col cols="12" md="8">
+          <v-tabs grow background-color="primary" class="elevation-2" dark centered>
+            <v-tab href="#video">Video</v-tab>
 
-          <v-row v-if="actors.length">
-            <v-col cols="12">
-              <v-row>
-                <v-col
-                  class="pa-1"
-                  v-for="(actor, i) in actors"
-                  :key="actor._id"
-                  cols="12"
-                  sm="6"
-                  md="6"
-                  lg="6"
-                >
-                  <actor-card style="height: 100%" v-model="actors[i]" />
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
+            <v-tab href="#images" @click="loadImages">Images</v-tab>
 
-        </v-col>
-
-        <v-col cols="7">
-          <v-tabs
-            grow
-            background-color="primary"
-            class="elevation-2"
-            dark
-            centered
-          >
-
-            <v-tab href="#video">
-              Video
-            </v-tab>
-
-            <v-tab 
-              href="#images"
-              @click="loadImages"
-            >
-              Images
-            </v-tab>
-
-            <v-tab-item
-              value="video"
-            >
-              <div class="mx-auto" id="dplayer" ref="dplayer"></div>
-              <v-btn small color="primary" @click="openMarkerDialog">Create Marker</v-btn>
-              <v-btn small color="primary" @click="openThumbnailDialog">Change Thumbnail</v-btn>
-
+            <v-tab-item value="video">
+              <div style="max-width: 900px" class="mx-auto" id="dplayer" ref="dplayer"></div>
             </v-tab-item>
 
-            <v-tab-item
-              value="images"
-            >
-
+            <v-tab-item value="images">
               <div class="d-flex align-center">
                 <v-spacer></v-spacer>
                 <h1 class="font-weight-light mr-3">{{ images.length }} Images</h1>
@@ -82,7 +34,12 @@
                       lg="3"
                       xl="3"
                     >
-                      <ImageCard @open="lightboxIndex = index" width="100%" height="100%" :image="image">
+                      <ImageCard
+                        @open="lightboxIndex = index"
+                        width="100%"
+                        height="100%"
+                        :image="image"
+                      >
                         <template v-slot:action>
                           <v-tooltip top>
                             <template v-slot:activator="{ on }">
@@ -115,42 +72,34 @@
                   </transition>
                 </v-container>
               </div>
-
             </v-tab-item>
-
           </v-tabs>
-
         </v-col>
-        <v-col cols="3">
-          <v-tabs
-            fixed-tabs
-            background-color="primary"
-            class="elevation-2"
-            dark
-            centered
-          >
-            <v-tab href="#metadata">
-              Metadata
-            </v-tab>
+        <v-col cols="12" md="4">
+          <v-tabs fixed-tabs background-color="primary" class="elevation-2" dark centered>
+            <v-tab href="#metadata">Metadata</v-tab>
 
-            <v-tab href="#markers">
-              Markers
-            </v-tab>
+            <v-tab href="#actors">Actors</v-tab>
 
-            <v-tab href="#info">
-              Info
-            </v-tab>
+            <v-tab href="#markers">Markers</v-tab>
 
-              <v-tab-item
-                value="metadata"
-              >
-              
-                <v-card class="scene-info-card">
-                  <v-form v-model="validEdit" class="mt-4">
-                    <v-row>
-                      <v-col cols="3">
-                        <v-subheader>Scene Name:</v-subheader>
-                      </v-col>
+            <v-tab href="#info">Info</v-tab>
+
+            <v-tab-item value="metadata">
+              <v-card class="scene-info-card">
+                <div class="px-3 pt-3 d-flex justify-center">
+                  <router-link
+                    v-if="currentScene.studio"
+                    :to="`/studio/${currentScene.studio._id}`"
+                  >
+                    <v-img v-ripple max-width="200px" :src="studioLogo"></v-img>
+                  </router-link>
+                </div>
+                <v-form v-model="validEdit" class="mt-4">
+                  <v-row dense>
+                    <v-col cols="3">
+                      <v-subheader>Scene title</v-subheader>
+                    </v-col>
                     <v-col cols="9">
                       <v-text-field
                         flat
@@ -158,224 +107,223 @@
                         :rules="sceneNameRules"
                         color="accent"
                         v-model="editName"
-                        placeholder="Name"
+                        placeholder="Scene title"
                         hide-details
                       />
                     </v-col>
+                  </v-row>
 
-                    </v-row>
+                  <v-row dense>
+                    <v-col cols="3">
+                      <v-subheader>Date</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <DateInput v-if="editDialog" v-model="editReleaseDate" />
+                    </v-col>
+                  </v-row>
 
-                    <DateInput v-if="editDialog" v-model="editReleaseDate" />
+                  <v-row dense>
+                    <v-col cols="3">
+                      <v-subheader>Description</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <v-textarea
+                        solo
+                        flat
+                        auto-grow
+                        color="accent"
+                        v-model="editDescription"
+                        label="Description"
+                        placeholder="Scene description"
+                        :rows="2"
+                        hide-details
+                        dense
+                      />
+                    </v-col>
+                  </v-row>
 
-                    <v-row>
-                      <v-col cols="3">
-                        <v-subheader>Description:</v-subheader>
-                      </v-col>
-                      <v-col cols="9">
-                        <v-textarea
-                          solo 
-                          flat
-                          auto-grow
+                  <v-row dense>
+                    <v-col cols="3">
+                      <v-subheader>Actors</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <ActorSelector v-model="editActors" />
+                    </v-col>
+                  </v-row>
+
+                  <v-row dense class="d-flex align-center">
+                    <v-col cols="3">
+                      <v-subheader>Studios</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <StudioSelector v-model="editStudio" />
+                    </v-col>
+                  </v-row>
+
+                  <v-row dense>
+                    <v-col cols="3">
+                      <v-subheader>Streaming links</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <v-textarea
+                        solo
+                        flat
+                        auto-grow
+                        color="accent"
+                        v-model="editStreamLinks"
+                        label="Streaming Links"
+                        placeholder="Streaming links (per line)"
+                        :rows="2"
+                        hide-details
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <v-row dense>
+                    <v-col cols="3">
+                      <v-subheader>Labels</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <div class="pa-2">
+                        <v-chip
+                          label
+                          class="mr-1 mb-1"
+                          small
+                          outlined
+                          v-for="label in labelNames"
+                          :key="label"
+                        >{{ label }}</v-chip>
+
+                        <v-chip
+                          label
                           color="accent"
-                          v-model="editDescription"
-                          label="Description"
-                          placeholder="Scene description"
-                          :rows="2"
-                          hide-details
-                        />
-                      </v-col>
-                    </v-row>
+                          v-ripple
+                          @click="openLabelSelector"
+                          small
+                          :class="`mr-1 mb-1 hover ${$vuetify.theme.dark ? 'black--text' : 'white--text'}`"
+                        >+ Add</v-chip>
+                      </div>
+                    </v-col>
+                  </v-row>
 
-                    <ActorSelector v-model="editActors" />
+                  <v-row dense>
+                    <v-col cols="3">
+                      <v-subheader>Rating</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <v-rating
+                        half-increments
+                        @input="rate"
+                        class="px-2"
+                        :value="currentScene.rating / 2"
+                        background-color="grey"
+                        color="amber"
+                        dense
+                        hide-details
+                      ></v-rating>
+                      <div
+                        @click="rate(0)"
+                        class="d-inline-block pl-3 mt-1 med--text caption hover"
+                      >Reset rating</div>
+                    </v-col>
+                  </v-row>
 
-                    <StudioSelector v-model="editStudio" />
+                  <v-row dense class="d-flex align-center">
+                    <v-col cols="3">
+                      <v-subheader>Views</v-subheader>
+                    </v-col>
+                    <v-col cols="9">
+                      <div class="px-2 d-flex align-center">
+                        {{ currentScene.watches.length }}
+                        <v-btn
+                          :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
+                          fab
+                          color="primary"
+                          class="mx-3"
+                          x-small
+                          @click="watchScene"
+                        >
+                          <v-icon>mdi-plus</v-icon>
+                        </v-btn>
+                        <v-btn
+                          :disabled="!currentScene || !currentScene.watches.length"
+                          :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
+                          fab
+                          color="primary"
+                          x-small
+                          @click="unwatchScene"
+                        >
+                          <v-icon>mdi-minus</v-icon>
+                        </v-btn>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </v-form>
+              </v-card>
+            </v-tab-item>
 
-                    <v-row>
-                      <v-col cols="3">
-                        <v-subheader>Streaming Links:</v-subheader>
-                      </v-col>
-                      <v-col cols="9">
-                        <v-textarea
-                          solo 
-                          flat
-                          auto-grow
-                          color="accent"
-                          v-model="editStreamLinks"
-                          label="Streaming Links"
-                          placeholder="Streaming links (per line)"
-                          :rows="2"
-                          hide-details
-                        />
-                      </v-col>
-                    </v-row>
-
-                    <v-row>
-                      <v-col cols="3">
-                        <v-subheader>Labels:</v-subheader>
-                      </v-col>
-                      <v-col cols="9">
-                        <div class="pa-2">
-                          <v-chip
-                            label
-                            class="mr-1 mb-1"
-                            small
-                            outlined
-                            v-for="label in labelNames"
-                            :key="label"
-                          >{{ label }}</v-chip>
-
-                          <v-chip
-                            label
-                            color="accent"
-                            v-ripple
-                            @click="openLabelSelector"
-                            small
-                            :class="`mr-1 mb-1 hover ${$vuetify.theme.dark ? 'black--text' : 'white--text'}`"
-                          >+ Add</v-chip>
-                        </div>
-                      </v-col>
-                    </v-row>
-
-                    <v-row>
-                      <v-col cols="3">
-                        <v-subheader>Rating:</v-subheader>
-                      </v-col>
-                      <v-col cols="9">
-                        <v-rating
-                          half-increments
-                          @input="rate"
-                          class="px-2"
-                          :value="currentScene.rating / 2"
-                          background-color="grey"
-                          color="amber"
-                          dense
-                          hide-details
-                        ></v-rating>
-                        <div
-                          @click="rate(0)"
-                          class="d-inline-block pl-3 mt-1 med--text caption hover"
-                        >Reset rating</div>
-                      </v-col>
-                    </v-row>
-
-                    <v-row>
-                      <v-col cols="3">
-                        <v-subheader>Views:</v-subheader>
-                      </v-col>
-                      <v-col cols="9">
-                        <div class="px-2 d-flex align-center">
-
-                          {{ currentScene.watches.length }}
-                          <v-btn
-                            :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
-                            fab
-                            color="primary"
-                            class="mx-3"
-                            x-small
-                            @click="watchScene"
-                          >
-                            <v-icon>mdi-plus</v-icon>
-                          </v-btn>
-                          <v-btn
-                            :disabled="!currentScene || !currentScene.watches.length"
-                            :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
-                            fab
-                            color="primary"
-                            x-small
-                            @click="unwatchScene"
-                          >
-                            <v-icon>mdi-minus</v-icon>
-                          </v-btn>
-                        </div>
-                      </v-col>
-                    </v-row>
-
-                  </v-form>
-                </v-card>
-              </v-tab-item>
-            
-              <v-tab-item
-                value="markers"
+            <v-tab-item value="actors">
+              <div
+                outlined
+                v-for="actor in actors"
+                :key="actor._id"
+                class="pa-2 d-flex align-center mb-2"
               >
+                <v-avatar :size="60">
+                  <v-img :src="actorThumbnail(actor)"></v-img>
+                </v-avatar>
+                <div class="text-truncate subtitle-1 ml-2">{{ actor.name }}</div>
+              </div>
+            </v-tab-item>
 
-                <div>
-                  <div class="mt-3">
-                    <v-row>
-                      <v-col cols="12" sm="8" md="6">
-                        <MarkerItem
-                          style="width: 100%"
-                          @jump="moveToTime(marker.time, marker.name)"
-                          @delete="removeMarker(marker._id)"
-                          :marker="marker"
-                          v-for="marker in markers"
-                          :key="marker._id"
-                        />
-                      </v-col>
-                    </v-row>
-                  </div>
-                 </div>
+            <v-tab-item class="pa-2" value="markers">
+              <div>
+                <v-btn color="accent" class="text-none" text @click="openMarkerDialog">Create Marker</v-btn>
+              </div>
+              <div>
+                <v-row>
+                  <v-col cols="12" sm="8" md="6">
+                    <MarkerItem
+                      style="width: 100%"
+                      @jump="moveToTime(marker.time, marker.name)"
+                      @delete="removeMarker(marker._id)"
+                      :marker="marker"
+                      v-for="marker in markers"
+                      :key="marker._id"
+                    />
+                  </v-col>
+                </v-row>
+              </div>
+            </v-tab-item>
 
-              </v-tab-item>
+            <v-tab-item class="pa-2" value="info">
+              <v-btn
+                text
+                color="accent"
+                class="text-none"
+                @click="openThumbnailDialog"
+              >Change Thumbnail</v-btn>
 
-              <v-tab-item
-                value="info"
-              >
-
-
-                <div v-if="currentScene.path" class="px-2 pt-2 d-flex align-center">
-                  <v-subheader>Filesystem path</v-subheader>
-                  {{ currentScene.path}}
-                </div>
-                <div v-if="currentScene.meta.dimensions.width" class="px-2 d-flex align-center">
-                  <v-subheader>Video dimensions</v-subheader>
-                  {{ currentScene.meta.dimensions.width }}x{{ currentScene.meta.dimensions.height }}
-                </div>
-                <div v-if="currentScene.meta.fps" class="px-2 d-flex align-center">
-                  <v-subheader>Framerate</v-subheader>
-                  {{ currentScene.meta.fps }} fps
-                </div>
-                <div v-if="currentScene.meta.size" class="px-2 d-flex align-center">
-                  <v-subheader>Video size</v-subheader>
-                  {{ (currentScene.meta.size / 1000 / 1000).toFixed(0) }} MB
-                </div>
-
-              </v-tab-item>
-
-
+              <div v-if="currentScene.path" class="px-2 pt-2 d-flex align-center">
+                <v-subheader>Filesystem path</v-subheader>
+                {{ currentScene.path}}
+              </div>
+              <div v-if="currentScene.meta.dimensions.width" class="px-2 d-flex align-center">
+                <v-subheader>Video dimensions</v-subheader>
+                {{ currentScene.meta.dimensions.width }}x{{ currentScene.meta.dimensions.height }}
+              </div>
+              <div v-if="currentScene.meta.fps" class="px-2 d-flex align-center">
+                <v-subheader>Framerate</v-subheader>
+                {{ currentScene.meta.fps }} fps
+              </div>
+              <div v-if="currentScene.meta.size" class="px-2 d-flex align-center">
+                <v-subheader>Video size</v-subheader>
+                {{ (currentScene.meta.size / 1000 / 1000).toFixed(0) }} MB
+              </div>
+            </v-tab-item>
           </v-tabs>
         </v-col>
       </v-row>
-      
-      <v-row>
-        <!-- <v-col cols="12" sm="4" md="4" lg="3" xl="2">
-          <v-container>
-            <v-hover>
-              <template v-slot:default="{ hover }">
-                <v-img
-                  v-ripple
-                  @click="openThumbnailDialog"
-                  class="elevation-4 hover"
-                  :aspect-ratio="aspectRatio"
-                  cover
-                  :src="thumbnail"
-                >
-                  <v-fade-transition>
-                    <v-overlay v-if="hover" absolute color="accent">
-                      <v-icon x-large>mdi-upload</v-icon>
-                    </v-overlay>
-                  </v-fade-transition>
-                </v-img>
-              </template>
-            </v-hover>
-          </v-container>
-        </v-col>-->
-        <v-col cols="12">
-
-
-
-        </v-col>
-      </v-row>
-
     </div>
 
     <v-dialog scrollable v-model="labelSelectorDialog" max-width="400px">
@@ -489,6 +437,7 @@ import DateInput from "../components/DateInput.vue";
 
 import "dplayer/dist/DPlayer.min.css";
 import DPlayer from "dplayer";
+import Actor from "../types/actor";
 
 interface ICropCoordinates {
   left: number;
@@ -558,6 +507,14 @@ export default class SceneDetails extends Vue {
   editReleaseDate = null as number | null;
 
   sceneNameRules = [v => (!!v && !!v.length) || "Invalid scene name"];
+
+  actorThumbnail(actor: Actor) {
+    if (actor.thumbnail)
+      return `${serverBase}/image/${
+        actor.thumbnail._id
+      }?password=${localStorage.getItem("password")}`;
+    return ``;
+  }
 
   removeMarker(id: string) {
     ApolloClient.mutate({
@@ -998,8 +955,8 @@ export default class SceneDetails extends Vue {
   }
 
   loadImages() {
-      console.log("test");
-      this.fetchPage().then(items => {
+    console.log("test");
+    this.fetchPage().then(items => {
       if (items.length) {
         this.page++;
         this.images.push(...items);
@@ -1081,7 +1038,6 @@ export default class SceneDetails extends Vue {
       this.editDialog = true;
       this.editStudio = this.currentScene.studio;
       this.editReleaseDate = this.currentScene.releaseDate;
-
     });
   }
 
@@ -1090,7 +1046,6 @@ export default class SceneDetails extends Vue {
   }
 
   mounted() {
-
     /* window.addEventListener("keydown", ev => {
           if (ev.keyCode >= 48 && ev.keyCode <= 53) {
             const rating = ev.keyCode - 48;
@@ -1105,15 +1060,13 @@ export default class SceneDetails extends Vue {
 </script>
 
 <style lang="scss" scoped>
-  .corner-actions {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-  }
+.corner-actions {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
 
-  .scene-info-card {
-    padding: 8px;
-  }
-
-
+.scene-info-card {
+  padding: 8px;
+}
 </style>

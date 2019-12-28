@@ -1,23 +1,16 @@
 <template>
-  <v-row>
-    <v-col cols="3">
-      <v-subheader>Date:</v-subheader>
-    </v-col>
-    <v-col cols="9">
-      <v-text-field
-        solo
-        flat 
-        :placeholder="placeholder"
-        color="accent"
-        clearable
-        v-model="innerValue"
-        label="Date"
-        v-mask="'####-##-##'"
-        :error-messages="errors"
-        hide-details
-      ></v-text-field>
-    </v-col>
-  </v-row>
+  <v-text-field
+    solo
+    flat
+    :placeholder="placeholder"
+    color="accent"
+    clearable
+    v-model="innerValue"
+    label="Date"
+    v-mask="'####-##-##'"
+    :error-messages="errors"
+    hide-details
+  ></v-text-field>
 </template>
 
 <script lang="ts">
@@ -57,5 +50,4 @@ export default class DateInput extends Vue {
 </script>
 
 <style scoped>
-
 </style>

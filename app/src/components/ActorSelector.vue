@@ -1,43 +1,34 @@
 <template>
-  <div>
-    <v-row>
-      <v-col cols="3">
-        <v-subheader>Actors:</v-subheader>
-      </v-col>
-      <v-col cols="9">
-        <v-autocomplete
-          solo 
-          flat
-          color="accent"
-          v-model="innerValue"
-          :loading="loading"
-          :items="actors"
-          :search-input.sync="searchQuery"
-          cache-items
-          hide-no-data
-          hint="Search for actors by typing something"
-          :label="multiple ? 'Select actors' : 'Select actor'"
-          :multiple="multiple"
-          item-text="name"
-          item-value="_id"
-          clearable
-          @change="onInnerValueChange"
-          hide-details
-        >
-          <template v-slot:item="{ item }">
-            <template>
-              <v-list-item-avatar>
-                <img :src="thumbnail(item)" />
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title v-html="item.name"></v-list-item-title>
-              </v-list-item-content>
-            </template>
-          </template>
-        </v-autocomplete>
-      </v-col>
-    </v-row>
-  </div>
+  <v-autocomplete
+    solo
+    flat
+    color="accent"
+    v-model="innerValue"
+    :loading="loading"
+    :items="actors"
+    :search-input.sync="searchQuery"
+    cache-items
+    hide-no-data
+    hint="Search for actors by typing something"
+    :label="multiple ? 'Select actors' : 'Select actor'"
+    :multiple="multiple"
+    item-text="name"
+    item-value="_id"
+    clearable
+    @change="onInnerValueChange"
+    hide-details
+  >
+    <template v-slot:item="{ item }">
+      <template>
+        <v-list-item-avatar>
+          <img :src="thumbnail(item)" />
+        </v-list-item-avatar>
+        <v-list-item-content>
+          <v-list-item-title v-html="item.name"></v-list-item-title>
+        </v-list-item-content>
+      </template>
+    </template>
+  </v-autocomplete>
 </template>
 
 <script lang="ts">
