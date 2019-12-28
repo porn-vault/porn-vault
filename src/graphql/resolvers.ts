@@ -7,6 +7,7 @@ import ImageResolver from "./resolvers/image";
 import LabelResolver from "./resolvers/label";
 import MovieResolver from "./resolvers/movie";
 import StudioResolver from "./resolvers/studio";
+import CustomFieldResolver from "./resolvers/custom_field";
 
 const resolvers = {
   Long: GraphQLLong,
@@ -17,7 +18,8 @@ const resolvers = {
   Mutation: MutationResolver,
   Label: LabelResolver,
   Movie: MovieResolver,
-  Studio: StudioResolver
+  Studio: StudioResolver,
+  CustomField: CustomFieldResolver
 };
 
 export default resolvers;

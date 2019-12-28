@@ -39,7 +39,7 @@ export default {
       .map(i => i.actor)
       .slice(0, num || 12);
   },
-  
+
   async getScenesWithoutActors(_, { num }: { num: number }) {
     return (
       await mapAsync(await Scene.getAll(), async scene => ({
@@ -823,9 +823,6 @@ export default {
   async getActorById(_, args: Dictionary<any>) {
     return await Actor.getById(args.id);
   },
-  async findActors(_, args: Dictionary<any>) {
-    return await Actor.find(args.name);
-  },
 
   async getMovieById(_, args: Dictionary<any>) {
     return await Movie.getById(args.id);
@@ -838,12 +835,13 @@ export default {
   async getLabelById(_, args: Dictionary<any>) {
     return await Label.getById(args.id);
   },
+  /* async getCustomFields() {
+    const fields = await Label.getAll();
+    return fields.sort((a, b) => a.name.localeCompare(b.name));
+  }, */
   async getLabels() {
     const labels = await Label.getAll();
     return labels.sort((a, b) => a.name.localeCompare(b.name));
-  },
-  async findLabel(_, args: Dictionary<any>) {
-    return await Label.find(args.name);
   },
   async numScenes() {
     return await database.count(database.store.scenes, {});

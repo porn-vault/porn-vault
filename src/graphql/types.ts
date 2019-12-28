@@ -35,24 +35,17 @@ type Query {
   getMovies(query: String): [Movie!]!
   getImages(query: String): [Image!]!
   getStudios(query: String): [Studio!]!
-
-  topActors(num: Int): [Actor!]!
+  getLabels: [Label!]!
+  getCustomFields: [CustomField!]!
 
   getSceneById(id: String!): Scene
-
   getActorById(id: String!): Actor
-  findActors(name: String!): [Actor!]
-
-  getLabelById(id: String!): Label
-  findLabel(name: String!): Label
-  getLabels: [Label!]!
-
   getMovieById(id: String!): Movie
-
   getStudioById(id: String!): Studio
-
+  getLabelById(id: String!): Label
+  
   getQueueInfo: QueueInfo!
-
+  topActors(num: Int): [Actor!]!
   getActorsWithoutScenes(num: Int): [Actor!]!
   getActorsWithoutLabels(num: Int): [Actor!]!
   getScenesWithoutActors(num: Int): [Scene!]!
@@ -174,6 +167,21 @@ type Studio {
   labels: [Label!]! # Inferred from scene labels
   actors: [Actor!]! # Inferred from scene actors
   movies: [Movie!]!
+}
+
+enum CustomFieldType {
+  INTEGER,
+  STRING,
+  BOOLEAN,
+  SINGLE_SELECT,
+  MULTI_SELECT
+}
+
+type CustomField {
+  _id: String!
+  name: String!
+  type: CustomFieldType!
+  values: [String!]
 }
 
 type Marker {
