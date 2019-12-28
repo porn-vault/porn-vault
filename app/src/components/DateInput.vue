@@ -1,14 +1,23 @@
 <template>
-  <v-text-field
-    :placeholder="placeholder"
-    color="accent"
-    clearable
-    v-model="innerValue"
-    hint="YYYY-MM-DD"
-    persistent-hint
-    v-mask="'####-##-##'"
-    :error-messages="errors"
-  ></v-text-field>
+  <v-row>
+    <v-col cols="3">
+      <v-subheader>Date:</v-subheader>
+    </v-col>
+    <v-col cols="9">
+      <v-text-field
+        solo
+        flat 
+        :placeholder="placeholder"
+        color="accent"
+        clearable
+        v-model="innerValue"
+        label="Date"
+        v-mask="'####-##-##'"
+        :error-messages="errors"
+        hide-details
+      ></v-text-field>
+    </v-col>
+  </v-row>
 </template>
 
 <script lang="ts">
@@ -18,7 +27,7 @@ import moment from "moment";
 @Component({})
 export default class DateInput extends Vue {
   @Prop({ default: null }) value!: number | null;
-  @Prop({ default: "Enter a date" }) placeholder!: string;
+  @Prop({ default: "YYYY-MM-DD" }) placeholder!: string;
 
   innerValue = this.value ? moment(this.value).format("YYYY-MM-DD") : null;
 
@@ -46,3 +55,7 @@ export default class DateInput extends Vue {
   }
 }
 </script>
+
+<style scoped>
+
+</style>
