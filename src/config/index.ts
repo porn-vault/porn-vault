@@ -24,6 +24,7 @@ export interface IConfig {
   FFPROBE_PATH: string;
 
   GENERATE_THUMBNAILS: boolean;
+  GENERATE_MULTIPLE_THUMBNAILS: boolean;
   GENERATE_PREVIEWS: boolean;
   THUMBNAIL_INTERVAL: number;
 
@@ -53,8 +54,9 @@ export const defaultConfig: IConfig = {
   FFMPEG_PATH: "",
   FFPROBE_PATH: "",
   GENERATE_THUMBNAILS: true,
+  GENERATE_MULTIPLE_THUMBNAILS: true,
   GENERATE_PREVIEWS: false,
-  THUMBNAIL_INTERVAL: 60,
+  THUMBNAIL_INTERVAL: 120,
   PASSWORD: null,
   PORT: 3000,
   APPLY_ACTOR_LABELS: true,
