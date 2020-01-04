@@ -13,6 +13,10 @@ import { existsAsync, statAsync } from "../fs/async";
 import { fileHash } from "../hash";
 import Studio from "../types/studio";
 
+function removeExtension(file: string) {
+  return file.replace(/\.[^/.]+$/, "");
+}
+
 export interface IQueueItem {
   _id: string;
   name: string | null;
@@ -48,8 +52,7 @@ class Queue {
       if (!labelInDb) throw new Error(`Label ${label} not found`);
     }
 
-    const fileNameWithoutExtension = item.filename.split(".")[0];
-    let sceneName = fileNameWithoutExtension;
+    let sceneName = removeExtension(item.filename);
     if (item.name) sceneName = item.name;
 
     const config = await getConfig();
