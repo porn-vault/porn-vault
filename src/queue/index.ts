@@ -178,36 +178,41 @@ class Queue {
 
     // Thumbnails
     if (config.GENERATE_THUMBNAILS) {
-      const loader = ora("Generating thumbnails...").start();
+      const loader = ora("Generating thumbnail(s)...").start();
 
       let thumbnailFiles = [] as ThumbnailFile[];
       let images = [] as Image[];
 
-      try {
-        thumbnailFiles = await Scene.generateThumbnails(scene);
-
-        for (let i = 0; i < thumbnailFiles.length; i++) {
-          const file = thumbnailFiles[i];
-          const image = new Image(`${sceneName} ${i + 1} (screenshot)`);
-          image.path = file.path;
-          image.scene = scene._id;
-          image.meta.size = file.size;
-          image.labels = scene.labels;
-          await Image.setLabels(image, labels);
-          await Image.setActors(image, actors);
-          logger.log(`Creating image with id ${image._id}...`);
-          await database.insert(database.store.images, image);
-          images.push(image);
+      if (config.GENERATE_MULTIPLE_THUMBNAILS) {
+        try {
+          thumbnailFiles = await Scene.generateThumbnails(scene);
+        } catch (error) {
+          logger.error(error);
+          loader.fail(`Error generating thumbnails.`);
         }
-
-        if (images.length > 0) {
-          scene.thumbnail = images[Math.floor(images.length / 2)]._id;
-          loader.succeed(`Created ${images.length} thumbnails.`);
-        } else loader.warn(`Created 0 thumbnails.`);
-      } catch (error) {
-        logger.error(error);
-        loader.fail(`Error generating thumbnails.`);
+      } else {
+        const thumbnail = await Scene.generateSingleThumbnail(scene);
+        if (thumbnail) thumbnailFiles.push(thumbnail);
       }
+
+      for (let i = 0; i < thumbnailFiles.length; i++) {
+        const file = thumbnailFiles[i];
+        const image = new Image(`${sceneName} ${i + 1} (screenshot)`);
+        image.path = file.path;
+        image.scene = scene._id;
+        image.meta.size = file.size;
+        image.labels = scene.labels;
+        await Image.setLabels(image, labels);
+        await Image.setActors(image, actors);
+        logger.log(`Creating image with id ${image._id}...`);
+        await database.insert(database.store.images, image);
+        images.push(image);
+      }
+
+      if (images.length > 0) {
+        scene.thumbnail = images[Math.floor(images.length / 2)]._id;
+        loader.succeed(`Created ${images.length} thumbnails.`);
+      } else loader.warn(`Created 0 thumbnails.`);
     }
 
     if (config.GENERATE_PREVIEWS && !scene.preview) {
