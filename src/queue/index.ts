@@ -259,8 +259,8 @@ class Queue {
           await this.process(head);
         } catch (error) {
           logger.warn("Error processing scene:", error.message);
-          await database.remove(this.store, { _id: head._id });
         }
+        await database.remove(this.store, { _id: head._id });
         head = await this.getFirst();
       }
       logger.success("Processing done");
