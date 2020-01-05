@@ -48,7 +48,7 @@ export interface IConfig {
 
 export const defaultConfig: IConfig = {
   VIDEO_PATHS: [],
-  VIDEO_EXTENSIONS: [".mp4"],
+  VIDEO_EXTENSIONS: [".mp4", ".mpg", ".mpeg", ".mkv", ".wmv", ".mov", ".avi", ".flv", ".m2ts"],
   IMAGE_PATHS: [],
   SCAN_ON_STARTUP: false,
   SCAN_INTERVAL: 10800000,
