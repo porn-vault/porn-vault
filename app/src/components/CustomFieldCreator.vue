@@ -32,6 +32,12 @@
             persistent-hint
             :hint="typeHint"
           ></v-select>
+          <v-text-field
+            color="accent"
+            placeholder="Unit (optional)"
+            v-model="createFieldUnit"
+            hide-details
+          ></v-text-field>
           <v-combobox
             chips
             v-if="createFieldType == 'SINGLE_SELECT' || createFieldType == 'MULTI_SELECT'"
@@ -78,6 +84,7 @@ export default class CustomFieldCreator extends Vue {
     "MULTI_SELECT"
   ];
   createFieldValues = [] as string[];
+  createFieldUnit = null as string | null;
 
   createField() {
     if (this.isCreating) return;
@@ -90,19 +97,27 @@ export default class CustomFieldCreator extends Vue {
             $name: String!
             $values: [String!]
             $type: CustomFieldType!
+            $unit: String
           ) {
-            createCustomField(name: $name, values: $values, type: $type) {
+            createCustomField(
+              name: $name
+              values: $values
+              type: $type
+              unit: $unit
+            ) {
               _id
               name
               type
               values
+              unit
             }
           }
         `,
         variables: {
           name: this.createFieldName,
           type: this.createFieldType,
-          values: this.createFieldValues
+          values: this.createFieldValues,
+          unit: this.createFieldUnit
         }
       })
         .then(res => {
@@ -110,6 +125,7 @@ export default class CustomFieldCreator extends Vue {
           this.createFieldName = "";
           this.createFieldValues = [];
           this.createDialog = false;
+          this.createFieldUnit = null;
         })
         .finally(() => {
           this.isCreating = false;
@@ -128,11 +144,14 @@ export default class CustomFieldCreator extends Vue {
       case "BOOLEAN":
         return "Checkbox (e.g. retired yes/no)";
         break;
-      case "SELECT":
+      case "SINGLE_SELECT":
         return "Set of values with one possible selected value (e.g. nationality)";
         break;
       case "MULTI_SELECT":
         return "Set of values with more than one possible value (e.g. hair color)";
+        break;
+      default:
+        return "Oops?";
         break;
     }
   }

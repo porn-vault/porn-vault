@@ -15,7 +15,7 @@ type IActorUpdateOpts = Partial<{
   favorite: boolean;
   bookmark: boolean;
   bornOn: number;
-  customFields: Dictionary<string>;
+  customFields: Dictionary<string[] | boolean | string | null>;
 }>;
 
 export default {
@@ -85,8 +85,12 @@ export default {
 
         if (opts.customFields) {
           for (const key in opts.customFields) {
-            const value = opts.customFields[key];
+            const value =
+              opts.customFields[key] !== undefined
+                ? opts.customFields[key]
+                : null;
             logger.log(`Set scene custom.${key} to ${value}`);
+            opts.customFields[key] = value;
           }
           actor.customFields = opts.customFields;
         }

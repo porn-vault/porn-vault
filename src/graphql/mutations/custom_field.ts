@@ -12,8 +12,14 @@ export default {
     {
       id,
       name,
-      values
-    }: { id: string; name?: string | null; values?: string[] | null }
+      values,
+      unit
+    }: {
+      id: string;
+      name?: string | null;
+      values?: string[] | null;
+      unit: string | null;
+    }
   ) {
     const field = await CustomField.getById(id);
 
@@ -21,6 +27,8 @@ export default {
       if (name) field.name = name;
 
       if (values) field.values = values;
+
+      if (unit) field.unit = unit;
 
       await database.update(
         database.store.customFields,
@@ -47,10 +55,18 @@ export default {
     {
       name,
       type,
-      values
-    }: { name: string; type: CustomFieldType; values?: string[] | null }
+      values,
+      unit
+    }: {
+      name: string;
+      type: CustomFieldType;
+      values?: string[] | null;
+      unit: string | null;
+    }
   ) {
     const field = new CustomField(name, type);
+
+    if (unit) field.unit = unit;
 
     if (
       type == CustomFieldType.SINGLE_SELECT ||

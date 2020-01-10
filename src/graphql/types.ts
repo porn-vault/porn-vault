@@ -301,8 +301,8 @@ type Mutation {
   createMarker(scene: String!, name: String!, time: Int!): Marker!
   removeMarkers(ids: [String!]!): Boolean!
 
-  createCustomField(name: String!, type: CustomFieldType!, values: [String!]): CustomField!
-  updateCustomField(id: String!, name: String, values: [String!]): CustomField!
+  createCustomField(name: String!, type: CustomFieldType!, values: [String!], unit: String): CustomField!
+  updateCustomField(id: String!, name: String, values: [String!], unit: String): CustomField!
   removeCustomField(id: String!): Boolean!
 }
 `;

@@ -92,7 +92,7 @@
             <v-subheader>Metadata</v-subheader>
           </div>
           <div class="px-2" v-for="(val, key) in currentActor.customFields" :key="key">
-            <div class="px-2 d-flex align-center">
+            <div v-if="val !== null" class="d-flex align-center">
               <v-subheader
                 class="text-truncate"
                 style="width: 125px; height: 40px"

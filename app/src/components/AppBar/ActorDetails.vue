@@ -158,6 +158,7 @@ export default class ActorToolbar extends Vue {
           updateActors(ids: $ids, opts: $opts) {
             name
             aliases
+            customFields
           }
         }
       `,
@@ -175,7 +176,7 @@ export default class ActorToolbar extends Vue {
         actorModule.setName(this.editName);
         actorModule.setAliases(this.editAliases);
         actorModule.setBornOn(this.editBirthDate);
-        actorModule.setCustomFields(this.editCustomFields);
+        actorModule.setCustomFields(res.data.updateActors[0].customFields);
         this.editDialog = false;
       })
       .catch(err => {
