@@ -19,42 +19,63 @@
       <v-card :loading="isCreating">
         <v-card-title>Create new custom field</v-card-title>
         <v-card-text>
-          <v-text-field
-            clearable
-            v-model="createFieldName"
-            color="accent"
-            placeholder="Field name (e.g. 'Hair color')"
-          />
-          <v-select
-            color="accent"
-            placeholder="Field type"
-            :items="createFieldTypes"
-            v-model="createFieldType"
-            persistent-hint
-            :hint="typeHint"
-          />
-          <v-text-field
-            color="accent"
-            placeholder="Unit (e.g. 'inches', optional)"
-            v-model="createFieldUnit"
-            hide-details
-            v-if="createFieldType != 'BOOLEAN'"
-          />
-          <v-combobox
-            chips
-            v-if="createFieldType.includes('SELECT')"
-            placeholder="Preset values"
-            color="accent"
-            clearable
-            multiple
-            v-model="createFieldValues"
-            hide-details
-          />
+          <v-form v-model="validated">
+            <v-text-field
+              clearable
+              v-model="createFieldName"
+              color="accent"
+              placeholder="Field name (e.g. 'Hair color')"
+              :rules="fieldNameRules"
+            />
+            <v-select
+              color="accent"
+              placeholder="Field type"
+              :items="createFieldTypes"
+              v-model="createFieldType"
+              persistent-hint
+              :hint="typeHint"
+              item-value="id"
+              item-text="text"
+            />
+            <!-- <v-select
+              multiple
+              color="accent"
+              placeholder="Field target items"
+              :items="createFieldTargets"
+              v-model="createFieldTarget"
+              persistent-hint
+              hint="Currently only actors are supported, but more will be supported in the future"
+              :rules="v => !!v.length || 'Required'"
+            />-->
+            <v-text-field
+              color="accent"
+              placeholder="Unit (e.g. 'inches', optional)"
+              v-model="createFieldUnit"
+              hide-details
+              v-if="createFieldType != 'BOOLEAN'"
+            />
+            <v-combobox
+              chips
+              v-if="createFieldType.includes('SELECT')"
+              placeholder="Preset values"
+              color="accent"
+              clearable
+              multiple
+              v-model="createFieldValues"
+              hide-details
+            />
+          </v-form>
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn class="text-none" text color="accent" @click="createField">Create</v-btn>
+          <v-btn
+            :disabled="!validated"
+            class="text-none"
+            text
+            color="accent"
+            @click="createField"
+          >Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -76,25 +97,53 @@ export default class CustomFieldCreator extends Vue {
   fields = [] as any[];
 
   isCreating = false;
+  validated = false;
+
   createDialog = false;
   createFieldName = "" as string | null;
   createFieldType = "STRING" as string | null;
   createFieldTypes = [
-    "NUMBER",
-    "STRING",
-    "BOOLEAN",
-    "SINGLE_SELECT",
-    "MULTI_SELECT"
+    {
+      id: "NUMBER",
+      text: "Number"
+    },
+    {
+      id: "STRING",
+      text: "String"
+    },
+    {
+      id: "BOOLEAN",
+      text: "Boolean"
+    },
+    {
+      id: "SINGLE_SELECT",
+      text: "Single choice"
+    },
+    {
+      id: "MULTI_SELECT",
+      text: "Multiple choice"
+    }
+  ];
+  createFieldTarget = ["ACTORS"] as string[];
+  createFieldTargets = [
+    "SCENES",
+    "ACTORS",
+    "MOVIES",
+    "IMAGES",
+    "STUDIOS",
+    "ALBUMS"
   ];
   createFieldValues = [] as string[];
   createFieldUnit = null as string | null;
+
+  fieldNameRules = [v => (!!v && !!v.length) || "Invalid field name"];
 
   updateField(index: number, field: any) {
     Vue.set(this.fields, index, field);
   }
 
   createField() {
-    if (this.isCreating) return;
+    if (this.isCreating || !this.validated) return;
 
     this.isCreating = true;
     setTimeout(() => {
@@ -105,18 +154,21 @@ export default class CustomFieldCreator extends Vue {
             $values: [String!]
             $type: CustomFieldType!
             $unit: String
+            $target: [CustomFieldTarget!]!
           ) {
             createCustomField(
               name: $name
               values: $values
               type: $type
               unit: $unit
+              target: $target
             ) {
               _id
               name
               type
               values
               unit
+              target
             }
           }
         `,
@@ -124,7 +176,8 @@ export default class CustomFieldCreator extends Vue {
           name: this.createFieldName,
           type: this.createFieldType,
           values: this.createFieldValues,
-          unit: this.createFieldUnit
+          unit: this.createFieldUnit,
+          target: this.createFieldTarget
         }
       })
         .then(res => {

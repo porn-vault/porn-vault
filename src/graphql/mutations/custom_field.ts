@@ -1,4 +1,7 @@
-import CustomField, { CustomFieldType } from "../../types/custom_field";
+import CustomField, {
+  CustomFieldType,
+  CustomFieldTarget
+} from "../../types/custom_field";
 import * as database from "../../database";
 import Actor from "../../types/actor";
 import Movie from "../../types/movie";
@@ -56,17 +59,19 @@ export default {
     _,
     {
       name,
+      target,
       type,
       values,
       unit
     }: {
       name: string;
+      target: CustomFieldTarget;
       type: CustomFieldType;
       values?: string[] | null;
       unit: string | null;
     }
   ) {
-    const field = new CustomField(name, type);
+    const field = new CustomField(name, target, type);
 
     if (unit) field.unit = unit;
 

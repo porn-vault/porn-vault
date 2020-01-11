@@ -180,9 +180,19 @@ enum CustomFieldType {
   MULTI_SELECT
 }
 
+enum CustomFieldTarget {
+  SCENES,
+  ACTORS,
+  MOVIES,
+  IMAGES,
+  STUDIOS,
+  ALBUMS
+}
+
 type CustomField {
   _id: String!
   name: String!
+  target: [CustomFieldTarget!]!
   type: CustomFieldType!
   values: [String!]
   unit: String
@@ -301,7 +311,7 @@ type Mutation {
   createMarker(scene: String!, name: String!, time: Int!): Marker!
   removeMarkers(ids: [String!]!): Boolean!
 
-  createCustomField(name: String!, type: CustomFieldType!, values: [String!], unit: String): CustomField!
+  createCustomField(name: String!, target: [CustomFieldTarget!]!, type: CustomFieldType!, values: [String!], unit: String): CustomField!
   updateCustomField(id: String!, name: String, values: [String!], unit: String): CustomField!
   removeCustomField(id: String!): Boolean!
 }

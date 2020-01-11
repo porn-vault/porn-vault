@@ -9,17 +9,28 @@ export enum CustomFieldType {
   MULTI_SELECT = "MULTI_SELECT"
 }
 
+export enum CustomFieldTarget {
+  SCENES = "SCENES",
+  ACTORS = "ACTORS",
+  MOVIES = "MOVIES",
+  IMAGES = "IMAGES",
+  STUDIOS = "STUDIOS",
+  ALBUMS = "ALBUMS"
+}
+
 export default class CustomField {
   _id: string;
   name: string;
   values: string[] | null = [];
   type: CustomFieldType;
+  target: CustomFieldTarget;
   unit = null as string | null;
 
-  constructor(name: string, type: CustomFieldType) {
+  constructor(name: string, target: CustomFieldTarget, type: CustomFieldType) {
     this._id = "cf_" + generateHash();
     this.name = name;
     this.type = type;
+    this.target = target;
   }
 
   static async remove(_id: string) {
