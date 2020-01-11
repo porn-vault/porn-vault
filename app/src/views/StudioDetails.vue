@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-container fluid>
     <div v-if="currentStudio">
       <div class="text-center" v-if="!currentStudio.thumbnail">
         <v-btn @click="openThumbnailDialog">Upload logo</v-btn>
@@ -174,7 +174,7 @@
         <div>That's all!</div>
       </div>
     </infinite-loading>
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">

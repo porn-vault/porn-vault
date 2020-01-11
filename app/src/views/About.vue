@@ -54,18 +54,24 @@
       </v-col>
     </v-row>
 
+    <div>
+      <CustomFieldCreator />
+    </div>
+
     <QueueInfo />
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import QueueInfo from "../components/QueueInfo.vue";
+import CustomFieldCreator from "../components/CustomFieldCreator.vue";
 import { contextModule } from "../store/context";
 
 @Component({
   components: {
-    QueueInfo
+    QueueInfo,
+    CustomFieldCreator
   }
 })
 export default class About extends Vue {

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-container fluid>
     <div v-if="currentScene">
       <v-row>
         <v-col cols="12">
@@ -357,7 +357,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">

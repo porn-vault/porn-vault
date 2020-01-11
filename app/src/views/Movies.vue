@@ -157,7 +157,7 @@
         <div>That's all!</div>
       </div>
     </infinite-loading>
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">
