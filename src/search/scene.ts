@@ -14,7 +14,7 @@ export interface ISceneSearchDoc {
   releaseDate: number | null;
   duration: number | null;
   // movies: string[];
-  studio: string;
+  studio: string | null;
 }
 
 export async function createSceneSearchDoc(
