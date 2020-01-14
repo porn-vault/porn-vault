@@ -6,7 +6,6 @@ import types from "./graphql/types";
 import resolvers from "./graphql/resolvers";
 import Scene from "./types/scene";
 import * as path from "path";
-import debugHandler from "./debug_handler";
 import { checkPassword, passwordHandler } from "./password";
 import cors from "cors";
 import { getConfig } from "./config/index";
@@ -27,6 +26,7 @@ import { buildActorIndex } from "./search/actor";
 import { buildStudioIndex } from "./search/studio";
 import { buildMovieIndex } from "./search/movie";
 import BROKEN_IMAGE from "./broken_image";
+import pug from "pug";
 
 function isRegExp(regStr: string) {
   try {
@@ -73,11 +73,18 @@ export default async () => {
 
   app.use(passwordHandler);
 
-  app.get("/debug", debugHandler);
-
-  app.get("/", (req, res) => {
+  app.get("/", async (req, res) => {
     const file = path.join(process.cwd(), "app/dist/index.html");
-    res.sendFile(file);
+
+    if (await existsAsync(file)) res.sendFile(file);
+    else {
+      return res.status(404).send(
+        pug.renderFile("./views/error.pug", {
+          code: 404,
+          message: `File ${file} not found`
+        })
+      );
+    }
   });
 
   app.use("/scene/:scene", async (req, res, next) => {
