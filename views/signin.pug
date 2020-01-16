@@ -19,13 +19,12 @@ script.
       if (res.status != 200) {
         return document.getElementById("error").innerText = "Invalid password.";
       }
-
-      res.json()
-        .then(json => {
-          localStorage.setItem("password", pw);
-          window.location = window.location + "?password=" + pw;
-        })
+      res.json() .then(hash => {
+        localStorage.setItem("password", hash);
+        window.location = window.location + "?password=" + hash;
+      })
     })
+   
   })
 
 style.
