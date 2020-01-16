@@ -8,7 +8,7 @@ Note: this is by no means finished, but useable.
 
 ## Features
 
-- EASY, portable (no install) aetup (see. [**How to run**](https://github.com/boi123212321/porn-manager#how-to-run))
+- EASY, portable (no install) setup (see. [**How to run**](https://github.com/boi123212321/porn-manager#how-to-run))
 - Cross-platform (Win, Linux, Mac)
 - Works on any somewhat-modern device including tablets and smartphones
 - Self hosted, fully open source
