@@ -22,6 +22,8 @@ interface IQueryOptions {
   page: number;
   scenes: string[];
   studios: string[];
+  durationMin: number | null;
+  durationMax: number | null;
 }
 
 const parseWords = (str = "") =>
@@ -55,7 +57,9 @@ export default (query?: string) => {
     sortDir: "desc",
     page: 0,
     scenes: [],
-    studios: []
+    studios: [],
+    durationMin: null,
+    durationMax: null
   };
 
   if (!query) return options;
@@ -89,6 +93,12 @@ export default (query?: string) => {
         break;
       case "rating":
         options[operation] = parseInt(value);
+        break;
+      case "duration.min":
+        options.durationMin = parseInt(value) || null;
+        break;
+      case "duration.max":
+        options.durationMax = parseInt(value) || null;
         break;
       case "favorite":
         options[operation] = value == "true";

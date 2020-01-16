@@ -12,6 +12,8 @@ export async function getScenes(_, { query }: { query: string | undefined }) {
     const options = extractQueryOptions(query);
     logger.log(`Searching scenes for '${options.query}'...`);
 
+    logger.log(options);
+
     const filters = [] as ((doc: ISceneSearchDoc) => boolean)[];
 
     if (options.bookmark) filters.push(doc => doc.bookmark);
@@ -19,6 +21,18 @@ export async function getScenes(_, { query }: { query: string | undefined }) {
     if (options.favorite) filters.push(doc => doc.favorite);
 
     if (options.rating) filters.push(doc => doc.rating >= options.rating);
+
+    if (options.durationMin)
+      filters.push(doc => {
+        if (!doc.duration) return false;
+        return doc.duration >= <number>options.durationMin;
+      });
+
+    if (options.durationMax)
+      filters.push(doc => {
+        if (!doc.duration) return false;
+        return doc.duration <= <number>options.durationMax;
+      });
 
     if (options.studios && options.studios.length)
       filters.push(doc => {
