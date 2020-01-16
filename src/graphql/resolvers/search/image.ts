@@ -13,7 +13,7 @@ export async function getImages(
   try {
     const timeNow = +new Date();
     const options = extractQueryOptions(query);
-    logger.log(`Searching for '${options.query}'...`);
+    logger.log(`Searching images for '${options.query}'...`);
 
     const filters = [] as ((doc: IImageSearchDoc) => boolean)[];
 

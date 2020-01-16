@@ -15,8 +15,6 @@ export async function getScenes(
     const options = extractQueryOptions(query);
     logger.log(`Searching scenes for '${options.query}'...`);
 
-    logger.log(options);
-
     const filters = [] as ((doc: ISceneSearchDoc) => boolean)[];
 
     if (options.bookmark) filters.push(doc => doc.bookmark);
