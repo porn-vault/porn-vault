@@ -1,6 +1,7 @@
 import Label from "./types/label";
 import Actor from "./types/actor";
 import Studio from "./types/studio";
+import Scene from "./types/scene";
 
 export function stripStr(str: string) {
   return str.toLowerCase().replace(/[^a-zA-Z0-9']/g, "");
@@ -43,6 +44,15 @@ export async function extractStudios(str: string): Promise<string[]> {
   const allStudios = await Studio.getAll();
   return allStudios
     .filter(studio => stripStr(str).includes(stripStr(studio.name)))
+    .sort((a, b) => b.name.length - a.name.length)
+    .map(s => s._id);
+}
+
+// Returns IDs of extracted scenes
+export async function extractScenes(str: string): Promise<string[]> {
+  const allScenes = await Scene.getAll();
+  return allScenes
+    .filter(scene => stripStr(str).includes(stripStr(scene.name)))
     .sort((a, b) => b.name.length - a.name.length)
     .map(s => s._id);
 }

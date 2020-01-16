@@ -32,6 +32,7 @@ export interface IConfig {
 
   PORT: number;
 
+  APPLY_SCENE_LABELS: boolean;
   APPLY_ACTOR_LABELS: boolean;
   APPLY_STUDIO_LABELS: boolean;
 
@@ -63,6 +64,7 @@ export const defaultConfig: IConfig = {
   THUMBNAIL_INTERVAL: 120,
   PASSWORD: null,
   PORT: 3000,
+  APPLY_SCENE_LABELS: true,
   APPLY_ACTOR_LABELS: true,
   APPLY_STUDIO_LABELS: true,
   /* USE_FUZZY_SEARCH: true,
