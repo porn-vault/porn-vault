@@ -79,7 +79,7 @@
           lg="3"
           xl="2"
         >
-          <actor-card v-model="actors[i]" style="height: 100%" />
+          <actor-card :showLabels="showCardLabels" v-model="actors[i]" style="height: 100%" />
         </v-col>
       </v-row>
     </div>
@@ -234,6 +234,10 @@ export default class SceneList extends Vue {
   actorsBulkText = "" as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
+
+   get showCardLabels( ){
+    return contextModule.showCardLabels;
+  }
 
   async runBulkImport() {
     this.bulkLoader = true;

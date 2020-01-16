@@ -80,7 +80,7 @@
           lg="3"
           xl="2"
         >
-          <MovieCard :movie="movie" style="height: 100%" v-model="movies[i]" />
+          <MovieCard :showLabels="showCardLabels" :movie="movie" style="height: 100%" v-model="movies[i]" />
         </v-col>
       </v-row>
     </div>
@@ -196,6 +196,10 @@ export default class MovieList extends Vue {
   moviesBulkText = "" as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
+
+   get showCardLabels( ){
+    return contextModule.showCardLabels;
+  }
 
   async runBulkImport() {
     this.bulkLoader = true;

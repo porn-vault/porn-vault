@@ -101,7 +101,7 @@
           lg="3"
           xl="2"
         >
-          <scene-card v-model="scenes[i]" style="height: 100%">
+          <scene-card :showLabels="showCardLabels" v-model="scenes[i]" style="height: 100%">
             <template v-slot:action>
               <v-checkbox
                 color="accent"
@@ -337,6 +337,10 @@ export default class SceneList extends Vue {
 
   selectedScenes = [] as string[];
   deleteSelectedScenesDialog = false;
+
+  get showCardLabels() {
+    return contextModule.showCardLabels;
+  }
 
   selectScene(id: string) {
     if (this.selectedScenes.includes(id))

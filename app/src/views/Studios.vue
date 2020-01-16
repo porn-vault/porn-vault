@@ -79,7 +79,7 @@
           lg="3"
           xl="2"
         >
-          <studio-card :studio="studio" style="height: 100%" />
+          <studio-card :showLabels="showCardLabels" :studio="studio" style="height: 100%" />
         </v-col>
       </v-row>
     </div>
@@ -160,6 +160,10 @@ export default class StudioList extends Vue {
   studiosBulkText = "" as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
+
+  get showCardLabels() {
+    return contextModule.showCardLabels;
+  }
 
   async runBulkImport() {
     this.bulkLoader = true;
