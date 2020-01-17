@@ -43,7 +43,13 @@ export async function extractActors(str: string): Promise<string[]> {
 export async function extractStudios(str: string): Promise<string[]> {
   const allStudios = await Studio.getAll();
   return allStudios
-    .filter(studio => stripStr(str).includes(stripStr(studio.name)))
+    .filter(
+      studio =>
+        stripStr(str).includes(stripStr(studio.name)) ||
+        (studio.aliases || []).some(alias =>
+          stripStr(str).includes(stripStr(alias))
+        )
+    )
     .sort((a, b) => b.name.length - a.name.length)
     .map(s => s._id);
 }

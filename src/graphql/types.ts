@@ -160,6 +160,7 @@ type Studio {
   favorite: Boolean!
   bookmark: Boolean!
   customFields: Object!
+  aliases: [String!]
   
   # Resolvers
   parent: Studio
@@ -272,6 +273,7 @@ input StudioUpdateOpts {
   bookmark: Boolean
   parent: String
   labels: [String!]
+  aliases: [String!]
 }
 
 input Crop {

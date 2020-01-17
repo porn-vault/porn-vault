@@ -16,6 +16,7 @@ type IStudioUpdateOpts = Partial<{
   bookmark: boolean;
   parent: string | null;
   labels: string[];
+  aliases: string[];
 }>;
 
 export default {
@@ -54,6 +55,9 @@ export default {
       const studio = await Studio.getById(id);
 
       if (studio) {
+        if (Array.isArray(opts.aliases))
+          studio.aliases = [...new Set(opts.aliases)];
+
         if (typeof opts.name == "string") studio.name = opts.name.trim();
 
         if (typeof opts.description == "string")
