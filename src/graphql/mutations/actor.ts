@@ -7,7 +7,7 @@ import * as logger from "../../logger/index";
 import { getConfig } from "../../config/index";
 import { indices } from "../../search/index";
 import { createActorSearchDoc } from "../../search/actor";
-import { runScrapersSerial } from "../../scrapers";
+import { runPluginsSerial } from "../../plugins";
 
 type IActorUpdateOpts = Partial<{
   name: string;
@@ -54,26 +54,28 @@ export default {
       }
     }
 
-    let scraperResult = {} as Dictionary<any>;
+    let pluginResult = {} as Dictionary<any>;
 
     try {
-      scraperResult = await runScrapersSerial(config, "actorCreated", {
+      pluginResult = await runPluginsSerial(config, "actorCreated", {
         actorName: actor.name
       });
 
-      if (scraperResult.bornOn)
-        actor.bornOn = new Date(scraperResult.bornOn).valueOf();
+      if (pluginResult.bornOn)
+        actor.bornOn = new Date(pluginResult.bornOn).valueOf();
 
-      if (scraperResult.aliases && Array.isArray(scraperResult.aliases)) {
-        actor.aliases.push(...scraperResult.aliases);
+      if (pluginResult.aliases && Array.isArray(pluginResult.aliases)) {
+        actor.aliases.push(...pluginResult.aliases);
         actor.aliases = [...new Set(actor.aliases)];
       }
 
-      if (scraperResult.custom && typeof scraperResult.custom === "object")
-        Object.assign(actor.customFields, scraperResult.custom);
+      if (pluginResult.custom && typeof pluginResult.custom === "object")
+        Object.assign(actor.customFields, pluginResult.custom);
 
-      if (scraperResult.labels && Array.isArray(scraperResult.labels)) {
-        const labelIds = (await mapAsync(scraperResult.labels, extractLabels)).flat();
+      if (pluginResult.labels && Array.isArray(pluginResult.labels)) {
+        const labelIds = (
+          await mapAsync(pluginResult.labels, extractLabels)
+        ).flat();
         await Actor.setLabels(actor, labelIds.concat(actorLabels));
       }
     } catch (error) {

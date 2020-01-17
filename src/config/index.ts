@@ -3,6 +3,8 @@ import setupFunction from "../setup";
 import { exists, writeFile, readFile } from "fs";
 import { promisify } from "util";
 import { Dictionary } from "../types/utility";
+import YAML from "yaml";
+import inquirer from "inquirer";
 
 const existsAsync = promisify(exists);
 const readFileAsync = promisify(readFile);
@@ -12,7 +14,7 @@ function stringifyFormatted(obj: any) {
   return JSON.stringify(obj, null, 1);
 }
 
-interface IScraper {
+interface IPlugin {
   path: string;
   args?: Dictionary<any>;
 }
@@ -55,8 +57,8 @@ export interface IConfig {
 
   CALCULATE_FILE_CHECKSUM: boolean;
 
-  SCRAPERS: Dictionary<IScraper>;
-  SCRAPE_EVENTS: { [key: string]: string[] };
+  PLUGINS: Dictionary<IPlugin>;
+  PLUGIN_EVENTS: { [key: string]: string[] };
 }
 
 export const defaultConfig: IConfig = {
@@ -84,8 +86,8 @@ export const defaultConfig: IConfig = {
   MAX_BACKUP_AMOUNT: 10,
   EXCLUDE_FILES: [],
   CALCULATE_FILE_CHECKSUM: false,
-  SCRAPERS: {},
-  SCRAPE_EVENTS: {
+  PLUGINS: {},
+  PLUGIN_EVENTS: {
     actorCreated: []
   }
 };
@@ -108,15 +110,49 @@ export async function checkConfig() {
       await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
     }
     return config;
+  } else if (await existsAsync("config.yaml")) {
+    config = YAML.parse(await readFileAsync("config.yaml", "utf-8"));
+
+    let defaultOverride = false;
+    for (const key in defaultConfig) {
+      if (config[key] === undefined) {
+        config[key] = defaultConfig[key];
+        defaultOverride = true;
+      }
+    }
+
+    if (defaultOverride) {
+      await writeFileAsync("config.yaml", YAML.stringify(config), "utf-8");
+    }
+    return config;
   }
+
+  const { yaml } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "yaml",
+      message: "Use YAML (instead of JSON) for config file?",
+      default: false
+    }
+  ]);
+
   config = await setupFunction();
-  await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
-  logger.warn("Created config.json. Please edit and restart.");
+
+  if (yaml) {
+    await writeFileAsync("config.yaml", YAML.stringify(config), "utf-8");
+    logger.warn("Created config.yaml. Please edit and restart.");
+  } else {
+    await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
+    logger.warn("Created config.json. Please edit and restart.");
+  }
+
   return process.exit(0);
 }
 
 export async function getConfig() {
   if (await existsAsync("config.json"))
     return JSON.parse(await readFileAsync("config.json", "utf-8")) as IConfig;
+  else if (await existsAsync("config.yaml"))
+    return YAML.parse(await readFileAsync("config.yaml", "utf-8")) as IConfig;
   return defaultConfig;
 }
