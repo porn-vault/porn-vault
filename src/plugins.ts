@@ -46,6 +46,10 @@ export async function runPlugin(
         $moment: moment,
         $log: debug("porn:plugin"),
         $ora: ora,
+        $throw: (str: string) => {
+          logger.error(str);
+          throw new Error(str);
+        },
         args: plugin.args,
         mapAsync,
         filterAsync,
