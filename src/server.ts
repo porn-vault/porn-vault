@@ -21,6 +21,7 @@ import BROKEN_IMAGE from "./broken_image";
 import pug from "pug";
 import { mountApolloServer } from "./apollo";
 import { buildIndices } from "./search";
+import { checkImportFolders } from "./import/index";
 
 function isRegExp(regStr: string) {
   try {
@@ -164,6 +165,10 @@ export default async () => {
 
     ProcessingQueue.processLoop();
   }
+
+  setupMessage = "Checking imports...";
+  await checkImportFolders();
+  process.exit(0); // TODO:
 
   setupMessage = "Loading database...";
   await loadStores();

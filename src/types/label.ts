@@ -53,11 +53,7 @@ export default class Label {
   static async find(name: string) {
     name = name.toLowerCase().trim();
     const allLabels = await Label.getAll();
-    return allLabels.find(
-      label =>
-        label.name === name ||
-        label.aliases.map(alias => alias.toLowerCase()).includes(name)
-    );
+    return allLabels.find(label => label.name === name);
   }
 
   constructor(name: string, aliases: string[] = []) {
