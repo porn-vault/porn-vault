@@ -23,6 +23,8 @@ export interface IConfig {
   VIDEO_PATHS: string[];
   IMAGE_PATHS: string[];
 
+  BULK_IMPORT_PATHS: string[];
+
   SCAN_ON_STARTUP: boolean;
   SCAN_INTERVAL: number;
 
