@@ -15,6 +15,7 @@ import { existsSync } from "fs";
 import Jimp from "jimp";
 import mergeImg from "merge-img";
 import Marker from "./marker";
+import Image from "./image";
 
 export type ThumbnailFile = {
   name: string;
@@ -494,6 +495,39 @@ export default class Scene {
         logger.error(err);
         reject(err);
       }
+    });
+  }
+
+  static async screenshot(scene: Scene, sec: number): Promise<Image | null> {
+    return new Promise(async (resolve, reject) => {
+      if (!scene.path) {
+        logger.log("No scene path.");
+        return resolve(null);
+      }
+
+      const image = new Image(`${scene.name} (thumbnail)`);
+      image.path =
+        path.join(await libraryPath("thumbnails/"), image._id) + ".jpg";
+
+      logger.log("Generating screenshot for scene...");
+
+      ffmpeg(scene.path)
+        .seekInput(sec)
+        .output(image.path)
+        .outputOptions("-frames", "1")
+        .on("end", async () => {
+          logger.log("Screenshot done.");
+          await database.insert(database.store.images, image);
+
+          const actors = (await Scene.getActors(scene)).map(l => l._id);
+          await Image.setActors(image, actors);
+
+          const labels = (await Scene.getLabels(scene)).map(l => l._id);
+          await Image.setLabels(image, labels);
+
+          resolve(image);
+        })
+        .run();
     });
   }
 

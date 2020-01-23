@@ -33,6 +33,16 @@ type ISceneUpdateOpts = Partial<{
 }>;
 
 export default {
+  async screenshotScene(_, { id, sec }: { id: string; sec: number }) {
+    const scene = await Scene.getById(id);
+
+    if (scene) {
+      const image = await Scene.screenshot(scene, sec);
+      return image;
+    }
+    return null;
+  },
+
   async unwatchScene(_, { id }: { id: string }) {
     const scene = await Scene.getById(id);
 
