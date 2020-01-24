@@ -99,39 +99,29 @@ export const defaultConfig: IConfig = {
   }
 };
 
-let config = JSON.parse(JSON.stringify(defaultConfig)) as IConfig;
+let loadedConfig;
+export let configFile;
 
 export async function checkConfig() {
-  if (await existsAsync("config.json")) {
-    config = JSON.parse(await readFileAsync("config.json", "utf-8"));
+  const readFile = await loadConfig();
 
+  if (readFile) {
     let defaultOverride = false;
     for (const key in defaultConfig) {
-      if (config[key] === undefined) {
-        config[key] = defaultConfig[key];
+      if (loadedConfig[key] === undefined) {
+        loadedConfig[key] = defaultConfig[key];
         defaultOverride = true;
       }
     }
 
     if (defaultOverride) {
-      await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
+      await writeFileAsync(
+        "config.json",
+        stringifyFormatted(loadedConfig),
+        "utf-8"
+      );
     }
-    return config;
-  } else if (await existsAsync("config.yaml")) {
-    config = YAML.parse(await readFileAsync("config.yaml", "utf-8"));
-
-    let defaultOverride = false;
-    for (const key in defaultConfig) {
-      if (config[key] === undefined) {
-        config[key] = defaultConfig[key];
-        defaultOverride = true;
-      }
-    }
-
-    if (defaultOverride) {
-      await writeFileAsync("config.yaml", YAML.stringify(config), "utf-8");
-    }
-    return config;
+    return;
   }
 
   const { yaml } = await inquirer.prompt([
@@ -143,23 +133,37 @@ export async function checkConfig() {
     }
   ]);
 
-  config = await setupFunction();
+  loadedConfig = await setupFunction();
 
   if (yaml) {
-    await writeFileAsync("config.yaml", YAML.stringify(config), "utf-8");
+    await writeFileAsync("config.yaml", YAML.stringify(loadedConfig), "utf-8");
     logger.warn("Created config.yaml. Please edit and restart.");
   } else {
-    await writeFileAsync("config.json", stringifyFormatted(config), "utf-8");
+    await writeFileAsync(
+      "config.json",
+      stringifyFormatted(loadedConfig),
+      "utf-8"
+    );
     logger.warn("Created config.json. Please edit and restart.");
   }
 
   return process.exit(0);
 }
 
-export async function getConfig() {
-  if (await existsAsync("config.json"))
-    return JSON.parse(await readFileAsync("config.json", "utf-8")) as IConfig;
-  else if (await existsAsync("config.yaml"))
-    return YAML.parse(await readFileAsync("config.yaml", "utf-8")) as IConfig;
-  return defaultConfig;
+export async function loadConfig(ext = "json") {
+  logger.message("Loading config...");
+  if (ext == "json") {
+    if (!(await existsAsync("config.json"))) return false;
+    loadedConfig = JSON.parse(await readFileAsync("config.json", "utf-8"));
+    configFile = "config.json";
+  } else if (ext == "yaml") {
+    if (!(await existsAsync("config.yaml"))) return false;
+    loadedConfig = YAML.parse(await readFileAsync("config.yaml", "utf-8"));
+    configFile = "config.yaml";
+  }
+  return true;
+}
+
+export function getConfig() {
+  return loadedConfig as IConfig;
 }

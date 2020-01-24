@@ -549,7 +549,7 @@ export default class Scene {
         return resolve([]);
       }
 
-      const config = await getConfig();
+      const config = getConfig();
 
       let amount: number;
 

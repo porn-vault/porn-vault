@@ -15,7 +15,7 @@ export function isValidUrl(str: string) {
 }
 
 export async function libraryPath(str: string) {
-  return path.join((await getConfig()).LIBRARY_PATH, "library", str);
+  return path.join(getConfig().LIBRARY_PATH, "library", str);
 }
 
 export function mapAsync<T, U>(

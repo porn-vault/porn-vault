@@ -19,6 +19,7 @@ export default class Actor {
   customFields: any = {};
   labels?: string[]; // backwards compatibility
   studio?: string | null; // backwards compatibility
+  description?: string | null = null;
 
   static async filterCustomField(fieldId: string) {
     await database.update(

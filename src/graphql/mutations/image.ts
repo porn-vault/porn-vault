@@ -48,7 +48,7 @@ export default {
       if (!sceneInDb) throw new Error(`Scene ${args.scene} not found`);
     }
 
-    const config = await getConfig();
+    const config = getConfig();
 
     const { filename, mimetype, createReadStream } = await args.file;
     const ext = extname(filename);
@@ -193,7 +193,7 @@ export default {
     _,
     { ids, opts }: { ids: string[]; opts: IImageUpdateOpts }
   ) {
-    const config = await getConfig();
+    const config = getConfig();
     const updatedImages = [] as Image[];
 
     for (const id of ids) {

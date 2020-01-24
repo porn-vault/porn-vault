@@ -55,7 +55,7 @@ async function processFile(file: string) {
 export async function checkImportFolders() {
   logger.log("Checking imports...");
 
-  const config = await getConfig();
+  const config = getConfig();
   const importedFile = await libraryPath("imported.txt");
 
   try {

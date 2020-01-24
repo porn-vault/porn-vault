@@ -24,7 +24,7 @@ type IActorUpdateOpts = Partial<{
 export default {
   async addActor(_, args: Dictionary<any>) {
     const actor = new Actor(args.name, args.aliases);
-    const config = await getConfig();
+    const config = getConfig();
 
     let actorLabels = [] as string[];
     if (args.labels) {

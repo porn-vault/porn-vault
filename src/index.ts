@@ -1,6 +1,6 @@
 import "./database";
 import startServer from "./server";
-import { checkConfig } from "./config/index";
+import { checkConfig, getConfig } from "./config/index";
 import inquirer from "inquirer";
 import { existsAsync } from "./fs/async";
 const sha = require("js-sha512").sha512;
@@ -14,11 +14,14 @@ logger.message(
 );
 
 (async () => {
-  let config = await checkConfig();
+  await checkConfig();
+  const config = getConfig();
 
   // TODO: validate config
 
   logger.message("Registered plugins", Object.keys(config.PLUGINS));
+
+  logger.log(config);
 
   for (const name in config.PLUGINS) {
     const plugin = config.PLUGINS[name];

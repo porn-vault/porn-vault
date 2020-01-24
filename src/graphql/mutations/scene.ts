@@ -74,7 +74,7 @@ export default {
       if (!labelInDb) throw new Error(`Label ${label} not found`);
     }
 
-    const config = await getConfig();
+    const config = getConfig();
 
     const sceneName = args.name;
     const scene = new Scene(sceneName);
@@ -178,7 +178,7 @@ export default {
     _,
     { ids, opts }: { ids: string[]; opts: ISceneUpdateOpts }
   ) {
-    const config = await getConfig();
+    const config = getConfig();
     const updatedScenes = [] as Scene[];
 
     for (const id of ids) {

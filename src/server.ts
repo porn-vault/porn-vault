@@ -5,7 +5,7 @@ import Scene from "./types/scene";
 import * as path from "path";
 import { checkPassword, passwordHandler } from "./password";
 import cors from "cors";
-import { getConfig } from "./config/index";
+import { getConfig, loadConfig } from "./config/index";
 import ProcessingQueue from "./queue/index";
 import {
   checkVideoFolders,
@@ -81,7 +81,7 @@ export default async () => {
     next();
   });
 
-  const config = await getConfig();
+  const config = getConfig();
 
   const port = config.PORT || 3000;
   app.listen(port, () => {

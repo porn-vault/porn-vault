@@ -74,7 +74,7 @@ class Queue {
     let sceneName = removeExtension(item.filename);
     if (item.name) sceneName = item.name;
 
-    const config = await getConfig();
+    const config = getConfig();
 
     logger.log(`Checking binaries...`);
 
