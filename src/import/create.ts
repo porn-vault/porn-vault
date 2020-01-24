@@ -22,6 +22,7 @@ import { basename } from "path";
 import Movie from "../types/movie";
 import Studio from "../types/studio";
 import args from "../args";
+import { onActorCreate } from "../plugin_events/actor";
 
 export interface ICreateOptions {
   scenes?: Dictionary<IImportedScene>;
@@ -153,7 +154,7 @@ export async function createFromFileData(opts: ICreateOptions) {
     for (const actorId in opts.actors) {
       const actorToCreate = opts.actors[actorId];
 
-      const actor = new Actor(actorToCreate.name, actorToCreate.aliases || []);
+      let actor = new Actor(actorToCreate.name, actorToCreate.aliases || []);
 
       if (isBoolean(actorToCreate.bookmark))
         actor.bookmark = <boolean>actorToCreate.bookmark;
@@ -180,12 +181,14 @@ export async function createFromFileData(opts: ICreateOptions) {
         }
       }
 
+      let actorLabels = [] as string[];
+
       if (actorToCreate.labels) {
-        const labelIds = normalizeCreatedObjects(
+        actorLabels = normalizeCreatedObjects(
           actorToCreate.labels,
           createdLabels
         );
-        if (args["commit-import"]) await Actor.setLabels(actor, labelIds);
+        if (args["commit-import"]) await Actor.setLabels(actor, actorLabels);
       }
 
       if (actorToCreate.customFields) {
@@ -195,7 +198,11 @@ export async function createFromFileData(opts: ICreateOptions) {
         );
       }
 
-      // TODO: plugin event
+      try {
+        actor = await onActorCreate(actor, actorLabels);
+      } catch (error) {
+        logger.error(error.message);
+      }
 
       if (args["commit-import"])
         await database.insert(database.store.actors, actor);

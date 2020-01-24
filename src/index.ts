@@ -6,6 +6,7 @@ import { existsAsync } from "./fs/async";
 const sha = require("js-sha512").sha512;
 import * as logger from "./logger/index";
 import v8 from "v8";
+import { isRegExp } from "./types/utility";
 
 logger.message(
   `Max. memory: ${Math.round(
@@ -18,6 +19,15 @@ logger.message(
   const config = getConfig();
 
   // TODO: validate config
+
+  if (config.EXCLUDE_FILES && config.EXCLUDE_FILES.length) {
+    for (const regStr of config.EXCLUDE_FILES) {
+      if (!isRegExp(regStr)) {
+        logger.error(`Invalid regex: '${regStr}'.`);
+        process.exit(1);
+      }
+    }
+  }
 
   logger.message("Registered plugins", Object.keys(config.PLUGINS));
 

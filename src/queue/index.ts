@@ -15,9 +15,8 @@ import Studio from "../types/studio";
 import { createSceneSearchDoc } from "../search/scene";
 import { indices } from "../search/index";
 import { createImageSearchDoc } from "../search/image";
-import { runPluginsSerial } from "../plugins";
-import actor from "../graphql/resolvers/actor";
-import { mapAsync, Dictionary } from "../types/utility";
+import { Dictionary } from "../types/utility";
+import { onSceneCreate } from "plugin_events/scene";
 
 function removeExtension(file: string) {
   return file.replace(/\.[^/.]+$/, "");
@@ -91,7 +90,7 @@ class Queue {
     ffmpeg.setFfmpegPath(config.FFMPEG_PATH);
     ffmpeg.setFfprobePath(config.FFPROBE_PATH);
 
-    const scene = new Scene(sceneName);
+    let scene = new Scene(sceneName);
     scene._id = item._id;
     scene.path = sourcePath;
     if (item.rating) scene.rating = item.rating;
@@ -268,26 +267,7 @@ class Queue {
     }
 
     try {
-      const pluginResult = await runPluginsSerial(config, "sceneCreated", {
-        sceneName: scene.name,
-        scenePath: scene.path
-      });
-
-      if (typeof pluginResult.description === "string")
-        scene.description = pluginResult.description;
-
-      if (typeof pluginResult.releaseDate === "number")
-        scene.releaseDate = new Date(pluginResult.releaseDate).valueOf();
-
-      if (pluginResult.custom && typeof pluginResult.custom === "object")
-        Object.assign(scene.customFields, pluginResult.custom);
-
-      if (pluginResult.labels && Array.isArray(pluginResult.labels)) {
-        const labelIds = (
-          await mapAsync(pluginResult.labels, extractLabels)
-        ).flat();
-        await Scene.setLabels(scene, labelIds.concat(sceneLabels));
-      }
+      scene = await onSceneCreate(scene, sceneLabels);
     } catch (error) {
       logger.error(error.message);
     }

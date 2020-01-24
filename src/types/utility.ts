@@ -32,3 +32,12 @@ export async function filterAsync<T>(
   const filterMap = await mapAsync(array, callbackfn);
   return array.filter((_value, index) => filterMap[index]);
 }
+
+export function isRegExp(regStr: string) {
+  try {
+    new RegExp(regStr);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
