@@ -33,7 +33,7 @@ export async function onSceneCreate(
     sceneName: scene.name,
     scenePath: scene.path,
     $createImage: async (url: string, name: string, thumbnail?: boolean) => {
-      if (!isValidUrl(url)) throw new Error(`Invalid URL: ` + url);
+      // if (!isValidUrl(url)) throw new Error(`Invalid URL: ` + url);
       const img = new Image(name);
       if (thumbnail) img.name += " (thumbnail)";
       const ext = extname(url);

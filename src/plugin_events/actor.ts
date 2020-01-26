@@ -18,7 +18,7 @@ export async function onActorCreate(actor: Actor, actorLabels: string[]) {
   const pluginResult = await runPluginsSerial(config, "actorCreated", {
     actorName: actor.name,
     $createImage: async (url: string, name: string, thumbnail?: boolean) => {
-      if (!isValidUrl(url)) throw new Error(`Invalid URL: ` + url);
+      // if (!isValidUrl(url)) throw new Error(`Invalid URL: ` + url);
       const img = new Image(name);
       if (thumbnail) img.name += " (thumbnail)";
       const ext = extname(url);
