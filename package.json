@@ -78,7 +78,7 @@
     "@types/yaml": "^1.2.0",
     "@types/yargs": "^15.0.1",
     "nodemon": "^2.0.2",
-    "pkg": "^4.4.0",
+    "pkg": "^4.4.2",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5"
   },
