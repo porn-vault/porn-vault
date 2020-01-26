@@ -90,13 +90,11 @@ import actorFragment from "../../fragments/actor";
 import sceneFragment from "../../fragments/scene";
 import movieFragment from "../../fragments/movie";
 import StudioSelector from "../../components/StudioSelector.vue";
-import DateInput from "../DateInput.vue";
 
 @Component({
   components: {
     SceneSelector,
-    StudioSelector,
-    DateInput
+    StudioSelector
   }
 })
 export default class MovieToolbar extends Vue {
@@ -178,6 +176,7 @@ export default class MovieToolbar extends Vue {
     this.editScenes = JSON.parse(JSON.stringify(this.currentMovie.scenes));
     this.editDialog = true;
     this.editStudio = this.currentMovie.studio;
+    this.editReleaseDate = this.currentMovie.releaseDate;
   }
 
   remove() {

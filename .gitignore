@@ -40,3 +40,5 @@ release/
 releases/
 tmp/
 backups/
+plugins/
+imports/

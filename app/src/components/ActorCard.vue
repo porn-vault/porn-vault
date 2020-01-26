@@ -1,7 +1,7 @@
 <template>
   <v-card :dark="!!cardColor || $vuetify.theme.dark" :color="cardColor" v-if="value" tile>
     <a :href="`#/actor/${value._id}`">
-      <v-img :aspect-ratio="aspectRatio" class="hover" v-ripple eager :src="thumbnail">
+      <v-img contain :aspect-ratio="aspectRatio" class="hover" v-ripple eager :src="thumbnail">
         <div class="corner-actions">
           <v-btn
             light
@@ -48,7 +48,7 @@
       color="amber"
       dense
     ></v-rating>
-    <div class="pa-2">
+    <div class="pa-2" v-if="this.value.labels.length && showLabels">
       <v-chip
         class="mr-1 mb-1"
         label
@@ -74,6 +74,7 @@ import { ensureDarkColor } from "../util/color";
 @Component
 export default class ActorCard extends Vue {
   @Prop(Object) value!: IActor;
+  @Prop({ default: true }) showLabels!: boolean;
 
   get cardColor() {
     if (this.value.thumbnail && this.value.thumbnail.color)

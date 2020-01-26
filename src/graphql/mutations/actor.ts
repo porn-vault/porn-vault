@@ -5,6 +5,9 @@ import { Dictionary } from "../../types/utility";
 import { stripStr } from "../../extractor";
 import * as logger from "../../logger/index";
 import { getConfig } from "../../config/index";
+import { indices } from "../../search/index";
+import { createActorSearchDoc } from "../../search/actor";
+import { onActorCreate } from "../../plugin_events/actor";
 
 type IActorUpdateOpts = Partial<{
   name: string;
@@ -20,8 +23,8 @@ type IActorUpdateOpts = Partial<{
 
 export default {
   async addActor(_, args: Dictionary<any>) {
-    const actor = new Actor(args.name, args.aliases);
-    const config = await getConfig();
+    let actor = new Actor(args.name, args.aliases);
+    const config = getConfig();
 
     let actorLabels = [] as string[];
     if (args.labels) {
@@ -51,7 +54,14 @@ export default {
       }
     }
 
+    try {
+      actor = await onActorCreate(actor, actorLabels);
+    } catch (error) {
+      logger.error(error.message);
+    }
+
     await database.insert(database.store.actors, actor);
+    indices.actors.add(await createActorSearchDoc(actor));
     return actor;
   },
 
@@ -98,6 +108,7 @@ export default {
         await database.update(database.store.actors, { _id: actor._id }, actor);
 
         updatedActors.push(actor);
+        indices.actors.update(actor._id, await createActorSearchDoc(actor));
       } else {
         throw new Error(`Actor ${id} not found`);
       }
@@ -112,6 +123,7 @@ export default {
 
       if (actor) {
         await Actor.remove(actor);
+        indices.actors.remove(actor._id);
         await database.remove(database.store.crossReferences, {
           from: actor._id
         });

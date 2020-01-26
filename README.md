@@ -8,7 +8,7 @@ Note: this is by no means finished, but useable.
 
 ## Features
 
-- EASY installation (see. [**How to run**](https://github.com/boi123212321/porn-manager#how-to-run))
+- EASY, portable (no install) setup (see. [**How to run**](https://github.com/boi123212321/porn-manager#how-to-run))
 - Cross-platform (Win, Linux, Mac)
 - Works on any somewhat-modern device including tablets and smartphones
 - Self hosted, fully open source
@@ -26,6 +26,8 @@ Note: this is by no means finished, but useable.
   - Automatic label extraction from scene titles & file names
   - Search, filter and sort your collection
   - Rate items, mark as your favorites & bookmark items
+- Custom data fields
+  - Extend actor info with any kind of data (hair color, retired, etc.)
 - Automatic thumbnail generation on scene import
 - Optional password protection in LAN
 
@@ -52,19 +54,20 @@ Note: this is by no means finished, but useable.
 - APPLY_ACTOR_LABELS: Whether actor labels should be applied to scenes and images the actor is starring in
   - Example: Kali Roses has labels "blonde" & "tattoos". Importing a new video featuring Kali Roses (will be matched if "Kali Roses" is in the video title or path), the newly created scene will automatically inherit "blonde" & "tattoos" + other labels that have been extracted from the title or path.
 - APPLY_STUDIO_LABELS: Same as APPLY_ACTOR_LABELS, but for studios
-- USE_FUZZY_SEARCH: Use fuzzy search. Fuzzy search decreases search performance, but may forgive misspellings. Disabling fuzzy search approx. halves the search time, which can be helpful on every large collections (5000+) items.
-- FUZZINESS: How hard the fuzzy search should be matching; 0 requires a perfect match, while 1 will match everything, effectively turning off the search.
 - READ_IMAGES_ON_IMPORT: Read image dimensions/hash on import, will greatly increase import time for a big image library (10000+)
 - REMOVE_DANGLING_FILE_REFERENCES: Remove scenes/images from the database that can not be found on disk
 - BACKUP_ON_STARTUP: Whether to create a backup when starting the server
 - MAX_BACKUP_AMOUNT: Max amount of backups in backups/ folder. Oldest one will be deleted, if max amount has been reached.
 - EXCLUDE_FILES: Array of regular expressions that, if any of them match a file name, will cause the file to be ignored
-- CALCULATE_FILE_CHECKSUM: Generate file checksum (hash) on import
+- CALCULATE_FILE_CHECKSUM: Generate file checksum (hash) on import (decreases import speed)
+- CREATE_MISSING_ACTORS: Create actors returned from plugins when not found in library
+- CREATE_MISSING_STUDIOS: Create studio returned from plugins when not found in library
+- CREATE_MISSING_LABELS: Create labels returned from plugins when not found in library
 
 ## Roadmap
 
-- Custom data fields
 - Image albums
+- Scraping (plugins)
 - More useful front page
 - Recommend similar scenes/actors/images
 - visit [Issues](https://github.com/boi123212321/porn-manager/issues) to see what's up
@@ -101,31 +104,31 @@ cd app
 npm install
 ```
 
-- Run web app in dev mode
+- Run web app in dev mode (in app/ folder)
 
 ```
 npm run serve
 ```
 
-- Build web app
+- Build web app (in app/ folder)
 
 ```
 npm run build
 ```
 
-- Run server in dev mode
+- Run server in dev mode (in root folder)
 
 ```
 npm run mon
 ```
 
-- Run server in release mode
+- Run server in release mode (in root folder)
 
 ```
 npm run build
 ```
 
-And run the built exe in the release/ folder
+And run the built executable in the release/ folder
 
 ## Images
 

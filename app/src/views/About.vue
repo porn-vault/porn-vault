@@ -1,23 +1,7 @@
 <template>
-  <div>
-    <div class="text-center">
-      <div class="pa-3 d-inline-block" style="border: 1px solid #ddd">
-        <div class="title">porn-manager (name TBD)</div>
-
-        <div class="med--text">by boi123212321</div>
-
-        <v-btn
-          depressed
-          href="https://github.com/boi123212321/porn-manager"
-          target="_blank"
-          color="accent mt-3"
-          :class="`text-none ${$vuetify.theme.dark ? 'black--text' : 'white--text'}`"
-        >
-          <v-icon left>mdi-github-circle</v-icon>GitHub
-        </v-btn>
-      </div>
-    </div>
-
+  <v-container fluid>
+    <BindTitle value="About" />
+    <div class="text-center headline mt-4">Settings</div>
     <v-row>
       <v-col :cols="12" :sm="6">
         <div>
@@ -49,34 +33,59 @@
           >{{ this.$vuetify.theme.dark ? "Light mode" : "Dark mode" }}</v-btn>
         </div>
         <div>
-          <v-checkbox v-model="scenePauseOnUnfocus" label="Pause video on window unfocus"></v-checkbox>
+          <v-checkbox
+            hide-details
+            v-model="scenePauseOnUnfocus"
+            label="Pause video on window unfocus"
+          ></v-checkbox>
+          <v-checkbox hide-details v-model="showCardLabels" label="Show card labels on overview"></v-checkbox>
         </div>
       </v-col>
     </v-row>
 
     <div>
+      <div class="text-center headline mb-4">Custom data fields</div>
       <CustomFieldCreator />
     </div>
 
-    <QueueInfo />
+    <div class="text-center">
+      <div class="mt-3 pa-3 d-inline-block" style="border: 1px solid #ddd; border-radius: 8px">
+        <div class="title">porn-manager (name TBD)</div>
+
+        <div class="med--text">by boi123212321</div>
+
+        <v-btn
+          depressed
+          href="https://github.com/boi123212321/porn-manager"
+          target="_blank"
+          color="accent mt-3"
+          :class="`text-none ${$vuetify.theme.dark ? 'black--text' : 'white--text'}`"
+        >
+          <v-icon left>mdi-github-circle</v-icon>GitHub
+        </v-btn>
+      </div>
+    </div>
   </v-container>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import QueueInfo from "../components/QueueInfo.vue";
 import CustomFieldCreator from "../components/CustomFieldCreator.vue";
 import { contextModule } from "../store/context";
 
 @Component({
   components: {
-    QueueInfo,
     CustomFieldCreator
   }
 })
 export default class About extends Vue {
-  beforeMount() {
-    document.title = "About";
+  set showCardLabels(val: boolean) {
+    localStorage.setItem("pm_showCardLabels", val.toString());
+    contextModule.toggleCardLabels(val);
+  }
+
+  get showCardLabels() {
+    return contextModule.showCardLabels;
   }
 
   set actorRatio(val: number) {

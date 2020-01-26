@@ -18,7 +18,8 @@ export default class Actor {
   rating: number = 0;
   customFields: any = {};
   labels?: string[]; // backwards compatibility
-  studio: string | null = null;
+  studio?: string | null; // backwards compatibility
+  description?: string | null = null;
 
   static async filterCustomField(fieldId: string) {
     await database.update(
@@ -130,16 +131,6 @@ export default class Actor {
     ).filter(Boolean) as Label[];
   }
 
-  static async find(name: string) {
-    name = name.toLowerCase().trim();
-    const allActors = await Actor.getAll();
-    return allActors.filter(
-      actor =>
-        actor.name === name ||
-        actor.aliases.map(alias => alias.toLowerCase()).includes(name)
-    );
-  }
-
   static async getById(_id: string) {
     return (await database.findOne(database.store.actors, {
       _id
@@ -181,6 +172,6 @@ export default class Actor {
   constructor(name: string, aliases: string[] = []) {
     this._id = "ac_" + generateHash();
     this.name = name.trim();
-    this.aliases = aliases.map(tag => tag.trim());
+    this.aliases = [...new Set(aliases.map(tag => tag.trim()))];
   }
 }

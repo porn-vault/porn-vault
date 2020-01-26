@@ -1,6 +1,13 @@
 <template>
-  <div>
-    <v-navigation-drawer style="z-index: 14" v-model="drawer" :permanent="$vuetify.breakpoint.mdAndUp" clipped app>
+  <v-container fluid>
+    <BindTitle value="Studios" />
+    <v-navigation-drawer
+      style="z-index: 14"
+      v-model="drawer"
+      :permanent="$vuetify.breakpoint.mdAndUp"
+      clipped
+      app
+    >
       <v-container>
         <v-text-field clearable color="accent" v-model="query" label="Search query"></v-text-field>
 
@@ -12,7 +19,7 @@
           v-model="selectedLabels"
           multiple
         >
-          <div style="max-height:40vh; overflow-y:scroll">
+          <div style="max-height:30vh; overflow-y:scroll">
             <v-chip label small v-for="label in allLabels" :key="label._id">{{ label.name }}</v-chip>
           </div>
         </v-chip-group>
@@ -73,7 +80,7 @@
           lg="3"
           xl="2"
         >
-          <studio-card :studio="studio" style="height: 100%" />
+          <studio-card :showLabels="showCardLabels" :studio="studio" style="height: 100%" />
         </v-col>
       </v-row>
     </div>
@@ -144,7 +151,8 @@ import StudioCard from "../components/StudioCard.vue";
 @Component({
   components: {
     InfiniteLoading,
-    StudioCard
+    StudioCard,
+    
   }
 })
 export default class StudioList extends Vue {
@@ -154,6 +162,10 @@ export default class StudioList extends Vue {
   studiosBulkText = "" as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
+
+  get showCardLabels() {
+    return contextModule.showCardLabels;
+  }
 
   async runBulkImport() {
     this.bulkLoader = true;
@@ -216,13 +228,17 @@ export default class StudioList extends Vue {
       value: "alpha"
     },
     {
-      text: "Added to collection",
-      value: "addedOn"
+      text: "# scenes",
+      value: "scenes"
     },
     {
+      text: "Added to collection",
+      value: "addedOn"
+    }
+    /* {
       text: "Rating",
       value: "rating"
-    }
+    } */
   ];
 
   favoritesOnly = localStorage.getItem("pm_studioFavorite") == "true";
@@ -444,7 +460,6 @@ export default class StudioList extends Vue {
       .catch(err => {
         console.error(err);
       });
-    document.title = "Studios";
   }
 }
 </script>

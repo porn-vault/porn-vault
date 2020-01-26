@@ -3,7 +3,7 @@
     <a :href="`#/scene/${value._id}`">
       <v-hover>
         <template v-slot:default="{ hover }">
-          <v-img :aspect-ratio="aspectRatio" v-ripple eager :src="thumbnail">
+          <v-img cover :aspect-ratio="aspectRatio" v-ripple eager :src="thumbnail">
             <v-fade-transition>
               <div
                 @mouseenter="mouseenter"
@@ -11,13 +11,9 @@
                 v-if="hover"
                 style="position: absolute: top: 0; left: 0; width: 100%; height: 100%"
               >
-                <video
-                  ref="video"
-                  style="object-fit: cover;width: 100%; height: 100%"
-                  autoplay
-                  muted
-                  :src="videoPath"
-                ></video>
+                <div style="width: 100%; height: 100%; position: relative">
+                  <video class="video-insert" ref="video" autoplay muted :src="videoPath" />
+                </div>
               </div>
             </v-fade-transition>
 
@@ -72,7 +68,7 @@
       >{{ value.name }}</span>
     </v-card-title>
     <v-card-subtitle v-if="value.actors.length" class="pb-1">
-      Featuring
+      With
       <span v-html="actorLinks"></span>
     </v-card-subtitle>
     <v-rating
@@ -84,7 +80,7 @@
       color="amber"
       dense
     ></v-rating>
-    <div class="pa-2">
+    <div class="pa-2" v-if="this.value.labels.length && showLabels">
       <v-chip
         label
         class="mr-1 mb-1"
@@ -126,6 +122,7 @@ import SceneMixin from "../mixins/scene";
 @Component
 export default class SceneCard extends Mixins(SceneMixin) {
   @Prop(Object) value!: IScene;
+  @Prop({ default: true }) showLabels!: boolean;
 
   playIndex = 0;
   playInterval = null as NodeJS.Timeout | null;
@@ -200,5 +197,13 @@ export default class SceneCard extends Mixins(SceneMixin) {
   position: absolute;
   bottom: 5px;
   left: 5px;
+}
+
+.video-insert {
+  position: absolute;
+  background-size: cover;
+  height: 100%;
+  overflow: hidden;
+  object-fit: cover;
 }
 </style>

@@ -1,6 +1,13 @@
 <template>
-  <div>
-    <v-navigation-drawer style="z-index: 14" v-model="drawer" :permanent="$vuetify.breakpoint.mdAndUp" clipped app>
+  <v-container fluid>
+    <BindTitle value="Actors" />
+    <v-navigation-drawer
+      style="z-index: 14"
+      v-model="drawer"
+      :permanent="$vuetify.breakpoint.mdAndUp"
+      clipped
+      app
+    >
       <v-container>
         <v-text-field clearable color="accent" v-model="query" label="Search query"></v-text-field>
 
@@ -12,7 +19,7 @@
           v-model="selectedLabels"
           multiple
         >
-          <div style="max-height:40vh; overflow-y:scroll">
+          <div style="max-height:30vh; overflow-y:scroll">
             <v-chip label small v-for="label in allLabels" :key="label._id">{{ label.name }}</v-chip>
           </div>
         </v-chip-group>
@@ -73,7 +80,7 @@
           lg="3"
           xl="2"
         >
-          <actor-card v-model="actors[i]" style="height: 100%" />
+          <actor-card :showLabels="showCardLabels" v-model="actors[i]" style="height: 100%" />
         </v-col>
       </v-row>
     </div>
@@ -229,6 +236,10 @@ export default class SceneList extends Vue {
   bulkImportDialog = false;
   bulkLoader = false;
 
+  get showCardLabels() {
+    return contextModule.showCardLabels;
+  }
+
   async runBulkImport() {
     this.bulkLoader = true;
 
@@ -299,8 +310,16 @@ export default class SceneList extends Vue {
       value: "rating"
     },
     {
+      text: "# scenes",
+      value: "scenes"
+    },
+    {
       text: "Views",
       value: "views"
+    },
+    {
+      text: "Age",
+      value: "date"
     }
   ];
 
@@ -559,7 +578,6 @@ export default class SceneList extends Vue {
       .catch(err => {
         console.error(err);
       });
-    document.title = "Actors";
   }
 }
 </script>

@@ -9,6 +9,7 @@ import Image from "../types/image";
 import ora from "ora";
 import Movie from "../types/movie";
 import Studio from "../types/studio";
+import CrossReference from "../types/cross_references";
 
 mkdirp.sync("backups/");
 mkdirp.sync("tmp/");
@@ -31,7 +32,7 @@ function buildIndex(store: DataStore, opts: EnsureIndexOptions) {
     store.ensureIndex(opts, err => {
       if (err) reject(err);
       else {
-        logger.log("Built index " + JSON.stringify(opts));
+        logger.log("Built DB index " + JSON.stringify(opts));
         resolve(store);
       }
     });
@@ -56,23 +57,23 @@ function loadStore(path: string): Promise<DataStore> {
 
 export async function loadStores() {
   try {
-    mkdirp.sync(await libraryPath("scenes/"));
-    mkdirp.sync(await libraryPath("images/"));
-    mkdirp.sync(await libraryPath("thumbnails/"));
-    mkdirp.sync(await libraryPath("previews/"));
+    mkdirp.sync(libraryPath("scenes/"));
+    mkdirp.sync(libraryPath("images/"));
+    mkdirp.sync(libraryPath("thumbnails/"));
+    mkdirp.sync(libraryPath("previews/"));
   } catch (err) {}
 
   store = {
-    crossReferences: await loadStore(await libraryPath("cross_references.db")),
-    scenes: await loadStore(await libraryPath("scenes.db")),
-    actors: await loadStore(await libraryPath("actors.db")),
-    images: await loadStore(await libraryPath("images.db")),
-    labels: await loadStore(await libraryPath("labels.db")),
-    movies: await loadStore(await libraryPath("movies.db")),
-    studios: await loadStore(await libraryPath("studios.db")),
-    queue: await loadStore(await libraryPath("queue.db")),
-    markers: await loadStore(await libraryPath("markers.db")),
-    customFields: await loadStore(await libraryPath("custom_fields.db"))
+    crossReferences: await loadStore(libraryPath("cross_references.db")),
+    scenes: await loadStore(libraryPath("scenes.db")),
+    actors: await loadStore(libraryPath("actors.db")),
+    images: await loadStore(libraryPath("images.db")),
+    labels: await loadStore(libraryPath("labels.db")),
+    movies: await loadStore(libraryPath("movies.db")),
+    studios: await loadStore(libraryPath("studios.db")),
+    queue: await loadStore(libraryPath("queue.db")),
+    markers: await loadStore(libraryPath("markers.db")),
+    customFields: await loadStore(libraryPath("custom_fields.db"))
   };
 
   await buildIndex(store.crossReferences, {
@@ -109,6 +110,7 @@ export async function loadStores() {
   await Image.checkIntegrity();
   await Studio.checkIntegrity();
   await Movie.checkIntegrity();
+  await CrossReference.checkIntegrity();
   loader.succeed("Integrity check done.");
 }
 

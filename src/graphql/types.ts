@@ -31,7 +31,7 @@ type Query {
   numStudios: Int!
   numImages: Int!
 
-  getScenes(query: String): [Scene!]!
+  getScenes(query: String, random: Boolean): [Scene!]!
   getActors(query: String): [Actor!]!
   getMovies(query: String): [Movie!]!
   # auto = true will prevent thumbnails, previews and screenshots from being filtered out
@@ -45,6 +45,7 @@ type Query {
   getMovieById(id: String!): Movie
   getStudioById(id: String!): Studio
   getLabelById(id: String!): Label
+  getImageById(id: String!): Image
   
   getQueueInfo: QueueInfo!
   topActors(num: Int): [Actor!]!
@@ -160,6 +161,7 @@ type Studio {
   favorite: Boolean!
   bookmark: Boolean!
   customFields: Object!
+  aliases: [String!]
   
   # Resolvers
   parent: Studio
@@ -272,6 +274,7 @@ input StudioUpdateOpts {
   bookmark: Boolean
   parent: String
   labels: [String!]
+  aliases: [String!]
 }
 
 input Crop {
@@ -295,6 +298,7 @@ type Mutation {
   removeLabels(ids: [String!]!): Boolean!
   
   addScene(name: String!, actors: [String!], labels: [String!]): Scene!
+  screenshotScene(id: String!, sec: Int!): Image
   watchScene(id: String!): Scene!
   unwatchScene(id: String!): Scene!
   uploadScene(file: Upload!, name: String, actors: [String!], labels: [String!]): Boolean!

@@ -1,6 +1,13 @@
 <template>
-  <div>
-    <v-navigation-drawer style="z-index: 14" v-model="drawer" :permanent="$vuetify.breakpoint.mdAndUp" clipped app>
+  <v-container fluid>
+    <BindTitle value="Movies" />
+    <v-navigation-drawer
+      style="z-index: 14"
+      v-model="drawer"
+      :permanent="$vuetify.breakpoint.mdAndUp"
+      clipped
+      app
+    >
       <v-container>
         <!-- <v-checkbox v-model="useDVDCoverRatio" label="Use DVD Cover ratio"></v-checkbox> -->
         <v-text-field clearable color="accent" v-model="query" label="Search query"></v-text-field>
@@ -13,7 +20,7 @@
           v-model="selectedLabels"
           multiple
         >
-          <div style="max-height:40vh; overflow-y:scroll">
+          <div style="max-height:30vh; overflow-y:scroll">
             <v-chip label small v-for="label in allLabels" :key="label._id">{{ label.name }}</v-chip>
           </div>
         </v-chip-group>
@@ -74,7 +81,12 @@
           lg="3"
           xl="2"
         >
-          <MovieCard :movie="movie" style="height: 100%" v-model="movies[i]" />
+          <MovieCard
+            :showLabels="showCardLabels"
+            :movie="movie"
+            style="height: 100%"
+            v-model="movies[i]"
+          />
         </v-col>
       </v-row>
     </div>
@@ -180,7 +192,7 @@ import movieFragment from "../fragments/movie";
   components: {
     InfiniteLoading,
     SceneSelector,
-    MovieCard
+    MovieCard,
   }
 })
 export default class MovieList extends Vue {
@@ -190,6 +202,10 @@ export default class MovieList extends Vue {
   moviesBulkText = "" as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
+
+  get showCardLabels() {
+    return contextModule.showCardLabels;
+  }
 
   async runBulkImport() {
     this.bulkLoader = true;
@@ -541,7 +557,6 @@ export default class MovieList extends Vue {
       .catch(err => {
         console.error(err);
       });
-    document.title = "Movies";
   }
 }
 </script>

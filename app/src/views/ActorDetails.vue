@@ -1,27 +1,38 @@
 <template>
   <div>
     <div v-if="currentActor">
+      <BindTitle :value="currentActor.name" />
       <v-container fluid>
         <v-row>
           <v-col cols="12" sm="4" md="3" lg="2" xl="2">
-            <v-hover>
+            <v-hover v-if="thumbnail">
               <template v-slot:default="{ hover }">
-                <v-img
+                <div
                   v-ripple
+                  style="position: relative;"
+                  class="hover text-center"
                   @click="openThumbnailDialog"
-                  class="elevation-4 hover"
-                  :aspect-ratio="aspectRatio"
-                  cover
-                  :src="thumbnail"
                 >
-                  <v-fade-transition>
-                    <v-overlay v-if="hover" absolute color="accent">
-                      <v-icon x-large>mdi-upload</v-icon>
-                    </v-overlay>
-                  </v-fade-transition>
-                </v-img>
+                  <img class="avatar" :src="thumbnail" />
+
+                  <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%;">
+                    <v-fade-transition>
+                      <v-overlay v-if="hover" absolute color="accent">
+                        <v-icon x-large>mdi-upload</v-icon>
+                      </v-overlay>
+                    </v-fade-transition>
+                  </div>
+                </div>
               </template>
             </v-hover>
+            <div v-else class="text-center">
+              <v-btn
+                class="text-none"
+                @click="openThumbnailDialog"
+                text
+                color="accent"
+              >Set thumbnail</v-btn>
+            </div>
             <v-rating
               half-increments
               @input="rate"
@@ -401,7 +412,7 @@ export default class ActorDetails extends Vue {
         console.error(err);
       });
   }
-  
+
   labelSearchQuery = "";
 
   get aspectRatio() {
@@ -765,7 +776,6 @@ export default class ActorDetails extends Vue {
       this.scenes.sort((a, b) => b.addedOn - a.addedOn);
       delete res.data.getActorById.scenes;
       actorModule.setCurrent(res.data.getActorById);
-      document.title = res.data.getActorById.name;
       this.editCustomFields = res.data.getActorById.customFields;
     });
   }
@@ -789,4 +799,7 @@ export default class ActorDetails extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.avatar {
+  max-width: 100%;
+}
 </style>

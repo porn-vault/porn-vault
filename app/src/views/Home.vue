@@ -1,45 +1,41 @@
 <template>
-  <div>
+  <v-container>
+    <BindTitle value="Home" />
     <div class="mx-auto" style="max-width: 800px">
       <v-row>
         <v-col cols="12" sm="6">
-          <v-card  class="mb-3" style="border-radius: 10px" >
+          <QueueInfo />
+          <v-card class="mb-3" style="border-radius: 10px">
             <v-card-title>
               <v-icon medium class="mr-2">mdi-counter</v-icon>Stats
             </v-card-title>
             <v-card-text>
               <div class="my-4">
-                <span class="mr-2 d-inline-block  display-1">{{ numScenes }}</span>
+                <span class="mr-2 d-inline-block display-1">{{ numScenes }}</span>
                 <span class="subtitle-1">scenes</span>
               </div>
               <v-divider></v-divider>
 
               <div class="my-4">
-                <span class="mr-2 d-inline-block  display-1">{{ numActors }}</span>
+                <span class="mr-2 d-inline-block display-1">{{ numActors }}</span>
                 <span class="subtitle-1">actors</span>
               </div>
               <v-divider></v-divider>
 
               <div class="my-4">
-                <span class="mr-2 d-inline-block  display-1">{{ numMovies }}</span>
+                <span class="mr-2 d-inline-block display-1">{{ numMovies }}</span>
                 <span class="subtitle-1">movies</span>
               </div>
               <v-divider></v-divider>
 
               <div class="my-4">
-                <span class="mr-2 d-inline-block  display-1">{{ numImages }}</span>
+                <span class="mr-2 d-inline-block display-1">{{ numImages }}</span>
                 <span class="subtitle-1">images</span>
               </div>
             </v-card-text>
           </v-card>
 
-          <v-card
-            v-if="scenesWithoutLabels.length"
-            
-            class="mb-3"
-            style="border-radius: 10px"
-            
-          >
+          <v-card v-if="scenesWithoutLabels.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
               <v-icon medium class="mr-2">mdi-account-alert</v-icon>Scenes without labels
             </v-card-title>
@@ -55,18 +51,12 @@
                   </v-avatar>
                 </router-link>
 
-                <div class="subtitle-1 ">{{ scene.name }}</div>
+                <div class="subtitle-1">{{ scene.name }}</div>
               </div>
             </v-card-text>
           </v-card>
 
-          <v-card
-            v-if="scenesWithoutActors.length"
-            
-            class="mb-3"
-            style="border-radius: 10px"
-            
-          >
+          <v-card v-if="scenesWithoutActors.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
               <v-icon medium class="mr-2">mdi-account-alert</v-icon>Scenes without actors
             </v-card-title>
@@ -82,86 +72,42 @@
                   </v-avatar>
                 </router-link>
 
-                <div class="subtitle-1 ">{{ scene.name }}</div>
+                <div class="subtitle-1">{{ scene.name }}</div>
               </div>
             </v-card-text>
           </v-card>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-card  class="mb-3" style="border-radius: 10px" >
+          <v-card class="mb-3" style="border-radius: 10px">
             <v-card-title>
               <v-icon medium class="mr-2">mdi-heart</v-icon>Your favorites
             </v-card-title>
             <v-card-text>
-              <div class="mb-2 d-flex align-center" v-for="actor in topActors" :key="actor._id">
-                <router-link :to="`/actor/${actor._id}`">
-                  <v-avatar color="grey" class="hover mr-2" size="80">
-                    <v-img v-ripple :src="thumbnail(actor)"></v-img>
-                  </v-avatar>
-                </router-link>
-
-                <div class="subtitle-1 ">{{ actor.name }}</div>
-              </div>
+              <ActorGrid :value="topActors" />
             </v-card-text>
           </v-card>
 
-          <v-card
-            v-if="actorsWithoutLabels.length"
-            
-            class="mb-3"
-            style="border-radius: 10px"
-            
-          >
+          <v-card v-if="actorsWithoutLabels.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
               <v-icon medium class="mr-2">mdi-account-alert</v-icon>Actors without labels
             </v-card-title>
             <v-card-text>
-              <div
-                class="mb-2 d-flex align-center"
-                v-for="actor in actorsWithoutLabels"
-                :key="actor._id"
-              >
-                <router-link :to="`/actor/${actor._id}`">
-                  <v-avatar color="grey" class="hover mr-2" size="80">
-                    <v-img v-ripple :src="thumbnail(actor)"></v-img>
-                  </v-avatar>
-                </router-link>
-
-                <div class="subtitle-1 ">{{ actor.name }}</div>
-              </div>
+              <ActorGrid :value="actorsWithoutLabels" />
             </v-card-text>
           </v-card>
 
-          <v-card
-            v-if="actorsWithoutScenes.length"
-            
-            class="mb-3"
-            style="border-radius: 10px"
-            
-          >
+          <v-card v-if="actorsWithoutScenes.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
               <v-icon medium class="mr-2">mdi-account-alert</v-icon>Actors without scenes
             </v-card-title>
             <v-card-text>
-              <div
-                class="mb-2 d-flex align-center"
-                v-for="actor in actorsWithoutScenes"
-                :key="actor._id"
-              >
-                <router-link :to="`/actor/${actor._id}`">
-                  <v-avatar color="grey" class="hover mr-2" size="80">
-                    <v-img v-ripple :src="thumbnail(actor)"></v-img>
-                  </v-avatar>
-                </router-link>
-
-                <div class="subtitle-1 ">{{ actor.name }}</div>
-              </div>
+              <ActorGrid :value="actorsWithoutScenes" />
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -173,10 +119,15 @@ import sceneFragment from "../fragments/scene";
 import ActorCard from "../components/ActorCard.vue";
 import IActor from "../types/actor";
 import IScene from "../types/scene";
+import QueueInfo from "../components/QueueInfo.vue";
+import ActorGrid from "../components/ActorGrid.vue";
+import { contextModule } from "../store/context";
 
 @Component({
   components: {
-    ActorCard
+    ActorCard,
+    QueueInfo,
+    ActorGrid
   }
 })
 export default class Home extends Vue {
@@ -224,19 +175,19 @@ export default class Home extends Vue {
     ApolloClient.query({
       query: gql`
         {
-          topActors(num: 5) {
+          topActors(num: 4) {
             ...ActorFragment
           }
-          getActorsWithoutScenes(num: 5) {
+          getActorsWithoutScenes(num: 4) {
             ...ActorFragment
           }
-          getScenesWithoutActors(num: 5) {
+          getScenesWithoutActors(num: 4) {
             ...SceneFragment
           }
-          getActorsWithoutLabels(num: 5) {
+          getActorsWithoutLabels(num: 4) {
             ...ActorFragment
           }
-          getScenesWithoutLabels(num: 5) {
+          getScenesWithoutLabels(num: 4) {
             ...SceneFragment
           }
         }

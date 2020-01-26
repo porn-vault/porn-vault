@@ -2,6 +2,8 @@ import * as database from "../../database";
 import Movie from "../../types/movie";
 import { Dictionary } from "../../types/utility";
 import * as logger from "../../logger";
+import { indices } from "../../search/index";
+import { createMovieSearchDoc } from "../../search/movie";
 
 type IMovieUpdateOpts = Partial<{
   name: string;
@@ -20,11 +22,15 @@ type IMovieUpdateOpts = Partial<{
 export default {
   async addMovie(_, args: Dictionary<any>) {
     const movie = new Movie(args.name, args.scenes);
-    await database.insert(database.store.movies, movie);
 
     if (args.scenes) {
       if (Array.isArray(args.scenes)) await Movie.setScenes(movie, args.scenes);
     }
+    await database.insert(database.store.movies, movie);
+    indices.movies.add(await createMovieSearchDoc(movie));
+
+    // TODO: plugin event
+
     return movie;
   },
 
@@ -34,6 +40,7 @@ export default {
 
       if (movie) {
         await Movie.remove(movie._id);
+        indices.movies.remove(movie._id);
         await database.remove(database.store.crossReferences, {
           from: movie._id
         });
@@ -93,6 +100,7 @@ export default {
 
         await database.update(database.store.movies, { _id: movie._id }, movie);
         updatedScenes.push(movie);
+        indices.movies.update(movie._id, await createMovieSearchDoc(movie));
       }
     }
 

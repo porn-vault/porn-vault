@@ -1,5 +1,6 @@
 <template>
   <v-container fluid>
+    <BindTitle value="Images" />
     <v-banner app sticky v-if="selectedImages.length">
       {{ selectedImages.length }} images selected
       <template v-slot:actions>
@@ -13,7 +14,13 @@
       </template>
     </v-banner>
 
-    <v-navigation-drawer style="z-index: 14" v-model="drawer" :permanent="$vuetify.breakpoint.mdAndUp" clipped app>
+    <v-navigation-drawer
+      style="z-index: 14"
+      v-model="drawer"
+      :permanent="$vuetify.breakpoint.mdAndUp"
+      clipped
+      app
+    >
       <v-container>
         <v-checkbox hide-details v-model="largeThumbs" label="Large thumbnails"></v-checkbox>
         <v-text-field clearable color="accent" v-model="query" label="Search query"></v-text-field>
@@ -26,7 +33,7 @@
           v-model="selectedLabels"
           multiple
         >
-          <div style="max-height:40vh; overflow-y:scroll">
+          <div style="max-height:30vh; overflow-y:scroll">
             <v-chip label small v-for="label in allLabels" :key="label._id">{{ label.name }}</v-chip>
           </div>
         </v-chip-group>
@@ -458,7 +465,6 @@ export default class ImagesView extends Vue {
       .catch(err => {
         console.error(err);
       });
-    document.title = "Images";
   }
 }
 </script>

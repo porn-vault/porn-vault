@@ -15,6 +15,7 @@ import { existsSync } from "fs";
 import Jimp from "jimp";
 import mergeImg from "merge-img";
 import Marker from "./marker";
+import Image from "./image";
 
 export type ThumbnailFile = {
   name: string;
@@ -235,12 +236,6 @@ export default class Scene {
     })) as Scene[];
   }
 
-  static async find(name: string) {
-    name = name.toLowerCase().trim();
-    const allScenes = await Scene.getAll();
-    return allScenes.filter(scene => scene.name.toLowerCase() == name);
-  }
-
   static async getMarkers(scene: Scene) {
     const references = await CrossReference.getBySource(scene._id);
     return (
@@ -422,7 +417,7 @@ export default class Scene {
       const img = (await mergeImg(files)) as Jimp;
 
       const file = path.join(
-        await libraryPath("previews/"),
+        libraryPath("previews/"),
         `${scene._id}.jpg`
       );
 
@@ -447,7 +442,7 @@ export default class Scene {
           return resolve(null);
         }
 
-        const folder = await libraryPath("thumbnails/");
+        const folder = libraryPath("thumbnails/");
 
         await (() => {
           return new Promise(async (resolve, reject) => {
@@ -478,7 +473,7 @@ export default class Scene {
 
         const thumbnailFiles = await Promise.all(
           thumbnailFilenames.map(async name => {
-            const filePath = await libraryPath(`thumbnails/${name}`);
+            const filePath = libraryPath(`thumbnails/${name}`);
             const stats = await statAsync(filePath);
             return {
               name,
@@ -503,6 +498,50 @@ export default class Scene {
     });
   }
 
+  static async screenshot(scene: Scene, sec: number): Promise<Image | null> {
+    return new Promise(async (resolve, reject) => {
+      if (!scene.path) {
+        logger.log("No scene path.");
+        return resolve(null);
+      }
+
+      const image = new Image(`${scene.name} (thumbnail)`);
+      image.path =
+        path.join(libraryPath("thumbnails/"), image._id) + ".jpg";
+      image.scene = scene._id;
+
+      logger.log("Generating screenshot for scene...");
+
+      ffmpeg(scene.path)
+        .seekInput(sec)
+        .output(image.path)
+        .outputOptions("-frames", "1")
+        .on("end", async () => {
+          logger.log("Screenshot done.");
+          await database.insert(database.store.images, image);
+
+          const actors = (await Scene.getActors(scene)).map(l => l._id);
+          await Image.setActors(image, actors);
+
+          const labels = (await Scene.getLabels(scene)).map(l => l._id);
+          await Image.setLabels(image, labels);
+
+          await database.update(
+            database.store.scenes,
+            { _id: scene._id },
+            {
+              $set: {
+                thumbnail: image._id
+              }
+            }
+          );
+
+          resolve(image);
+        })
+        .run();
+    });
+  }
+
   static async generateThumbnails(scene: Scene): Promise<ThumbnailFile[]> {
     return new Promise(async (resolve, reject) => {
       if (!scene.path) {
@@ -510,7 +549,7 @@ export default class Scene {
         return resolve([]);
       }
 
-      const config = await getConfig();
+      const config = getConfig();
 
       let amount: number;
 
@@ -530,7 +569,7 @@ export default class Scene {
         file: scene.path,
         pattern: `${scene._id}-{{index}}.jpg`,
         count: amount,
-        thumbnailPath: await libraryPath("thumbnails/")
+        thumbnailPath: libraryPath("thumbnails/")
       };
 
       try {
@@ -591,7 +630,7 @@ export default class Scene {
 
         const thumbnailFiles = await Promise.all(
           thumbnailFilenames.map(async name => {
-            const filePath = await libraryPath(`thumbnails/${name}`);
+            const filePath = libraryPath(`thumbnails/${name}`);
             const stats = await statAsync(filePath);
             return {
               name,
