@@ -1,4 +1,4 @@
-name: TSC
+name: Build test
 
 on:
   push:
