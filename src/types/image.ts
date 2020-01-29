@@ -70,7 +70,7 @@ export default class Image {
               .catch(err => {});
           }
         } catch (err) {
-          logger.error(err);
+          logger.error(image.path, err);
         }
       })();
     }
