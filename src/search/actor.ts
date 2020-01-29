@@ -4,6 +4,7 @@ import { tokenizeNames, tokenize } from "./tokenize";
 import Scene from "../types/scene";
 import * as log from "../logger/index";
 import { memorySizeOf } from "../mem";
+import ora from "ora";
 
 export interface IActorSearchDoc {
   _id: string;
@@ -56,11 +57,11 @@ export const actorIndex = new SearchIndex(
 
 export async function buildActorIndex() {
   const timeNow = +new Date();
-  log.log("Building actor index...");
+  const loader = ora("Building actor index...").start();
   for (const actor of await Actor.getAll()) {
     actorIndex.add(await createActorSearchDoc(actor));
   }
-  log.message(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
+  loader.succeed(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
   log.log(
     `Index size: ${actorIndex.size()} items, ${memorySizeOf(actorIndex)}`
   );

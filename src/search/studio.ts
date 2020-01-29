@@ -3,6 +3,7 @@ import Studio from "../types/studio";
 import { tokenizeNames, tokenize } from "./tokenize";
 import * as log from "../logger/index";
 import { memorySizeOf } from "../mem";
+import ora from "ora";
 
 export interface IStudioSearchDoc {
   _id: string;
@@ -49,11 +50,11 @@ export const studioIndex = new SearchIndex(
 
 export async function buildStudioIndex() {
   const timeNow = +new Date();
-  log.log("Building studio index...");
+  const loader = ora("Building studio index...").start();
   for (const studio of await Studio.getAll()) {
     studioIndex.add(await createStudioSearchDoc(studio));
   }
-  log.message(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
+  loader.succeed(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
   log.log(
     `Index size: ${studioIndex.size()} items, ${memorySizeOf(studioIndex)}`
   );

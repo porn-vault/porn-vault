@@ -4,7 +4,6 @@ import Image from "./types/image";
 import Scene from "./types/scene";
 import * as path from "path";
 import { checkPassword, passwordHandler } from "./password";
-import cors from "cors";
 import { getConfig } from "./config/index";
 import ProcessingQueue from "./queue/index";
 import {
@@ -22,6 +21,7 @@ import pug from "pug";
 import { mountApolloServer } from "./apollo";
 import { buildIndices } from "./search";
 import { checkImportFolders } from "./import/index";
+import cors from "./middlewares/cors";
 
 logger.message(
   "Check https://github.com/boi123212321/porn-manager for discussion & updates"
@@ -43,7 +43,7 @@ async function scanFolders() {
 
 export default async () => {
   const app = express();
-  app.use(cors({ origin: "*" }));
+  app.use(cors);
 
   app.get("/setup", (req, res) => {
     res.json({
