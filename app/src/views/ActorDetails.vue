@@ -17,7 +17,7 @@
 
                   <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%;">
                     <v-fade-transition>
-                      <v-overlay v-if="hover" absolute color="accent">
+                      <v-overlay v-if="hover" absolute color="primary">
                         <v-icon x-large>mdi-upload</v-icon>
                       </v-overlay>
                     </v-fade-transition>
@@ -30,7 +30,7 @@
                 class="text-none"
                 @click="openThumbnailDialog"
                 text
-                color="accent"
+                color="primary"
               >Set thumbnail</v-btn>
             </div>
             <v-rating
@@ -55,7 +55,7 @@
               >{{ label }}</v-chip>
               <v-chip
                 label
-                color="accent"
+                color="primary"
                 v-ripple
                 @click="openLabelSelector"
                 small
@@ -91,19 +91,35 @@
                 >Last watched: {{ new Date(currentActor.watches[currentActor.watches.length - 1]).toLocaleString() }}</span>
                 <span v-else>You haven't watched {{ currentActor.name }} yet!</span>
               </v-tooltip>
+
+              <div class="text-center mt-3">
+                <v-btn
+                  color="primary"
+                  :loading="pluginLoader"
+                  text
+                  class="text-none"
+                  @click="runPlugins"
+                >Run plugins</v-btn>
+              </div>
             </div>
           </v-col>
           <v-col cols="12" sm="8" md="9" lg="10" xl="10">
-            <v-tabs v-model="activeTab" background-color="transparent" color="accent" centered grow>
+            <v-tabs
+              v-model="activeTab"
+              background-color="transparent"
+              color="primary"
+              centered
+              grow
+            >
               <v-tab>Metadata</v-tab>
-              <v-tab>Scenes</v-tab>
+              <v-tab @click="loadScenes">Scenes</v-tab>
               <v-tab>Images</v-tab>
             </v-tabs>
             <div class="pa-2" v-if="activeTab == 0">
               <div class="text-center py-2">
                 <v-btn
                   class="text-none"
-                  color="accent"
+                  color="primary"
                   text
                   @click="updateCustomFields"
                   :disabled="!hasUpdatedFields"
@@ -136,7 +152,11 @@
                   </v-row>
                 </v-col>
               </v-row>
-              <div v-else class="text-center title">No scenes found :(</div>
+              <div v-else-if="!sceneLoader" class="text-center title">No scenes found :(</div>
+              <div v-else class="mt-3 text-center">
+                <div>Loading...</div>
+                <v-progress-circular indeterminate></v-progress-circular>
+              </div>
             </div>
             <div class="pa-2" v-if="activeTab == 2">
               <div v-if="images.length">
@@ -209,9 +229,9 @@
                   <div>Nothing found!</div>
                 </div>
 
-                <div slot="spinner">
-                  <v-progress-circular indeterminate></v-progress-circular>
+                <div class="mt-3" slot="spinner">
                   <div>Loading...</div>
+                  <v-progress-circular indeterminate></v-progress-circular>
                 </div>
 
                 <div slot="no-more">
@@ -224,7 +244,7 @@
         </v-row>
       </v-container>
     </div>
-    <div v-else class="text-center">
+    <div v-else class="mt-3 text-center">
       <p>Loading...</p>
       <v-progress-circular indeterminate></v-progress-circular>
     </div>
@@ -235,7 +255,7 @@
 
         <v-text-field
           clearable
-          color="accent"
+          color="primary"
           hide-details
           class="px-5 mb-2"
           label="Find labels..."
@@ -253,7 +273,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn @click="editLabels" text color="accent" class="text-none">Edit</v-btn>
+          <v-btn @click="editLabels" text color="primary" class="text-none">Edit</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -279,7 +299,7 @@
         <v-card-title>Set thumbnail for '{{ currentActor.name }}'</v-card-title>
         <v-card-text>
           <v-file-input
-            color="accent"
+            color="primary"
             placeholder="Select image"
             @change="readThumbnail"
             v-model="selectedThumbnail"
@@ -298,7 +318,7 @@
           <v-spacer></v-spacer>
           <v-btn
             :disabled="!thumbnailDisplay"
-            color="accent"
+            color="primary"
             text
             class="text-none"
             @click="uploadThumbnail"
@@ -385,6 +405,37 @@ export default class ActorDetails extends Vue {
 
   editCustomFields = {} as any;
   hasUpdatedFields = false;
+
+  sceneLoader = false;
+  pluginLoader = false;
+
+  runPlugins() {
+    if (!this.currentActor) return;
+
+    this.pluginLoader = true;
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($ids: [String!]!) {
+          runActorPlugins(ids: $ids) {
+            ...ActorFragment
+          }
+        }
+        ${actorFragment}
+      `,
+      variables: {
+        ids: [this.currentActor._id]
+      }
+    })
+      .then(res => {
+        actorModule.setCurrent(res.data.runActorPlugins[0]);
+      })
+      .catch(err => {
+        console.error(err);
+      })
+      .finally(() => {
+        this.pluginLoader = false;
+      });
+  }
 
   updateCustomFields() {
     if (!this.currentActor) return;
@@ -735,7 +786,7 @@ export default class ActorDetails extends Vue {
       return `${serverBase}/image/${
         this.currentActor.thumbnail._id
       }?password=${localStorage.getItem("password")}`;
-    return "";
+    return `${serverBase}/broken`;
   }
 
   @Watch("$route.params.id")
@@ -747,34 +798,57 @@ export default class ActorDetails extends Vue {
     this.onLoad();
   }
 
+  loadScenes() {
+    if (!this.scenes.length) {
+      this.sceneLoader = true;
+      ApolloClient.query({
+        query: gql`
+          query($id: String!) {
+            getActorById(id: $id) {
+              scenes {
+                ...SceneFragment
+                actors {
+                  ...ActorFragment
+                }
+                studio {
+                  ...StudioFragment
+                }
+              }
+            }
+          }
+          ${actorFragment}
+          ${sceneFragment}
+          ${studioFragment}
+        `,
+        variables: {
+          id: (<any>this).$route.params.id
+        }
+      })
+        .then(res => {
+          this.scenes = res.data.getActorById.scenes;
+          this.scenes.sort((a, b) => b.addedOn - a.addedOn);
+          delete res.data.getActorById.scenes;
+        })
+        .finally(() => {
+          this.sceneLoader = false;
+        });
+    }
+  }
+
   onLoad() {
     ApolloClient.query({
       query: gql`
         query($id: String!) {
           getActorById(id: $id) {
             ...ActorFragment
-            scenes {
-              ...SceneFragment
-              actors {
-                ...ActorFragment
-              }
-              studio {
-                ...StudioFragment
-              }
-            }
           }
         }
         ${actorFragment}
-        ${sceneFragment}
-        ${studioFragment}
       `,
       variables: {
         id: (<any>this).$route.params.id
       }
     }).then(res => {
-      this.scenes = res.data.getActorById.scenes;
-      this.scenes.sort((a, b) => b.addedOn - a.addedOn);
-      delete res.data.getActorById.scenes;
       actorModule.setCurrent(res.data.getActorById);
       this.editCustomFields = res.data.getActorById.customFields;
     });

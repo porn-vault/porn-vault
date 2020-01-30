@@ -4,7 +4,6 @@ import Image from "./types/image";
 import Scene from "./types/scene";
 import * as path from "path";
 import { checkPassword, passwordHandler } from "./password";
-import cors from "cors";
 import { getConfig } from "./config/index";
 import ProcessingQueue from "./queue/index";
 import {
@@ -15,13 +14,19 @@ import {
 import * as database from "./database/index";
 import { checkSceneSources, checkImageSources } from "./integrity";
 import { loadStores } from "./database/index";
-import { existsAsync } from "./fs/async";
+import { existsAsync, readFileAsync } from "./fs/async";
 import { createBackup } from "./backup";
 import BROKEN_IMAGE from "./broken_image";
-import pug from "pug";
 import { mountApolloServer } from "./apollo";
 import { buildIndices } from "./search";
 import { checkImportFolders } from "./import/index";
+import cors from "./middlewares/cors";
+import Handlebars from "handlebars";
+
+async function renderHandlebars(file: string, context: any) {
+  const text = await readFileAsync(file, "utf-8");
+  return Handlebars.compile(text)(context);
+}
 
 logger.message(
   "Check https://github.com/boi123212321/porn-manager for discussion & updates"
@@ -43,7 +48,7 @@ async function scanFolders() {
 
 export default async () => {
   const app = express();
-  app.use(cors({ origin: "*" }));
+  app.use(cors);
 
   app.get("/setup", (req, res) => {
     res.json({
@@ -52,12 +57,11 @@ export default async () => {
     });
   });
 
-  app.get("/", (req, res, next) => {
+  app.get("/", async (req, res, next) => {
     if (serverReady) next();
     else {
       res.status(404).send(
-        pug.renderFile("./views/setup.pug", {
-          code: 200,
+        await renderHandlebars("./views/setup.html", {
           message: setupMessage
         })
       );
@@ -105,7 +109,7 @@ export default async () => {
     if (await existsAsync(file)) res.sendFile(file);
     else {
       return res.status(404).send(
-        pug.renderFile("./views/error.pug", {
+        await renderHandlebars("./views/error.html", {
           code: 404,
           message: `File <b>${file}</b> not found`
         })

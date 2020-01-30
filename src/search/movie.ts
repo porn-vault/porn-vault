@@ -4,6 +4,7 @@ import { tokenizeNames, tokenize } from "./tokenize";
 import Studio from "../types/studio";
 import * as log from "../logger/index";
 import { memorySizeOf } from "../mem";
+import ora from "ora";
 
 export interface IMovieSearchDoc {
   _id: string;
@@ -63,12 +64,14 @@ export const movieIndex = new SearchIndex(
 
 export async function buildMovieIndex() {
   const timeNow = +new Date();
-  log.log("Building movie index...");
+  const loader = ora("Building movie index...").start();
   for (const movie of await Movie.getAll()) {
     movieIndex.add(await createMovieSearchDoc(movie));
   }
-  log.message(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
+  loader.succeed(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
   log.log(
-    `Index size: ${movieIndex.size()} items, ${memorySizeOf(movieIndex)}`
+    `Index size: ${movieIndex.size()} items, ${movieIndex.numTokens()} tokens, ${memorySizeOf(
+      movieIndex
+    )}`
   );
 }

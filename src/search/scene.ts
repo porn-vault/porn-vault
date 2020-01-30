@@ -4,6 +4,7 @@ import { tokenizeNames, tokenize } from "./tokenize";
 import Studio from "../types/studio";
 import * as log from "../logger/index";
 import { memorySizeOf } from "../mem";
+import ora from "ora";
 
 export interface ISceneSearchDoc {
   _id: string;
@@ -70,12 +71,14 @@ export const sceneIndex = new SearchIndex(
 
 export async function buildSceneIndex() {
   const timeNow = +new Date();
-  log.log("Building scene index...");
+  const loader = ora("Building scene index...").start();
   for (const scene of await Scene.getAll()) {
     sceneIndex.add(await createSceneSearchDoc(scene));
   }
-  log.message(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
+  loader.succeed(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
   log.log(
-    `Index size: ${sceneIndex.size()} items, ${memorySizeOf(sceneIndex)}`
+    `Index size: ${sceneIndex.size()} items, ${sceneIndex.numTokens()} tokens, ${memorySizeOf(
+      sceneIndex
+    )}`
   );
 }
