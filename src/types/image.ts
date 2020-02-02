@@ -258,7 +258,7 @@ export default class Image {
 
     for (const id of [...new Set(actorIds)]) {
       const crossReference = new CrossReference(image._id, id);
-      logger.log("Adding label to image: " + JSON.stringify(crossReference));
+      logger.log("Adding actor to image: " + JSON.stringify(crossReference));
       await database.insert(database.store.crossReferences, crossReference);
     }
   }
@@ -276,7 +276,7 @@ export default class Image {
 
     for (const id of [...new Set(labelIds)]) {
       const crossReference = new CrossReference(image._id, id);
-      logger.log("Adding label to scene: " + JSON.stringify(crossReference));
+      logger.log("Adding label to image: " + JSON.stringify(crossReference));
       await database.insert(database.store.crossReferences, crossReference);
     }
   }

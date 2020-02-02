@@ -10,6 +10,7 @@ import * as database from "../database/index";
 import * as logger from "../logger/index";
 import { indices } from "../search/index";
 import { createImageSearchDoc } from "../search/image";
+import Label from "../types/label";
 
 // This function has side effects
 export async function onActorCreate(
@@ -61,10 +62,21 @@ export async function onActorCreate(
   }
 
   if (pluginResult.labels && Array.isArray(pluginResult.labels)) {
-    const labelIds = (
-      await mapAsync(pluginResult.labels, extractLabels)
-    ).flat();
-    await Actor.setLabels(actor, labelIds.concat(actorLabels));
+    const labelIds = [] as string[];
+    for (const labelName of pluginResult.labels) {
+      const extractedIds = await extractLabels(labelName);
+      if (extractedIds.length) {
+        labelIds.push(...extractedIds);
+        logger.log(`Found ${extractedIds.length} labels for ${labelName}:`);
+        logger.log(extractedIds);
+      } else if (config.CREATE_MISSING_LABELS) {
+        const label = new Label(labelName);
+        labelIds.push(label._id);
+        await database.insert(database.store.labels, label);
+        logger.log("Created label " + label.name);
+      }
+    }
+    actorLabels.push(...labelIds);
   }
 
   return actor;
