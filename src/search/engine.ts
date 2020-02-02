@@ -1,4 +1,5 @@
 import { tokenize } from "./tokenize";
+import * as logger from "../logger/index";
 
 export interface ISearchOptions<T> {
   query: string;
