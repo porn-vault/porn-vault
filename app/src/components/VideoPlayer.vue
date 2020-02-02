@@ -140,6 +140,13 @@ export default class VideoPlayer extends Vue {
     return this.percentOfVideo(this.progress);
   }
 
+  seekRel(delta: number, text?: string) {
+    this.seek(
+      Math.min(this.duration, Math.max(0, this.progress + delta)),
+      text
+    );
+  }
+
   seek(time: number, text?: string) {
     const vid = <HTMLVideoElement>document.getElementById("video");
     if (vid) {

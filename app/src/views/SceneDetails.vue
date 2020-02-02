@@ -1105,6 +1105,11 @@ export default class SceneDetails extends Vue {
       return false;
     });
 
+    hotkeys("*", ev => {
+      if (ev.keyCode == 37) this.$refs.player.seekRel(-5);
+      else if (ev.keyCode == 39) this.$refs.player.seekRel(5);
+    });
+
     window.onblur = () => {
       if (
         this.$refs.player &&
