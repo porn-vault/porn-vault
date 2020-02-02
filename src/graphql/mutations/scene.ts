@@ -42,7 +42,9 @@ export default {
       if (scene) {
         const labels = (await Scene.getLabels(scene)).map(l => l._id);
         const actors = (await Scene.getActors(scene)).map(a => a._id);
+        logger.log("Labels before plugin: ", labels);
         scene = await onSceneCreate(scene, labels, actors, "sceneCustom");
+        logger.log("Labels after plugin: ", labels);
 
         await Scene.setLabels(scene, labels);
         await Scene.setActors(scene, actors);
