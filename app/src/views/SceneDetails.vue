@@ -2,8 +2,8 @@
   <v-container fluid>
     <div v-if="currentScene">
       <BindTitle :value="currentScene.name" />
-      <div class="align-center d-flex pb-2">
-        <div class="text-center pa-2" style="flex-grow: 1">
+      <div class="d-flex pb-2">
+        <div class="d-flex align-center text-center pa-2" style="flex-grow: 1">
           <div class="mx-auto" style="max-width: 1100px">
             <VideoPlayer
               ref="player"
