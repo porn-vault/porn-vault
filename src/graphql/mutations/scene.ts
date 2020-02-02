@@ -40,15 +40,14 @@ export default {
       let scene = await Scene.getById(id);
 
       if (scene) {
-        const labels = await Scene.getLabels(scene);
-        const actors = await Scene.getActors(scene);
-        scene = await onSceneCreate(
-          scene,
-          labels.map(l => l._id),
-          actors.map(a => a._id),
-          "sceneCustom"
-        );
+        const labels = (await Scene.getLabels(scene)).map(l => l._id);
+        const actors = (await Scene.getActors(scene)).map(a => a._id);
+        logger.log("Labels before plugin: ", labels);
+        scene = await onSceneCreate(scene, labels, actors, "sceneCustom");
+        logger.log("Labels after plugin: ", labels);
 
+        await Scene.setLabels(scene, labels);
+        await Scene.setActors(scene, actors);
         await database.update(database.store.scenes, { _id: scene._id }, scene);
         indices.scenes.update(scene._id, await createSceneSearchDoc(scene));
 

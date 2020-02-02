@@ -26,7 +26,7 @@ export async function onSceneCreate(
   scene: Scene,
   sceneLabels: string[],
   sceneActors: string[],
-  event="sceneCreated"
+  event = "sceneCreated"
 ) {
   const config = getConfig();
 
@@ -91,8 +91,11 @@ export async function onSceneCreate(
     const labelIds = [] as string[];
     for (const labelName of pluginResult.labels) {
       const extractedIds = await extractLabels(labelName);
-      if (extractedIds.length) labelIds.push(...extractedIds);
-      else if (config.CREATE_MISSING_LABELS) {
+      if (extractedIds.length) {
+        labelIds.push(...extractedIds);
+        logger.log(`Found ${extractedIds.length} labels for ${labelName}:`);
+        logger.log(extractedIds);
+      } else if (config.CREATE_MISSING_LABELS) {
         const label = new Label(labelName);
         labelIds.push(label._id);
         await database.insert(database.store.labels, label);

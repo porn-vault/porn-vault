@@ -3,8 +3,17 @@
     <div v-if="currentScene">
       <BindTitle :value="currentScene.name" />
       <div class="d-flex pb-2">
-        <div class="text-center pa-2" style="flex-grow: 1">
-          <div class="mx-auto" style="max-width: 1200px" id="dplayer" ref="dplayer"></div>
+        <div class="d-flex align-center text-center pa-2" style="flex-grow: 1">
+          <div class="mx-auto" style="max-width: 1100px">
+            <VideoPlayer
+              ref="player"
+              :src="videoPath"
+              :poster="thumbnail"
+              :duration="currentScene.meta.duration"
+              :markers="markers"
+              :preview="currentScene.preview ? imageLink(currentScene.preview) : null"
+            />
+          </div>
         </div>
         <v-divider vertical v-if="$vuetify.breakpoint.mdAndUp" />
         <div class="py-2" v-if="$vuetify.breakpoint.mdAndUp" style="width: 400px; max-width: 400px">
@@ -14,7 +23,7 @@
           <div class="mt-3">
             <MarkerItem
               style="width: 100%"
-              @jump="moveToTime(marker.time, marker.name)"
+              @jump="$refs.player.seek(marker.time, marker.name)"
               @delete="removeMarker(marker._id)"
               :marker="marker"
               v-for="marker in markers"
@@ -32,7 +41,7 @@
           <div class="mt-3">
             <MarkerItem
               style="width: 100%"
-              @jump="moveToTime(marker.time, marker.name)"
+              @jump="$refs.player.seek(marker.time, marker.name)"
               @delete="removeMarker(marker._id)"
               :marker="marker"
               v-for="marker in markers"
@@ -441,9 +450,7 @@ import MarkerItem from "../components/MarkerItem.vue";
 import hotkeys from "hotkeys-js";
 import CustomFieldSelector from "../components/CustomFieldSelector.vue";
 import ActorGrid from "../components/ActorGrid.vue";
-
-import "dplayer/dist/DPlayer.min.css";
-import DPlayer from "dplayer";
+import VideoPlayer from "../components/VideoPlayer.vue";
 
 interface ICropCoordinates {
   left: number;
@@ -467,7 +474,8 @@ interface ICropResult {
     Cropper,
     ImageUploader,
     MarkerItem,
-    CustomFieldSelector
+    CustomFieldSelector,
+    VideoPlayer
   },
   beforeRouteLeave(_to, _from, next) {
     sceneModule.setCurrent(null);
@@ -475,6 +483,10 @@ interface ICropResult {
   }
 })
 export default class SceneDetails extends Vue {
+  $refs!: {
+    player: VideoPlayer;
+  };
+
   actors = [] as IActor[];
   images = [] as IImage[];
   lightboxIndex = null as number | null;
@@ -497,8 +509,6 @@ export default class SceneDetails extends Vue {
 
   uploadDialog = false;
   isUploading = false;
-
-  dp = null as any;
 
   markers = [] as { _id: string; name: string; time: number }[];
   markerName = "" as string | null;
@@ -589,7 +599,7 @@ export default class SceneDetails extends Vue {
       variables: {
         // @ts-ignore
         id: this.currentScene._id,
-        sec: this.currentTime()
+        sec: Math.floor(this.$refs.player.currentProgress())
       }
     })
       .then(res => {})
@@ -629,7 +639,7 @@ export default class SceneDetails extends Vue {
       variables: {
         scene: this.currentScene._id,
         name: this.markerName,
-        time: this.currentTime()
+        time: Math.floor(this.$refs.player.currentProgress())
       }
     }).then(res => {
       this.markers.unshift(res.data.createMarker);
@@ -648,24 +658,12 @@ export default class SceneDetails extends Vue {
   }
 
   currentTimeFormatted() {
-    return this.formatTime(this.currentTime());
-  }
-
-  currentTime() {
-    if (this.dp) return Math.round(this.dp.video.currentTime);
-    return 0;
-  }
-
-  moveToTime(time: number, text?: string) {
-    if (this.dp) {
-      this.dp.seek(time);
-      this.dp.play();
-      if (text) this.dp.notice(text, 2000, 0.8);
-    }
+    if (this.$refs.player)
+      return this.formatTime(this.$refs.player.currentProgress());
   }
 
   openMarkerDialog() {
-    this.dp.pause();
+    this.$refs.player.pause();
     this.markerDialog = true;
   }
 
@@ -686,35 +684,6 @@ export default class SceneDetails extends Vue {
       return `${serverBase}/scene/${
         this.currentScene._id
       }?password=${localStorage.getItem("password")}`;
-  }
-
-  get dplayerOptions() {
-    if (this.currentScene) {
-      return {
-        container: this.$refs.dplayer,
-        autoplay: false,
-        preload: true,
-        video: {
-          url: this.videoPath,
-          poster: this.thumbnail,
-          pic: this.thumbnail,
-          type: "normal",
-          thumbnails: this.currentScene.preview
-            ? this.imageLink(this.currentScene.preview)
-            : null
-        },
-        highlight: this.markers.map(m => ({
-          text: m.name,
-          time: m.time
-        })),
-        contextmenu: [
-          {
-            text: "Follow on GitHub",
-            link: "https://github.com/boi123212321/porn-manager"
-          }
-        ]
-      };
-    }
   }
 
   @Watch("currentScene.actors", { deep: true })
@@ -1094,10 +1063,6 @@ export default class SceneDetails extends Vue {
       this.markers = res.data.getSceneById.markers;
       this.markers.sort((a, b) => a.time - b.time);
       this.editCustomFields = res.data.getSceneById.customFields;
-
-      setTimeout(() => {
-        this.dp = new DPlayer(this.dplayerOptions);
-      }, 100);
     });
   }
 
@@ -1106,22 +1071,22 @@ export default class SceneDetails extends Vue {
   }
 
   goToPreviousMarker() {
-    const prevMarkers = this.markers.filter(
-      m => m.time < this.currentTime() - 5
-    );
+    const progress = this.$refs.player.currentProgress();
+    const prevMarkers = this.markers.filter(m => m.time < progress - 5);
     if (prevMarkers.length) {
       const prevMarker = prevMarkers.pop() as {
         _id: string;
         name: string;
         time: number;
       };
-      this.moveToTime(prevMarker.time, prevMarker.name);
-    } else this.moveToTime(0);
+      this.$refs.player.seek(prevMarker.time, prevMarker.name);
+    } else this.$refs.player.seek(0);
   }
 
   goToNextMarker() {
-    const nextMarker = this.markers.find(m => m.time > this.currentTime());
-    if (nextMarker) this.moveToTime(nextMarker.time, nextMarker.name);
+    const progress = this.$refs.player.currentProgress();
+    const nextMarker = this.markers.find(m => m.time > progress);
+    if (nextMarker) this.$refs.player.seek(nextMarker.time, nextMarker.name);
   }
 
   destroyed() {
@@ -1140,49 +1105,33 @@ export default class SceneDetails extends Vue {
       return false;
     });
 
-    /* window.addEventListener("keydown", ev => {
-          if (ev.keyCode >= 48 && ev.keyCode <= 53) {
-            const rating = ev.keyCode - 48;
-            this.rate(rating);
-          } else if (ev.keyCode >= 96 && ev.keyCode <= 101) {
-            const rating = ev.keyCode - 96;
-            this.rate(rating);
-          }
-        }); */
-
-    /* window.addEventListener(
-      "pagehide",
-      event => {
-        if (event.persisted) {
-          this.dp.pause();
-          this.dp.notice("Auto pause", 4000, 0.8);
-        }
-      },
-      false
-    ); */
+    hotkeys("*", ev => {
+      if (ev.keyCode == 37) this.$refs.player.seekRel(-5);
+      else if (ev.keyCode == 39) this.$refs.player.seekRel(5);
+    });
 
     window.onblur = () => {
       if (
+        this.$refs.player &&
+        this.$refs.player.isPaused() &&
         !document.hasFocus() &&
-        this.dp &&
-        !this.dp.video.paused &&
         contextModule.scenePauseOnUnfocus
       ) {
-        this.dp.pause();
+        this.$refs.player.pause();
         this.autoPaused = true;
-        this.dp.notice("Auto pause", 4000, 0.8);
+        this.$refs.player.notice("Auto pause", 4000);
       }
     };
 
     window.onfocus = () => {
       if (
         document.hasFocus() &&
-        this.dp &&
+        // this.dp &&
         contextModule.scenePauseOnUnfocus &&
         this.autoPaused
       ) {
-        this.dp.play();
-        this.dp.notice("", 0, 0);
+        this.$refs.player.play();
+        this.$refs.player.notice("", 0);
         this.autoPaused = false;
       }
     };
@@ -1190,17 +1139,19 @@ export default class SceneDetails extends Vue {
     document.addEventListener(
       "visibilitychange",
       () => {
-        if (this.dp && contextModule.scenePauseOnUnfocus) {
+        if (this.$refs.player && contextModule.scenePauseOnUnfocus) {
+          const isPaused = this.$refs.player.isPaused();
+
           if (document.hidden) {
-            if (!this.dp.video.paused) {
-              this.dp.pause();
+            if (!isPaused) {
+              this.$refs.player.pause();
               this.autoPaused = true;
-              this.dp.notice("Auto pause", 4000, 0.8);
+              this.$refs.player.notice("Auto pause", 4000);
             }
           } else if (this.autoPaused) {
-            this.dp.play();
+            this.$refs.player.play();
             this.autoPaused = false;
-            this.dp.notice("", 0, 0);
+            this.$refs.player.notice("");
           }
         }
       },
@@ -1211,9 +1162,4 @@ export default class SceneDetails extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.corner-actions {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-}
 </style>

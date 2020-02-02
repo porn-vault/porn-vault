@@ -44,7 +44,6 @@ export async function getScenes(
 
     if (options.actors && options.actors.length)
       filters.push(doc => {
-        if (!doc.studio) return false;
         const actorIds = doc.actors.map(a => a._id);
         // @ts-ignore
         return options.actors.every(id => actorIds.includes(id));
