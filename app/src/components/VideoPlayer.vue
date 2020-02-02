@@ -317,7 +317,7 @@ export default class VideoPlayer extends Vue {
     width: 100%;
     height: 100%;
 
-    .blurred {
+    &.blurred {
       filter: blur(8px);
     }
   }

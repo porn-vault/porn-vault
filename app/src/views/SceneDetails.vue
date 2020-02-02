@@ -599,7 +599,7 @@ export default class SceneDetails extends Vue {
       variables: {
         // @ts-ignore
         id: this.currentScene._id,
-        sec: this.$refs.player.currentProgress()
+        sec: Math.floor(this.$refs.player.currentProgress())
       }
     })
       .then(res => {})
@@ -639,7 +639,7 @@ export default class SceneDetails extends Vue {
       variables: {
         scene: this.currentScene._id,
         name: this.markerName,
-        time: this.$refs.player.currentProgress()
+        time: Math.floor(this.$refs.player.currentProgress())
       }
     }).then(res => {
       this.markers.unshift(res.data.createMarker);
