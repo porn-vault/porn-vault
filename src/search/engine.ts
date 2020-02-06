@@ -35,13 +35,17 @@ export class SearchIndex<T> {
   idMap: { [key: string]: string } = {};
 
   tokenizer: (t: T) => string[];
-  identifier: (t: T) => string;
+  identifier: string;
 
   idCounter = 0;
 
-  constructor(tokenizer: (t: T) => string[], identifier: (t: T) => string) {
+  constructor(tokenizer: (t: T) => string[], identifier: string) {
     this.tokenizer = tokenizer;
     this.identifier = identifier;
+  }
+
+  numLinks() {
+    return Object.values(this.tokens).reduce((a, c) => a + c.length, 0);
   }
 
   numTokens() {
@@ -82,7 +86,7 @@ export class SearchIndex<T> {
     const tokens = this.tokenizer(t);
 
     const id = (this.idCounter++).toString();
-    const realId = this.identifier(t);
+    const realId = t[this.identifier];
     this.idMap[id] = realId;
 
     for (const token of tokens) {
@@ -91,6 +95,7 @@ export class SearchIndex<T> {
     }
 
     this.items[realId] = t;
+    delete t[this.identifier];
   }
 
   async search(search: ISearchOptions<T>) {

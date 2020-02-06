@@ -30,7 +30,7 @@ export async function checkVideoFolders() {
   const allFiles = [] as string[];
 
   if (config.EXCLUDE_FILES.length)
-  logger.log(`Will ignore files: ${config.EXCLUDE_FILES}.`);
+    logger.log(`Will ignore files: ${config.EXCLUDE_FILES}.`);
 
   for (const folder of config.VIDEO_PATHS) {
     await walk(folder, [".mp4"], async path => {
@@ -124,7 +124,7 @@ export async function checkImageFolders() {
     logger.warn("Reading images on import is disabled.");
 
   if (config.EXCLUDE_FILES.length)
-  logger.log(`Will ignore files: ${config.EXCLUDE_FILES}.`);
+    logger.log(`Will ignore files: ${config.EXCLUDE_FILES}.`);
 
   for (const folder of config.IMAGE_PATHS) {
     await walk(folder, [".jpg", ".jpeg", ".png"], async path => {
