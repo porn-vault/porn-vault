@@ -9,7 +9,7 @@ function ignoreSingleNames(arr: string[]) {
 }
 
 export function stripStr(str: string) {
-  return str.toLowerCase().replace(/[^a-zA-Z0-9']/g, "");
+  return str.toLowerCase().replace(/[^a-zA-Z0-9'/\\,()[\]{}]/g, "");
 }
 
 // Returns IDs of extracted custom fields
