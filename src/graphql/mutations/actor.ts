@@ -11,6 +11,7 @@ import { onActorCreate } from "../../plugin_events/actor";
 
 type IActorUpdateOpts = Partial<{
   name: string;
+  description: string;
   rating: number;
   labels: string[];
   aliases: string[];
@@ -107,6 +108,9 @@ export default {
         if (typeof opts.favorite == "boolean") actor.favorite = opts.favorite;
 
         if (typeof opts.name == "string") actor.name = opts.name.trim();
+
+        if (typeof opts.description == "string")
+          actor.description = opts.description.trim();
 
         if (typeof opts.thumbnail == "string") actor.thumbnail = opts.thumbnail;
 
