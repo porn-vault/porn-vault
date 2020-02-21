@@ -22,6 +22,7 @@ import { buildIndices } from "./search";
 import { checkImportFolders } from "./import/index";
 import cors from "./middlewares/cors";
 import Handlebars from "handlebars";
+import { spawnTwigs } from "./twigs";
 
 async function renderHandlebars(file: string, context: any) {
   const text = await readFileAsync(file, "utf-8");
@@ -163,6 +164,8 @@ export default async () => {
 
   setupMessage = "Checking imports...";
   await checkImportFolders();
+
+  await spawnTwigs();
 
   setupMessage = "Creating search indices...";
   await buildIndices();

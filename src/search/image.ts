@@ -1,21 +1,74 @@
-import { SearchIndex } from "./engine";
 import Image from "../types/image";
-import { tokenizeNames, tokenize } from "./tokenize";
 import * as log from "../logger";
-import { memorySizeOf } from "../mem";
 import ora from "ora";
-import { inspect } from "util";
+import Axios from "axios";
+import extractQueryOptions, { SortTarget } from "../query_extractor";
+import * as logger from "../logger";
+
+const PAGE_SIZE = 24;
+
+interface ISearchResults {
+  num_hits: number;
+  items: IImageSearchDoc[];
+}
+
+export async function searchImages(query: string) {
+  const options = extractQueryOptions(query);
+  logger.log(`Searching images for '${options.query}'...`);
+  return Axios.get<ISearchResults>("http://localhost:8000/image", {
+    params: {
+      query: options.query || "",
+      skip: options.page * 24,
+      take: PAGE_SIZE,
+      sort_by: options.sortBy,
+      sort_dir: options.sortDir,
+      favorite: options.favorite ? "true" : undefined,
+      bookmark: options.bookmark ? "true" : undefined,
+      rating: options.rating || 0,
+      include: options.include.length ? options.include.join(",") : undefined, // TODO: update twigs to handle this
+      exclude: options.exclude.length ? options.exclude.join(",") : undefined // TODO: update twigs to handle this
+    }
+  });
+}
 
 export interface IImageSearchDoc {
-  _id: string;
-  addedOn: number;
+  id: string;
   name: string;
-  actors: { _id: string; name: string; aliases: string[] }[];
-  labels: { _id: string; name: string; aliases: string[] }[];
-  rating: number;
+  added_on: number;
+  actors: { id: string; name: string; aliases: string[] }[];
+  labels: { id: string; name: string; aliases: string[] }[];
   bookmark: boolean;
   favorite: boolean;
+  rating: number;
   scene: string | null;
+  scene_name: string | null;
+  studio_name: string | null;
+}
+
+export async function removeImageDoc(imageId: string) {
+  return Axios.delete("http://localhost:8000/image/" + imageId);
+}
+
+export async function indexImages(images: Image[]) {
+  let docs = [] as IImageSearchDoc[];
+  for (const image of images) {
+    docs.push(await createImageSearchDoc(image));
+  }
+  return addImageSearchDocs(docs);
+}
+
+export async function addImageSearchDocs(docs: IImageSearchDoc[]) {
+  return Axios.post("http://localhost:8000/image", docs);
+}
+
+export async function buildImageIndex() {
+  const timeNow = +new Date();
+  const loader = ora("Building image index...").start();
+
+  const res = await indexImages(await Image.getAll());
+
+  loader.succeed(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
+  log.log(`Index size: ${res.data.size} items`);
 }
 
 export async function createImageSearchDoc(
@@ -25,45 +78,24 @@ export async function createImageSearchDoc(
   const actors = await Image.getActors(image);
 
   return {
-    _id: image._id,
-    addedOn: image.addedOn,
+    id: image._id,
+    added_on: image.addedOn,
     name: image.name,
     labels: labels.map(l => ({
-      _id: l._id,
+      id: l._id,
       name: l.name,
       aliases: l.aliases
     })),
     actors: actors.map(a => ({
-      _id: a._id,
+      id: a._id,
       name: a.name,
       aliases: a.aliases
     })),
-    rating: image.rating,
+    rating: image.rating || 0,
     bookmark: image.bookmark,
     favorite: image.favorite,
-    scene: image.scene
+    scene: image.scene,
+    scene_name: null, // TODO:
+    studio_name: null // TODO:
   };
-}
-
-export const imageIndex = new SearchIndex((doc: IImageSearchDoc) => {
-  return [
-    ...tokenize(doc.name),
-    ...tokenizeNames(doc.actors.map(l => l.name)),
-    ...tokenizeNames(doc.actors.map(l => l.aliases).flat()),
-    ...tokenizeNames(doc.labels.map(l => l.name))
-  ];
-}, "_id");
-
-export async function buildImageIndex() {
-  const timeNow = +new Date();
-  const loader = ora("Building image index...").start();
-  for (const image of await Image.getAll()) {
-    imageIndex.add(await createImageSearchDoc(image));
-  }
-  loader.succeed(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
-  log.log(
-    `Index size: ${imageIndex.size()} items, ${imageIndex.numTokens()} tokens, ${imageIndex.numLinks()} links, ${memorySizeOf(
-      imageIndex
-    )}`
-  );
 }

@@ -1,4 +1,3 @@
-import { imageIndex } from "./image";
 import { sceneIndex } from "./scene";
 import { actorIndex } from "./actor";
 import { studioIndex } from "./studio";
@@ -11,7 +10,6 @@ import { buildStudioIndex } from "./studio";
 import { buildMovieIndex } from "./movie";
 
 export const indices = {
-  images: imageIndex,
   scenes: sceneIndex,
   actors: actorIndex,
   studios: studioIndex,

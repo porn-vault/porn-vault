@@ -14,7 +14,7 @@ import { fileHash } from "../hash";
 import Studio from "../types/studio";
 import { createSceneSearchDoc } from "../search/scene";
 import { indices } from "../search/index";
-import { createImageSearchDoc } from "../search/image";
+import { createImageSearchDoc, indexImages } from "../search/image";
 import { Dictionary } from "../types/utility";
 import { onSceneCreate } from "../plugin_events/scene";
 
@@ -218,7 +218,7 @@ class Queue {
         await Image.setActors(image, sceneActors);
         logger.log(`Creating image with id ${image._id}...`);
         await database.insert(database.store.images, image);
-        indices.images.add(await createImageSearchDoc(image));
+        await indexImages([image]);
         images.push(image);
       }
 
