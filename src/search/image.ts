@@ -26,7 +26,9 @@ export async function searchImages(query: string) {
       bookmark: options.bookmark ? "true" : undefined,
       rating: options.rating || 0,
       include: options.include.join(","),
-      exclude: options.exclude.join(",")
+      exclude: options.exclude.join(","),
+      actors: options.actors.join(","),
+      scene: options.scenes[0]
     }
   });
 }
