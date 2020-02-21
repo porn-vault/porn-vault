@@ -42,7 +42,7 @@
       <v-spacer></v-spacer>
 
       <v-btn
-        v-if="showFilterButton && $vuetify.breakpoint.smAndDown"
+        v-if="showFilterButton && $vuetify.breakpoint.mdAndDown"
         icon
         @click="filterDrawer = !filterDrawer"
       >
