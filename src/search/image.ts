@@ -53,13 +53,26 @@ export async function removeImageDoc(imageId: string) {
 
 export async function indexImages(images: Image[]) {
   let docs = [] as IImageSearchDoc[];
+  let numItems = 0;
   for (const image of images) {
     docs.push(await createImageSearchDoc(image));
+
+    if (docs.length == 10000) {
+      await addImageSearchDocs(docs);
+      numItems += docs.length;
+      docs = [];
+    }
   }
-  return addImageSearchDocs(docs);
+  if (docs.length) {
+    await addImageSearchDocs(docs);
+    numItems += docs.length;
+  }
+  docs = [];
+  return numItems;
 }
 
 export async function addImageSearchDocs(docs: IImageSearchDoc[]) {
+  logger.log(`Indexing ${docs.length} items...`);
   const timeNow = +new Date();
   const res = await Axios.post("http://localhost:8000/image", docs);
   logger.log(`Twigs indexing done in ${(Date.now() - timeNow) / 1000}s`);
@@ -73,7 +86,7 @@ export async function buildImageIndex() {
   const res = await indexImages(await Image.getAll());
 
   loader.succeed(`Build done in ${(Date.now() - timeNow) / 1000}s.`);
-  log.log(`Index size: ${res.data.size} items`);
+  log.log(`Index size: ${res} items`);
 }
 
 export async function createImageSearchDoc(
