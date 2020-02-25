@@ -37,7 +37,7 @@ class SceneModule extends VuexModule {
   }
 
   @Mutation
-  setBookmark(bool: boolean) {
+  setBookmark(bool: number) {
     if (this.current) this.current.bookmark = bool;
   }
 

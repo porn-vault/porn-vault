@@ -261,8 +261,8 @@ export async function createFromFileData(opts: ICreateOptions) {
         path: sceneToCreate.path,
         name: sceneToCreate.name,
         description: sceneToCreate.description || null,
-        bookmark: isBoolean(sceneToCreate.bookmark)
-          ? <boolean>sceneToCreate.bookmark
+        bookmark: isNumber(sceneToCreate.bookmark)
+          ? <number>sceneToCreate.bookmark
           : undefined,
         favorite: isBoolean(sceneToCreate.favorite)
           ? <boolean>sceneToCreate.favorite

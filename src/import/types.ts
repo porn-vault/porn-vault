@@ -9,7 +9,7 @@ export interface IImportedScene {
   labels?: string[] | null;
   customFields?: Dictionary<string> | null;
   favorite?: boolean | null;
-  bookmark?: boolean | null;
+  bookmark?: number | null;
   rating?: number | null;
   description?: string | null;
   thumbnail?: string | null;
