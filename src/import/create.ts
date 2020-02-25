@@ -24,6 +24,7 @@ import Studio from "../types/studio";
 import args from "../args";
 import { onActorCreate } from "../plugin_events/actor";
 import { isString } from "./schemas/common";
+import { onMovieCreate } from "../plugin_events/movie";
 
 export interface ICreateOptions {
   scenes?: Dictionary<IImportedScene>;
@@ -293,7 +294,7 @@ export async function createFromFileData(opts: ICreateOptions) {
     for (const movieId in opts.movies) {
       const movieToCreate = opts.movies[movieId];
 
-      const movie = new Movie(movieToCreate.name, Object.keys(createdScenes));
+      let movie = new Movie(movieToCreate.name, Object.keys(createdScenes));
 
       if (isBoolean(movieToCreate.bookmark))
         movie.bookmark = <boolean>movieToCreate.bookmark;
@@ -333,7 +334,11 @@ export async function createFromFileData(opts: ICreateOptions) {
           await database.insert(database.store.images, image);
       }
 
-      // TODO: movie plugin event
+      try {
+        movie = await onMovieCreate(movie);
+      } catch (error) {
+        logger.error(error.message);
+      }
 
       if (args["commit-import"])
         await database.insert(database.store.movies, movie);

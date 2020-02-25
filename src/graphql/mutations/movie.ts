@@ -29,7 +29,7 @@ export default {
     }
 
     try {
-      movie = await onMovieCreate(movie, []);
+      movie = await onMovieCreate(movie);
     } catch (error) {
       logger.log(error);
       logger.error(error.message);

@@ -13,11 +13,7 @@ import Label from "../types/label";
 import Movie from "../types/movie";
 
 // This function has side effects
-export async function onMovieCreate(
-  movie: Movie,
-  movieLabels: string[],
-  event = "movieCreated"
-) {
+export async function onMovieCreate(movie: Movie, event = "movieCreated") {
   const config = getConfig();
 
   const pluginResult = await runPluginsSerial(config, event, {
@@ -74,24 +70,6 @@ export async function onMovieCreate(
       const fields = await extractFields(key);
       if (fields.length) movie.customFields[fields[0]] = pluginResult[key];
     }
-  }
-
-  if (pluginResult.labels && Array.isArray(pluginResult.labels)) {
-    const labelIds = [] as string[];
-    for (const labelName of pluginResult.labels) {
-      const extractedIds = await extractLabels(labelName);
-      if (extractedIds.length) {
-        labelIds.push(...extractedIds);
-        logger.log(`Found ${extractedIds.length} labels for ${labelName}:`);
-        logger.log(extractedIds);
-      } else if (config.CREATE_MISSING_LABELS) {
-        const label = new Label(labelName);
-        labelIds.push(label._id);
-        await database.insert(database.store.labels, label);
-        logger.log("Created label " + label.name);
-      }
-    }
-    movieLabels.push(...labelIds);
   }
 
   return movie;
