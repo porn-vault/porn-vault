@@ -66,7 +66,6 @@ export default class Scene {
 
   static async checkIntegrity() {
     const allScenes = await Scene.getAll();
-
     const timeNow = Date.now();
 
     for (const scene of allScenes) {
