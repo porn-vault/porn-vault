@@ -1,6 +1,7 @@
 import * as database from "../../database";
 import Actor from "../../types/actor";
 import Scene from "../../types/scene";
+import Image from "../../types/image";
 import { Dictionary } from "../../types/utility";
 import { stripStr } from "../../extractor";
 import * as logger from "../../logger";
@@ -9,6 +10,7 @@ import { indices } from "../../search/index";
 import { createActorSearchDoc } from "../../search/actor";
 import { onActorCreate } from "../../plugin_events/actor";
 import { createSceneSearchDoc } from "../../search/scene";
+import { createImageSearchDoc } from "../../search/image";
 
 type IActorUpdateOpts = Partial<{
   name: string;
@@ -83,6 +85,30 @@ export default {
         );
         indices.scenes.update(scene._id, await createSceneSearchDoc(scene));
         logger.log(`Updated actors of ${scene._id}`);
+      }
+    }
+
+    for (const image of await Image.getAll()) {
+      const perms = stripStr(image.name);
+
+      if (
+        perms.includes(stripStr(actor.name)) ||
+        actor.aliases.some(alias => perms.includes(stripStr(alias)))
+      ) {
+        if (config.APPLY_ACTOR_LABELS === true) {
+          const imageLabels = (await Image.getLabels(image)).map(l => l._id);
+          await Image.setLabels(image, imageLabels.concat(actorLabels));
+          logger.log(`Applied actor labels of new actor to ${image._id}`);
+        }
+        await Image.setActors(
+          image,
+          (await Image.getActors(image)).map(l => l._id).concat(actor._id)
+        );
+        // TODO: investigate why this is not working
+        // may be fixed with twigs?
+        // vvvvvvvvvv
+        indices.images.update(image._id, await createImageSearchDoc(image));
+        logger.log(`Updated actors of ${image._id}`);
       }
     }
 
