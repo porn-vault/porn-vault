@@ -14,13 +14,7 @@
       </template>
     </v-banner>
 
-    <v-navigation-drawer
-      style="z-index: 14"
-      v-model="drawer"
-      :permanent="$vuetify.breakpoint.mdAndUp"
-      clipped
-      app
-    >
+    <v-navigation-drawer style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
         <v-checkbox color="primary" hide-details v-model="largeThumbs" label="Large thumbnails"></v-checkbox>
         <v-text-field clearable color="primary" v-model="query" label="Search query"></v-text-field>
@@ -174,6 +168,8 @@ import imageFragment from "../fragments/image";
 import ImageUploader from "../components/ImageUploader.vue";
 import IImage from "../types/image";
 import ILabel from "../types/label";
+import DrawerMixin from "../mixins/drawer";
+import { mixins } from "vue-class-component";
 
 @Component({
   components: {
@@ -184,7 +180,7 @@ import ILabel from "../types/label";
     ImageUploader
   }
 })
-export default class ImagesView extends Vue {
+export default class ImagesView extends mixins(DrawerMixin) {
   images = [] as IImage[];
   lightboxIndex = null as number | null;
 
@@ -226,6 +222,10 @@ export default class ImagesView extends Vue {
     {
       text: "Rating",
       value: "rating"
+    },
+    {
+      text: "Bookmarked",
+      value: "bookmark"
     }
   ];
 
@@ -309,14 +309,6 @@ export default class ImagesView extends Vue {
 
   openUploadDialog() {
     this.uploadDialog = true;
-  }
-
-  get drawer() {
-    return contextModule.showFilters;
-  }
-
-  set drawer(val: boolean) {
-    contextModule.toggleFilters(val);
   }
 
   @Watch("ratingFilter", {})

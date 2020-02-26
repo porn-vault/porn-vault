@@ -1,13 +1,7 @@
 <template>
   <v-container fluid>
     <BindTitle value="Studios" />
-    <v-navigation-drawer
-      style="z-index: 14"
-      v-model="drawer"
-      :permanent="$vuetify.breakpoint.mdAndUp"
-      clipped
-      app
-    >
+    <v-navigation-drawer style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
         <v-text-field clearable color="primary" v-model="query" label="Search query"></v-text-field>
 
@@ -147,15 +141,16 @@ import InfiniteLoading from "vue-infinite-loading";
 import ILabel from "../types/label";
 import studioFragment from "../fragments/studio";
 import StudioCard from "../components/StudioCard.vue";
+import { mixins } from "vue-class-component";
+import DrawerMixin from "../mixins/drawer";
 
 @Component({
   components: {
     InfiniteLoading,
-    StudioCard,
-    
+    StudioCard
   }
 })
-export default class StudioList extends Vue {
+export default class StudioList extends mixins(DrawerMixin) {
   studios = [] as any[];
   fetchLoader = false;
 
@@ -234,6 +229,10 @@ export default class StudioList extends Vue {
     {
       text: "Added to collection",
       value: "addedOn"
+    },
+    {
+      text: "Bookmarked",
+      value: "bookmark"
     }
     /* {
       text: "Rating",
@@ -247,14 +246,6 @@ export default class StudioList extends Vue {
 
   infiniteId = 0;
   resetTimeout = null as NodeJS.Timeout | null;
-
-  get drawer() {
-    return contextModule.showFilters;
-  }
-
-  set drawer(val: boolean) {
-    contextModule.toggleFilters(val);
-  }
 
   labelIDs(indices: number[]) {
     return indices.map(i => this.allLabels[i]).map(l => l._id);

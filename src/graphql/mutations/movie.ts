@@ -13,7 +13,7 @@ type IMovieUpdateOpts = Partial<{
   frontCover: string;
   backCover: string;
   favorite: boolean;
-  bookmark: boolean;
+  bookmark: number | null;
   rating: number;
   scenes: string[];
   studio: string | null;
@@ -29,7 +29,7 @@ export default {
     }
 
     try {
-      movie = await onMovieCreate(movie, []);
+      movie = await onMovieCreate(movie);
     } catch (error) {
       logger.log(error);
       logger.error(error.message);
@@ -84,7 +84,8 @@ export default {
         if (Array.isArray(opts.scenes))
           await Movie.setScenes(movie, opts.scenes);
 
-        if (typeof opts.bookmark == "boolean") movie.bookmark = opts.bookmark;
+        if (typeof opts.bookmark == "number" || opts.bookmark === null)
+          movie.bookmark = opts.bookmark;
 
         if (typeof opts.favorite == "boolean") movie.favorite = opts.favorite;
 

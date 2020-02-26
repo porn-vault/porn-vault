@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar style="z-index: 13" clipped-left app :color="appbarColor">
+    <v-app-bar :hide-on-scroll="showDetailsBar" dense style="z-index: 13" clipped-left app :color="appbarColor">
       <v-btn icon to="/" v-if="$vuetify.breakpoint.smAndUp">
         <v-icon>mdi-home</v-icon>
       </v-btn>
@@ -42,7 +42,7 @@
       <v-spacer></v-spacer>
 
       <v-btn
-        v-if="showFilterButton && $vuetify.breakpoint.smAndDown"
+        v-if="showFilterButton && $vuetify.breakpoint.mdAndDown"
         icon
         @click="filterDrawer = !filterDrawer"
       >
@@ -207,6 +207,13 @@ export default class App extends Vue {
       contextModule.setScenePauseOnUnfocus(
         scenePauseOnUnfocusLocalStorage == "true"
       );
+    }
+
+    const showCardLabelsLocalStorage = localStorage.getItem(
+      "pm_showCardLabels"
+    );
+    if (showCardLabelsLocalStorage) {
+      contextModule.toggleCardLabels(showCardLabelsLocalStorage == "true");
     }
   }
 

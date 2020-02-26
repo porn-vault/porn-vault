@@ -4,11 +4,12 @@ export default gql`
   type Actor {
     _id: String!
     name: String!
+    description: String
     aliases: [String!]!
     addedOn: Long!
     bornOn: Long
     favorite: Boolean!
-    bookmark: Boolean!
+    bookmark: Long
     rating: Int
     customFields: Object!
 
@@ -33,12 +34,13 @@ export default gql`
 
   input ActorUpdateOpts {
     name: String
+    description: String
     rating: Int
     labels: [String!]
     aliases: [String!]
     thumbnail: String
     favorite: Boolean
-    bookmark: Boolean
+    bookmark: Long
     bornOn: Long
     customFields: Object
   }
@@ -48,5 +50,6 @@ export default gql`
     updateActors(ids: [String!]!, opts: ActorUpdateOpts!): [Actor!]!
     removeActors(ids: [String!]!): Boolean!
     runActorPlugins(ids: [String!]!): [Actor!]!
+    runAllActorPlugins: [Actor!]!
   }
 `;

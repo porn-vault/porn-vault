@@ -14,13 +14,7 @@
       </template>
     </v-banner>
 
-    <v-navigation-drawer
-      style="z-index: 14"
-      v-model="drawer"
-      :permanent="$vuetify.breakpoint.mdAndUp"
-      clipped
-      app
-    >
+    <v-navigation-drawer style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
         <v-text-field clearable color="primary" v-model="query" label="Search query"></v-text-field>
 
@@ -37,18 +31,6 @@
             :key="label._id"
           >{{ label.name }}</div>
         </div>
-
-        <!-- <v-chip-group
-          active-class="primary--text"
-          :items="allLabels"
-          column
-          v-model="selectedLabels"
-          multiple
-        >
-          <div style="max-height:30vh; overflow-y:scroll">
-            <v-chip label small v-for="label in allLabels" :key="label._id">{{ label.name }}</v-chip>
-          </div>
-        </v-chip-group>-->
 
         <v-subheader>Filter by duration</v-subheader>
         <v-range-slider hide-details :max="durationMax" v-model="durationRange" color="primary"></v-range-slider>
@@ -259,6 +241,8 @@ import IScene from "../types/scene";
 import IActor from "../types/actor";
 import ILabel from "../types/label";
 import moment from "moment";
+import DrawerMixin from "../mixins/drawer";
+import { mixins } from "vue-class-component";
 
 @Component({
   components: {
@@ -269,7 +253,7 @@ import moment from "moment";
     SceneUploader
   }
 })
-export default class SceneList extends Vue {
+export default class SceneList extends mixins(DrawerMixin) {
   scenes = [] as IScene[];
   fetchLoader = false;
   fetchingRandom = false;
@@ -354,6 +338,10 @@ export default class SceneList extends Vue {
     {
       text: "Release date",
       value: "date"
+    },
+    {
+      text: "Bookmarked",
+      value: "bookmark"
     }
   ];
 
@@ -444,14 +432,6 @@ export default class SceneList extends Vue {
 
   openUploadDialog() {
     this.uploadDialog = true;
-  }
-
-  get drawer() {
-    return contextModule.showFilters;
-  }
-
-  set drawer(val: boolean) {
-    contextModule.toggleFilters(val);
   }
 
   labelIDs(indices: number[]) {

@@ -23,7 +23,7 @@ import { onSceneCreate } from "../../plugin_events/scene";
 
 type ISceneUpdateOpts = Partial<{
   favorite: boolean;
-  bookmark: boolean;
+  bookmark: number;
   actors: string[];
   name: string;
   description: string;
@@ -36,11 +36,10 @@ type ISceneUpdateOpts = Partial<{
   customFields: Dictionary<string[] | boolean | string | null>;
 }>;
 
-export default {
-  async runScenePlugins(_, { ids }: { ids: string[] }) {
-    const changedScenes = [] as Scene[];
-    for (const id of ids) {
-      let scene = await Scene.getById(id);
+async function runScenePlugins(ids: string[]) {
+  const changedScenes = [] as Scene[];
+  for (const id of ids) {
+    let scene = await Scene.getById(id);
 
       if (scene) {
         const labels = (await Scene.getLabels(scene)).map(l => l._id);
@@ -57,7 +56,18 @@ export default {
         changedScenes.push(scene);
       }
     }
-    return changedScenes;
+  }
+  return changedScenes;
+}
+
+export default {
+  async runAllScenePlugins() {
+    const ids = (await Scene.getAll()).map(a => a._id);
+    return runScenePlugins(ids);
+  },
+
+  async runScenePlugins(_, { ids }: { ids: string[] }) {
+    return runScenePlugins(ids);
   },
 
   async screenshotScene(_, { id, sec }: { id: string; sec: number }) {
@@ -261,7 +271,8 @@ export default {
         if (Array.isArray(opts.streamLinks))
           scene.streamLinks = [...new Set(opts.streamLinks)];
 
-        if (typeof opts.bookmark == "boolean") scene.bookmark = opts.bookmark;
+        if (typeof opts.bookmark == "number" || opts.bookmark === null)
+          scene.bookmark = opts.bookmark;
 
         if (typeof opts.favorite == "boolean") scene.favorite = opts.favorite;
 
@@ -314,10 +325,12 @@ export default {
             await database.remove(database.store.crossReferences, {
               to: image._id
             });
-            await Marker.removeByScene(scene);
           }
           logger.success("Deleted images of scene " + scene._id);
         }
+
+        await Marker.removeByScene(scene);
+
         logger.success("Deleted scene " + scene._id);
 
         await database.remove(database.store.crossReferences, {

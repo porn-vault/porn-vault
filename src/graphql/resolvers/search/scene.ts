@@ -16,7 +16,6 @@ export async function getScenes(
 ) {
   try {
     const timeNow = +new Date();
-
     const res = await searchScenes(query || "", random);
 
     if (random) {

@@ -10,6 +10,11 @@ class ActorModule extends VuexModule {
   }
 
   @Mutation
+  setDescription(description: string) {
+    if (this.current) this.current.description = description;
+  }
+
+  @Mutation
   setAliases(aliases: string[]) {
     if (this.current) this.current.aliases = aliases;
   }
@@ -25,7 +30,7 @@ class ActorModule extends VuexModule {
   }
 
   @Mutation
-  setBookmark(bool: boolean) {
+  setBookmark(bool: number | null) {
     if (this.current) this.current.bookmark = bool;
   }
 

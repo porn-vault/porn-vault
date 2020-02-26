@@ -1,13 +1,7 @@
 <template>
   <v-container fluid>
     <BindTitle value="Movies" />
-    <v-navigation-drawer
-      style="z-index: 14"
-      v-model="drawer"
-      :permanent="$vuetify.breakpoint.mdAndUp"
-      clipped
-      app
-    >
+    <v-navigation-drawer style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
         <!-- <v-checkbox v-model="useDVDCoverRatio" label="Use DVD Cover ratio"></v-checkbox> -->
         <v-text-field clearable color="primary" v-model="query" label="Search query"></v-text-field>
@@ -187,15 +181,17 @@ import ILabel from "../types/label";
 import MovieCard from "../components/MovieCard.vue";
 import IMovie from "../types/movie";
 import movieFragment from "../fragments/movie";
+import DrawerMixin from "../mixins/drawer";
+import { mixins } from "vue-class-component";
 
 @Component({
   components: {
     InfiniteLoading,
     SceneSelector,
-    MovieCard,
+    MovieCard
   }
 })
-export default class MovieList extends Vue {
+export default class MovieList extends mixins(DrawerMixin) {
   movies = [] as IMovie[];
   fetchLoader = false;
 
@@ -277,6 +273,10 @@ export default class MovieList extends Vue {
     {
       text: "Duration",
       value: "duration"
+    },
+    {
+      text: "Bookmarked",
+      value: "bookmark"
     }
     /* TODO: amount of scenes */
   ];
@@ -298,14 +298,6 @@ export default class MovieList extends Vue {
   onRatioChange(newVal: boolean) {
     localStorage.setItem("pm_movieDVDRatio", "" + newVal);
   } */
-
-  get drawer() {
-    return contextModule.showFilters;
-  }
-
-  set drawer(val: boolean) {
-    contextModule.toggleFilters(val);
-  }
 
   openCreateDialog() {
     this.createMovieDialog = true;
@@ -384,26 +376,6 @@ export default class MovieList extends Vue {
       .finally(() => {
         this.addMovieLoader = false;
       });
-  }
-
-  favorite(id: any, favorite: boolean) {
-    const index = this.movies.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const movie = this.movies[index];
-      movie.favorite = favorite;
-      Vue.set(this.movies, index, movie);
-    }
-  }
-
-  bookmark(id: any, bookmark: boolean) {
-    const index = this.movies.findIndex(sc => sc._id == id);
-
-    if (index > -1) {
-      const movie = this.movies[index];
-      movie.bookmark = bookmark;
-      Vue.set(this.movies, index, movie);
-    }
   }
 
   movieLabels(movie: any) {

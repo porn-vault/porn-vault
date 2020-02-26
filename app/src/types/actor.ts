@@ -1,11 +1,12 @@
 export default interface IActor {
   _id: string;
   name: string;
+  description: string | null;
   bornOn: number | null;
   aliases: string[];
   rating: number | null;
   favorite: boolean;
-  bookmark: boolean;
+  bookmark: number | null;
   labels: {
     _id: string;
     name: string;

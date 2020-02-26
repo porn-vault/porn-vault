@@ -38,7 +38,7 @@ export interface ISceneSearchDoc {
   actors: { id: string; name: string; aliases: string[] }[];
   labels: { id: string; name: string; aliases: string[] }[];
   rating: number;
-  bookmark: boolean;
+  bookmark: number | null;
   favorite: boolean;
   num_watches: number;
   release_date: number | null;

@@ -8,7 +8,6 @@ export async function getImages(
 ) {
   try {
     const timeNow = +new Date();
-
     const res = await searchImages(query || "");
 
     // Filter thumbnails, screenshots, previews

@@ -29,7 +29,7 @@ export default gql`
     addedOn: Long!
     releaseDate: Long
     favorite: Boolean!
-    bookmark: Boolean!
+    bookmark: Long
     rating: Int
     path: String
     streamLinks: [String!]!
@@ -50,7 +50,7 @@ export default gql`
 
   input SceneUpdateOpts {
     favorite: Boolean
-    bookmark: Boolean
+    bookmark: Long
     actors: [String!]
     name: String
     description: String
@@ -65,7 +65,7 @@ export default gql`
 
   extend type Mutation {
     addScene(name: String!, actors: [String!], labels: [String!]): Scene!
-    screenshotScene(id: String!, sec: Int!): Image
+    screenshotScene(id: String!, sec: Float!): Image
     watchScene(id: String!): Scene!
     unwatchScene(id: String!): Scene!
     uploadScene(
@@ -77,5 +77,6 @@ export default gql`
     updateScenes(ids: [String!]!, opts: SceneUpdateOpts!): [Scene!]!
     removeScenes(ids: [String!]!, deleteImages: Boolean): Boolean!
     runScenePlugins(ids: [String!]!): [Scene!]!
+    runAllScenePlugins: [Scene!]!
   }
 `;
