@@ -12,9 +12,9 @@ import ora from "ora";
 import { existsAsync, statAsync } from "../fs/async";
 import { fileHash } from "../hash";
 import Studio from "../types/studio";
-import { createSceneSearchDoc } from "../search/scene";
+import { createSceneSearchDoc, indexScenes } from "../search/scene";
 import { indices } from "../search/index";
-import { createImageSearchDoc } from "../search/image";
+import { createImageSearchDoc, indexImages } from "../search/image";
 import { Dictionary } from "../types/utility";
 import { onSceneCreate } from "../plugin_events/scene";
 
@@ -218,7 +218,7 @@ class Queue {
         await Image.setActors(image, sceneActors);
         logger.log(`Creating image with id ${image._id}...`);
         await database.insert(database.store.images, image);
-        indices.images.add(await createImageSearchDoc(image));
+        await indexImages([image]);
         images.push(image);
       }
 
@@ -260,7 +260,7 @@ class Queue {
 
     logger.log(`Creating scene with id ${scene._id}...`);
     await database.insert(database.store.scenes, scene);
-    indices.scenes.add(await createSceneSearchDoc(scene));
+    await indexScenes([scene]);
     logger.success(`Scene '${scene.name}' created.`);
   }
 

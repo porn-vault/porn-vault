@@ -8,7 +8,7 @@ import Image from "../types/image";
 import * as database from "../database/index";
 import * as logger from "../logger";
 import { indices } from "../search/index";
-import { createImageSearchDoc } from "../search/image";
+import { createImageSearchDoc, indexImages } from "../search/image";
 import Label from "../types/label";
 import Movie from "../types/movie";
 
@@ -43,7 +43,9 @@ export async function onMovieCreate(movie: Movie, event = "movieCreated") {
       img.path = path;
       logger.log("Created image " + img._id);
       await database.insert(database.store.images, img);
-      if (!thumbnail) indices.images.add(await createImageSearchDoc(img));
+      if (!thumbnail) {
+        await indexImages([img]);
+      }
       return img._id;
     }
   });

@@ -118,7 +118,7 @@ export default (query?: string) => {
       case "sortDir":
         if (["asc", "desc"].includes(value))
           options[operation] = <"asc" | "desc">value;
-        else throw `Query error: Unsupported sort direct '${value}'`;
+        else throw `Query error: Unsupported sort direction '${value}'`;
         break;
     }
   }
