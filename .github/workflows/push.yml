@@ -16,4 +16,4 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_HOOK }}
       uses: Ilshidur/action-discord@master
       with:
-        args: 'New commit to dev by {{ EVENT_PAYLOAD.pusher.name }}'
+        args: 'New commit to *dev* by **{{ EVENT_PAYLOAD.pusher.name }}**'
