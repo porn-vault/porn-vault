@@ -616,15 +616,19 @@ export default class SceneList extends mixins(DrawerMixin) {
   }
 
   infiniteHandler($state) {
-    this.fetchPage().then(items => {
-      if (items.length) {
-        this.page++;
-        this.scenes.push(...items);
-        $state.loaded();
-      } else {
-        $state.complete();
-      }
-    });
+    this.fetchPage()
+      .then(items => {
+        if (items.length) {
+          this.page++;
+          this.scenes.push(...items);
+          $state.loaded();
+        } else {
+          $state.complete();
+        }
+      })
+      .catch(err => {
+        $state.error();
+      });
   }
 
   getRandom() {

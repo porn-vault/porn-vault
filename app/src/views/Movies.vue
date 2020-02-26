@@ -452,15 +452,19 @@ export default class MovieList extends mixins(DrawerMixin) {
   }
 
   infiniteHandler($state) {
-    this.fetchPage().then(items => {
-      if (items.length) {
-        this.page++;
-        this.movies.push(...items);
-        $state.loaded();
-      } else {
-        $state.complete();
-      }
-    });
+    this.fetchPage()
+      .then(items => {
+        if (items.length) {
+          this.page++;
+          this.movies.push(...items);
+          $state.loaded();
+        } else {
+          $state.complete();
+        }
+      })
+      .catch(err => {
+        $state.error();
+      });
   }
 
   async fetchPage() {
