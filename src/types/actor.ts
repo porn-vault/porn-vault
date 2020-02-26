@@ -37,7 +37,6 @@ export default class Actor {
 
   static async checkIntegrity() {
     const allActors = await Actor.getAll();
-    const timeNow = Date.now();
 
     for (const actor of allActors) {
       const actorId = actor._id.startsWith("ac_")
@@ -46,7 +45,7 @@ export default class Actor {
 
       if (typeof actor.bookmark == "boolean") {
         logger.log(`Setting bookmark to timestamp...`);
-        const time = actor.bookmark ? timeNow : null;
+        const time = actor.bookmark ? actor.addedOn : null;
         await database.update(
           database.store.actors,
           { _id: actorId },

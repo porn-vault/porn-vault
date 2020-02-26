@@ -5,6 +5,7 @@ import ora from "ora";
 import Axios from "axios";
 import extractQueryOptions from "../query_extractor";
 import { ISearchResults } from "./index";
+import argv from "../args";
 
 const PAGE_SIZE = 24;
 
@@ -66,7 +67,7 @@ export async function indexScenes(scenes: Scene[]) {
   for (const scene of scenes) {
     docs.push(await createSceneSearchDoc(scene));
 
-    if (docs.length == 10000) {
+    if (docs.length == (argv["index-slice-size"] || 5000)) {
       await addSceneSearchDocs(docs);
       numItems += docs.length;
       docs = [];

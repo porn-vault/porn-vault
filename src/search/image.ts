@@ -5,6 +5,7 @@ import Axios from "axios";
 import extractQueryOptions from "../query_extractor";
 import * as logger from "../logger";
 import { ISearchResults } from "./index";
+import argv from "../args";
 
 const PAGE_SIZE = 24;
 
@@ -60,7 +61,7 @@ export async function indexImages(images: Image[]) {
   for (const image of images) {
     docs.push(await createImageSearchDoc(image));
 
-    if (docs.length == 10000) {
+    if (docs.length == (argv["index-slice-size"] || 5000)) {
       await addImageSearchDocs(docs);
       numItems += docs.length;
       docs = [];

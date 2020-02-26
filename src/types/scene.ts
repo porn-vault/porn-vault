@@ -66,7 +66,6 @@ export default class Scene {
 
   static async checkIntegrity() {
     const allScenes = await Scene.getAll();
-    const timeNow = Date.now();
 
     for (const scene of allScenes) {
       const sceneId = scene._id.startsWith("sc_")
@@ -75,7 +74,7 @@ export default class Scene {
 
       if (typeof scene.bookmark == "boolean") {
         logger.log(`Setting bookmark to timestamp...`);
-        const time = scene.bookmark ? timeNow : null;
+        const time = scene.bookmark ? scene.addedOn : null;
         await database.update(
           database.store.scenes,
           { _id: sceneId },

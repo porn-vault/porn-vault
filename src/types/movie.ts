@@ -32,7 +32,6 @@ export default class Movie {
 
   static async checkIntegrity() {
     const allMovies = await Movie.getAll();
-    const timeNow = Date.now();
 
     for (const movie of allMovies) {
       const movieId = movie._id.startsWith("mo_")
@@ -41,7 +40,7 @@ export default class Movie {
 
       if (typeof movie.bookmark == "boolean") {
         logger.log(`Setting bookmark to timestamp...`);
-        const time = movie.bookmark ? timeNow : null;
+        const time = movie.bookmark ? movie.addedOn : null;
         await database.update(
           database.store.movies,
           { _id: movieId },
