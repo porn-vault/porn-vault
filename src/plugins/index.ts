@@ -7,10 +7,10 @@ import ora from "ora";
 import { Dictionary, libraryPath } from "../types/utility";
 import * as logger from "../logger";
 import moment from "moment";
-import { mapAsync, filterAsync } from "../types/utility";
 import * as fs from "fs";
 import * as nodepath from "path";
 import ffmpeg from "fluent-ffmpeg";
+import jimp from "jimp";
 
 export async function runPluginsSerial(
   config: IConfig,
@@ -100,6 +100,7 @@ export async function runPlugin(
           moment: moment
         }, */
         // TODO: deprecate at some point, replace with ^
+        $jimp: jimp,
         $ffmpeg: ffmpeg,
         $fs: fs,
         $path: nodepath,
