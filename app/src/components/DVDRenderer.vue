@@ -1,9 +1,23 @@
 <template>
   <v-fade-transition>
     <div v-if="value" class="dvd-render">
-      <v-btn @click="$emit('input', false)" style="position: absolute; top: 5px; right: 5px;" icon>
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
+      <div class="actions">
+        <v-btn class="mr-2" target="_blank" v-on="on" :href="url" icon>
+          <v-icon>mdi-link</v-icon>
+        </v-btn>
+        <v-tooltip left>
+          <template v-slot:activator="{ on }">
+            <v-btn class="mr-2" v-on="on" @click="toggleMode" icon>
+              <v-icon>mdi-theme-light-dark</v-icon>
+            </v-btn>
+          </template>
+          Toggle box color
+        </v-tooltip>
+        <v-btn @click="$emit('input', false)" icon>
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+
       <iframe script :src="url" frameborder="0"></iframe>
     </div>
   </v-fade-transition>
@@ -18,8 +32,15 @@ export default class DVDRenderer extends Vue {
   @Prop({ default: false }) value!: boolean;
   @Prop() movie!: string;
 
+  light = "false";
+
+  toggleMode() {
+    if (this.light == "false") this.light = "true";
+    else this.light = "false";
+  }
+
   get url() {
-    return serverBase + `/dvd-renderer/${this.movie}`;
+    return serverBase + `/dvd-renderer/${this.movie}?light=${this.light}`;
   }
 }
 </script>
@@ -37,5 +58,11 @@ iframe {
   top: 0;
   width: 100%;
   height: 100%;
+
+  .actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
 }
 </style>

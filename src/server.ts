@@ -82,10 +82,6 @@ export default async () => {
     res.sendFile(path.resolve("./views/bump.jpg"));
   });
 
-  app.get("/normal", (req, res) => {
-    res.sendFile(path.resolve("./views/normal.jpg"));
-  });
-
   app.get("/dvd-renderer/:id", async (req, res, next) => {
     const movie = await Movie.getById(req.params.id);
 
@@ -99,7 +95,7 @@ export default async () => {
     } else {
       const color = movie.frontCover
         ? (await Image.getById(movie.frontCover))?.color
-        : "#333333";
+        : "";
 
       const studioName = movie.studio
         ? (await Studio.getById(movie.studio))?.name
@@ -110,6 +106,7 @@ export default async () => {
           color,
           movieName: movie.name,
           studioName,
+          light: req.query.light == "true",
           frontCover: movie.frontCover
             ? `/image/${movie.frontCover}?password=${config.PASSWORD}`
             : null,

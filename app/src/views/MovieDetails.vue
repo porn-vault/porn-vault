@@ -229,7 +229,7 @@
       </div>
     </infinite-loading>
 
-    <DVDRenderer v-model="show3d" :movie="currentMovie._id" />
+    <DVDRenderer v-if="currentMovie" v-model="show3d" :movie="currentMovie._id" />
   </v-container>
 </template>
 
@@ -272,7 +272,7 @@ import DVDRenderer from "@/components/DVDRenderer.vue";
     next();
   }
 })
-export default class SceneDetails extends Vue {
+export default class MovieDetails extends Vue {
   actors = [] as IActor[];
   scenes = [] as IScene[];
   images = [] as IImage[];

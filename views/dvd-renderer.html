@@ -22,7 +22,7 @@
   </head>
   <body style="margin: 0">
     <div
-      style="padding-top: 5px; color: white; width: 100%; position: fixed; text-align: center"
+      style="padding-top: 10px; color: white; width: 100%; position: fixed; text-align: center"
     >
       <div style="font-weight: bold; font-size: 24px">
         {{ movieName }}
@@ -73,11 +73,18 @@
       const dvdWidth = 13.5; // in cm
       const dvdHeight = 19.0; // in cm
       const dvdDepth = 1.4; // in cm
-      const coverPadding = 0.2;
       const scaleFactor = 0.4;
-      const roundness = 0.125;
-      const shininess = 100;
+      const coverPadding = 0.2; // distance to edges of box
+      const coverMargin = 0.01; // to resolve Z fighting
+      const roundness = 0.125; // Roundness of box
+      const shininess = 100; // Shiny
 
+      const light = "{{ light }}" == "true";
+
+      const boxColor = light ? "#fbfbfb" : "#040404";
+      const spineTextColor = light ? "#040404" : "#fbfbfb";
+
+      const movieName = "{{ movieName }}";
       const studioName = "{{ studioName }}";
       const frontCover = "{{ frontCover }}".replace("&#x3D;", "=");
       const backCover = "{{ backCover }}".replace("&#x3D;", "=");
@@ -100,14 +107,6 @@
         const boxHeight = dvdHeight * scaleFactor;
         const boxDepth = dvdDepth * scaleFactor;
 
-        const geometry = createBoxWithRoundedEdges(
-          boxWidth,
-          boxHeight,
-          boxDepth,
-          roundness,
-          16
-        );
-
         const frontTex = loader.load(frontCover);
         const backTex = loader.load(backCover);
         const bumpMap = loader.load("/bump");
@@ -115,46 +114,108 @@
         frontTex.minFilter = THREE.LinearFilter;
         backTex.minFilter = THREE.LinearFilter;
 
-        var front = new THREE.Mesh(
-          new THREE.PlaneGeometry(
-            boxWidth - coverPadding,
-            boxHeight - coverPadding
-          ),
-          new THREE.MeshPhongMaterial({
-            map: frontTex,
-            shininess,
-            bumpMap: bumpMap,
-            bumpScale: 0.2
-          })
-        );
-        front.position.set(0, 0, boxDepth / 2 + 0.025);
-        scene.add(front);
+        (function createFront() {
+          let front = new THREE.Mesh(
+            new THREE.PlaneGeometry(
+              boxWidth - coverPadding,
+              boxHeight - coverPadding
+            ),
+            new THREE.MeshPhongMaterial({
+              map: frontTex,
+              shininess,
+              bumpMap: bumpMap,
+              bumpScale: 0.2
+            })
+          );
+          front.position.set(0, 0, boxDepth / 2 + coverMargin);
+          scene.add(front);
+        })();
 
-        var back = new THREE.Mesh(
-          new THREE.PlaneGeometry(
-            boxWidth - coverPadding,
-            boxHeight - coverPadding
-          ),
-          new THREE.MeshPhongMaterial({
-            map: backTex,
-            shininess,
-            bumpMap: bumpMap,
-            bumpScale: 0.2
-          })
-        );
-        back.rotation.x = Math.PI;
-        back.rotation.z = Math.PI;
-        back.position.set(0, 0, -(boxDepth / 2 + 0.025));
-        scene.add(back);
+        (function createBack() {
+          let back = new THREE.Mesh(
+            new THREE.PlaneGeometry(
+              boxWidth - coverPadding,
+              boxHeight - coverPadding
+            ),
+            new THREE.MeshPhongMaterial({
+              map: backTex,
+              shininess,
+              bumpMap: bumpMap,
+              bumpScale: 0.2
+            })
+          );
+          back.rotation.x = Math.PI;
+          back.rotation.z = Math.PI;
+          back.position.set(0, 0, -(boxDepth / 2 + coverMargin));
+          scene.add(back);
+        })();
 
-        mesh = new THREE.Mesh(
-          geometry,
-          new THREE.MeshPhongMaterial({
-            color: "#121212",
-            shininess
-          })
-        );
-        scene.add(mesh);
+        (function createSpine() {
+          const spineText = movieName;
+          var bitmap = document.createElement("canvas");
+          bitmap.style.backgroundColor = boxColor;
+          var ctx = bitmap.getContext("2d");
+          bitmap.width = 1000;
+          bitmap.height = 50;
+          ctx.font = "900 32px Arial";
+
+          ctx.fillStyle = boxColor;
+          ctx.fillRect(0, 0, bitmap.width, bitmap.height);
+
+          if (studioName) {
+            ctx.fillStyle = spineTextColor;
+            ctx.fillText(studioName, 10, 40);
+            ctx.strokeStyle = boxColor;
+            ctx.strokeText(studioName, 10, 40);
+          }
+
+          ctx.textAlign = "right";
+          ctx.font = "bold 24px Arial";
+
+          ctx.fillStyle = spineTextColor;
+          ctx.fillText(spineText, 990, 35);
+          ctx.strokeStyle = boxColor;
+          ctx.strokeText(spineText, 990, 35);
+
+          var spineTex = new THREE.Texture(bitmap);
+          spineTex.needsUpdate = true;
+
+          let spine = new THREE.Mesh(
+            new THREE.PlaneGeometry(
+              boxHeight - coverPadding,
+              boxDepth - coverPadding
+            ),
+            new THREE.MeshPhongMaterial({
+              map: spineTex,
+              shininess,
+              bumpMap: bumpMap,
+              bumpScale: 0.2
+            })
+          );
+          spine.rotation.z = Math.PI / 2;
+          spine.rotation.y = Math.PI / 2 + Math.PI;
+          spine.position.set(-boxWidth / 2 - coverMargin, 0, 0);
+          scene.add(spine);
+        })();
+
+        (function createBox() {
+          const geometry = createBoxWithRoundedEdges(
+            boxWidth,
+            boxHeight,
+            boxDepth,
+            roundness,
+            16
+          );
+
+          mesh = new THREE.Mesh(
+            geometry,
+            new THREE.MeshPhongMaterial({
+              color: boxColor,
+              shininess
+            })
+          );
+          scene.add(mesh);
+        })();
 
         renderer.setSize(WIDTH, HEIGHT);
         document.body.appendChild(renderer.domElement);
