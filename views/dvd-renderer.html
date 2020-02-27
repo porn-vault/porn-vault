@@ -23,8 +23,10 @@
       }
     </style>
   </head>
-  <body style="margin: 0">
-    <div style="padding: 10px; color: white; width: 100%; position: fixed">
+  <body style="margin: 0; cursor:grab">
+    <div
+      style="padding: 10px; color: white; width: 100%; position: fixed; bottom: 0px"
+    >
       <span class="disabled" id="auto-rotate" style="cursor: pointer">
         Toggle auto-rotate
       </span>
@@ -294,6 +296,7 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.1;
         controls.maxDistance = 50;
+        controls.autoRotateSpeed = 3;
 
         document.getElementById("auto-rotate").addEventListener("click", ev => {
           controls.autoRotate = !controls.autoRotate;
