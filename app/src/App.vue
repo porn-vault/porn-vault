@@ -122,7 +122,6 @@ export default class App extends Vue {
       return this.currentMovie.frontCover.color;
     if (this.currentStudio && this.currentStudio.thumbnail)
       return this.currentStudio.thumbnail.color;
-
     return color ? ensureDarkColor(color) : undefined;
   }
 

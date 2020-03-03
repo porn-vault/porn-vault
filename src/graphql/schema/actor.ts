@@ -21,6 +21,7 @@ export default gql`
     scenes: [Scene!]
     numScenes: Int!
     thumbnail: Image
+    hero: Image
     images: [Image!]!
   }
 
@@ -40,6 +41,7 @@ export default gql`
     labels: [String!]
     aliases: [String!]
     thumbnail: String
+    hero: String
     favorite: Boolean
     bookmark: Long
     bornOn: Long

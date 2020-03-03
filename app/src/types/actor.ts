@@ -16,6 +16,10 @@ export default interface IActor {
     _id: string;
     color: string | null;
   } | null;
+  hero?: {
+    _id: string;
+    color: string | null;
+  } | null;
   customFields: { _id: string; name: string; values?: string[]; type: string };
   availableFields: {
     _id: string;

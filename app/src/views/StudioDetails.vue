@@ -348,7 +348,7 @@ export default class StudioDetails extends Vue {
     if (!this.currentStudio) return;
 
     try {
-      const query = `page:${this.page} sortDir:asc sortBy:addedOn studios:${this.currentStudio._id}`;
+      const query = `page:${this.page} sortDir:desc sortBy:addedOn studios:${this.currentStudio._id}`;
 
       const result = await ApolloClient.query({
         query: gql`

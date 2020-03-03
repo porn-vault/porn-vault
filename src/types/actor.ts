@@ -14,6 +14,7 @@ export default class Actor {
   addedOn = +new Date();
   bornOn: number | null = null;
   thumbnail: string | null = null;
+  hero?: string | null = null;
   favorite: boolean = false;
   bookmark: number | null = null;
   rating: number = 0;
