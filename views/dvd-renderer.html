@@ -5,14 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="{{ frontCover }}" type="image/x-icon" />
     <title>{{ movieName }} in 3D!</title>
-    <script
-      type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="http://threejs.org/examples/js/controls/OrbitControls.js"
-    ></script>
+    <script type="text/javascript" src="/assets/three.min.js"></script>
+    <script type="text/javascript" src="/assets/OrbitControls.js"></script>
     <style>
       * {
         overflow: hidden;
@@ -121,7 +115,7 @@
 
         const frontTex = loader.load(frontCover);
         const backTex = loader.load(backCover);
-        const bumpMap = loader.load("/bump");
+        const bumpMap = loader.load("/assets/bump.jpg");
 
         frontTex.minFilter = THREE.LinearFilter;
         backTex.minFilter = THREE.LinearFilter;

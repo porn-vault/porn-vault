@@ -104,7 +104,7 @@ export default class Actor {
     await database.update(
       database.store.actors,
       { thumbnail },
-      { $set: { thumbnail: null } }
+      { $set: { thumbnail: null, hero: null } }
     );
   }
 

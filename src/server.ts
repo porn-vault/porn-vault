@@ -68,12 +68,6 @@ export default async () => {
     }
   });
 
-  app.get("/bump", (req, res) => {
-    res.sendFile(path.resolve("./views/bump.jpg"));
-  });
-
-  app.get("/dvd-renderer/:id", dvdRenderer);
-
   app.get("/broken", (_, res) => {
     const b64 = BROKEN_IMAGE;
 
@@ -97,6 +91,8 @@ export default async () => {
   app.use("/css", express.static("./app/dist/css"));
   app.use("/fonts", express.static("./app/dist/fonts"));
   app.use("/previews", express.static("./library/previews"));
+  app.use("/assets", express.static("./assets"));
+  app.get("/dvd-renderer/:id", dvdRenderer);
 
   app.get("/password", checkPassword);
 

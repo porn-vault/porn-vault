@@ -1,7 +1,12 @@
 <template>
   <div>
     <div v-if="currentActor">
-      <v-img v-if="heroImage && $vuetify.breakpoint.smAndUp" :height="heroHeight" :src="heroImage"></v-img>
+      <v-img
+        :max-height="450"
+        :aspect-ratio="2.75"
+        v-if="heroImage && $vuetify.breakpoint.smAndUp"
+        :src="heroImage"
+      ></v-img>
       <BindTitle :value="currentActor.name" />
       <v-container fluid>
         <v-row>
@@ -482,13 +487,6 @@ export default class ActorDetails extends Vue {
   pluginLoader = false;
 
   labelSearchQuery = "";
-
-  get heroHeight() {
-    if (this.$vuetify.breakpoint.sm) return 300;
-    if (this.$vuetify.breakpoint.md) return 350;
-    if (this.$vuetify.breakpoint.lg) return 400;
-    if (this.$vuetify.breakpoint.xl) return 450;
-  }
 
   get heroImage() {
     if (!this.currentActor) return null;
