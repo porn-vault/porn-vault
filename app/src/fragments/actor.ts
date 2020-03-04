@@ -20,6 +20,9 @@ export default gql`
       _id
       color
     }
+    altThumbnail {
+      _id
+    }
     watches
     customFields
     availableFields {

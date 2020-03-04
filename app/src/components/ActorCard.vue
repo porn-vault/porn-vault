@@ -1,39 +1,52 @@
 <template>
   <v-card :dark="!!cardColor || $vuetify.theme.dark" :color="cardColor" v-if="value" tile>
-    <a :href="`#/actor/${value._id}`">
-      <v-img
-        :cover="fillThumbnail"
-        :contain="!fillThumbnail"
-        :aspect-ratio="aspectRatio"
-        class="hover"
-        v-ripple
-        eager
-        :src="thumbnail"
-      >
-        <div class="corner-actions">
-          <v-btn
-            light
-            class="elevation-2 mr-1"
-            @click.stop.prevent="favorite"
-            icon
-            style="background: #fafafa;"
-          >
-            <v-icon
-              :color="value.favorite ? 'red' : undefined"
-            >{{ value.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
-          </v-btn>
-          <v-btn
-            light
-            class="elevation-2"
-            @click.stop.prevent="bookmark"
-            icon
-            style="background: #fafafa;"
-          >
-            <v-icon>{{ value.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
-          </v-btn>
-        </div>
-      </v-img>
-    </a>
+    <v-hover v-slot:default="{ hover }">
+      <a :href="`#/actor/${value._id}`">
+        <v-img
+          :cover="fillThumbnail"
+          :contain="!fillThumbnail"
+          :aspect-ratio="aspectRatio"
+          style="cursor: pointer"
+          v-ripple
+          eager
+          :src="thumbnail"
+        >
+          <v-fade-transition>
+            <v-img
+              :cover="fillThumbnail"
+              :contain="!fillThumbnail"
+              eager
+              :aspect-ratio="aspectRatio"
+              :src="altThumbnail"
+              v-if="altThumbnail && hover"
+            ></v-img>
+          </v-fade-transition>
+
+          <div class="corner-actions">
+            <v-btn
+              light
+              class="elevation-2 mr-1"
+              @click.stop.prevent="favorite"
+              icon
+              style="background: #fafafa;"
+            >
+              <v-icon
+                :color="value.favorite ? 'red' : undefined"
+              >{{ value.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+            </v-btn>
+            <v-btn
+              light
+              class="elevation-2"
+              @click.stop.prevent="bookmark"
+              icon
+              style="background: #fafafa;"
+            >
+              <v-icon>{{ value.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
+            </v-btn>
+          </div>
+        </v-img>
+      </a>
+    </v-hover>
 
     <v-card-title>
       <span
@@ -168,6 +181,14 @@ export default class ActorCard extends Vue {
         this.value.thumbnail._id
       }?password=${localStorage.getItem("password")}`;
     return `${serverBase}/broken`;
+  }
+
+  get altThumbnail() {
+    if (this.value.altThumbnail)
+      return `${serverBase}/image/${
+        this.value.altThumbnail._id
+      }?password=${localStorage.getItem("password")}`;
+    return null;
   }
 }
 </script>

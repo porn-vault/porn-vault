@@ -19,6 +19,7 @@ type IActorUpdateOpts = Partial<{
   labels: string[];
   aliases: string[];
   thumbnail: string;
+  altThumbnail: string;
   hero: string;
   favorite: boolean;
   bookmark: number | null;
@@ -158,6 +159,9 @@ export default {
           actor.description = opts.description.trim();
 
         if (typeof opts.thumbnail == "string") actor.thumbnail = opts.thumbnail;
+
+        if (typeof opts.altThumbnail == "string")
+          actor.altThumbnail = opts.altThumbnail;
 
         if (typeof opts.hero == "string") actor.hero = opts.hero;
 

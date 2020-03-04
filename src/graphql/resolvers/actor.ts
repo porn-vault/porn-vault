@@ -17,6 +17,10 @@ export default {
     if (actor.thumbnail) return await Image.getById(actor.thumbnail);
     return null;
   },
+  async altThumbnail(actor: Actor) {
+    if (actor.altThumbnail) return await Image.getById(actor.altThumbnail);
+    return null;
+  },
   async hero(actor: Actor) {
     if (actor.hero) return await Image.getById(actor.hero);
     return null;

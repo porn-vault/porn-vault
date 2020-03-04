@@ -16,19 +16,18 @@
               v-if="thumbnail"
             >
               <template v-slot:default="{ hover }">
-                <div
-                  v-ripple
-                  style="position: relative;"
-                  class="hover text-center"
-                  @click="openThumbnailDialog"
-                >
+                <div style="position: relative" class="text-center">
                   <img class="avatar" :src="thumbnail" />
 
                   <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%;">
                     <v-fade-transition>
-                      <v-overlay v-if="hover" absolute color="primary">
-                        <v-icon x-large>mdi-upload</v-icon>
-                      </v-overlay>
+                      <v-img
+                        style="z-index: 5"
+                        eager
+                        cover
+                        :src="altThumbnail"
+                        v-if="altThumbnail && hover"
+                      ></v-img>
                     </v-fade-transition>
                   </div>
                 </div>
@@ -100,6 +99,20 @@
                   class="text-none"
                   @click="runPlugins"
                 >Run plugins</v-btn>
+
+                <v-btn
+                  color="primary"
+                  text
+                  class="text-none"
+                  @click="thumbnailDialog=true"
+                >Change thumbnail</v-btn>
+
+                <v-btn
+                  color="primary"
+                  text
+                  class="text-none"
+                  @click="altThumbnailDialog=true"
+                >Change alt. thumbnail</v-btn>
 
                 <v-btn
                   color="primary"
@@ -362,6 +375,39 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="altThumbnailDialog" max-width="600px">
+      <v-card v-if="currentActor" :loading="altThumbnailLoader">
+        <v-card-title>Set alt. thumbnail for '{{ currentActor.name }}'</v-card-title>
+        <v-card-text>
+          <v-file-input
+            color="primary"
+            placeholder="Select image"
+            @change="readAltThumbnail"
+            v-model="selectedAltThumbnail"
+          ></v-file-input>
+          <div v-if="altThumbnailDisplay" class="text-center">
+            <cropper
+              style="height: 400px"
+              class="cropper"
+              :src="altThumbnailDisplay"
+              :stencilProps="{ aspectRatio: aspectRatio }"
+              @change="changeAltThumbnailCrop"
+            ></cropper>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            :disabled="!altThumbnailDisplay"
+            color="primary"
+            text
+            class="text-none"
+            @click="uploadAltThumbnail"
+          >Upload</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="heroDialog" max-width="600px">
       <v-card v-if="currentActor" :loading="heroLoader">
         <v-card-title>Set hero image for '{{ currentActor.name }}'</v-card-title>
@@ -470,6 +516,12 @@ export default class ActorDetails extends Vue {
   thumbnailDisplay = null as string | null;
   selectedThumbnail = null as File | null;
   thumbnailCrop: ICropCoordinates = { left: 0, top: 0, width: 0, height: 0 };
+
+  altThumbnailDialog = false;
+  altThumbnailLoader = false;
+  altThumbnailDisplay = null as string | null;
+  selectedAltThumbnail = null as File | null;
+  altThumbnailCrop: ICropCoordinates = { left: 0, top: 0, width: 0, height: 0 };
 
   heroDialog = false;
   heroLoader = false;
@@ -614,6 +666,15 @@ export default class ActorDetails extends Vue {
     };
   }
 
+  changeAltThumbnailCrop(crop: ICropResult) {
+    this.altThumbnailCrop = {
+      left: Math.round(crop.coordinates.left),
+      top: Math.round(crop.coordinates.top),
+      width: Math.round(crop.coordinates.width),
+      height: Math.round(crop.coordinates.height)
+    };
+  }
+
   changeHeroCrop(crop: ICropResult) {
     this.heroCrop = {
       left: Math.round(crop.coordinates.left),
@@ -637,6 +698,10 @@ export default class ActorDetails extends Vue {
 
   async readThumbnail(file: File) {
     if (file) this.thumbnailDisplay = await this.readImage(file);
+  }
+
+  async readAltThumbnail(file: File) {
+    if (file) this.altThumbnailDisplay = await this.readImage(file);
   }
 
   async readHero(file: File) {
@@ -706,6 +771,69 @@ export default class ActorDetails extends Vue {
       });
   }
 
+  uploadAltThumbnail() {
+    if (!this.currentActor) return;
+
+    this.altThumbnailLoader = true;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation(
+          $file: Upload!
+          $name: String
+          $crop: Crop
+          $actors: [String!]
+          $labels: [String!]
+          $compress: Boolean
+        ) {
+          uploadImage(
+            file: $file
+            name: $name
+            crop: $crop
+            actors: $actors
+            labels: $labels
+            compress: $compress
+          ) {
+            ...ImageFragment
+            actors {
+              ...ActorFragment
+            }
+            scene {
+              _id
+              name
+            }
+          }
+        }
+        ${imageFragment}
+        ${actorFragment}
+      `,
+      variables: {
+        file: this.selectedAltThumbnail,
+        name: this.currentActor.name + " (alt. thumbnail)",
+        actors: [this.currentActor._id],
+        labels: this.currentActor.labels.map(a => a._id),
+        crop: {
+          left: this.altThumbnailCrop.left,
+          top: this.altThumbnailCrop.top,
+          width: this.altThumbnailCrop.width,
+          height: this.altThumbnailCrop.height
+        },
+        compress: true
+      }
+    })
+      .then(res => {
+        const image = res.data.uploadImage;
+        this.images.unshift(image);
+        this.setAsAltThumbnail(image._id);
+        this.altThumbnailDialog = false;
+        this.altThumbnailDisplay = null;
+        this.selectedAltThumbnail = null;
+      })
+      .finally(() => {
+        this.altThumbnailLoader = false;
+      });
+  }
+
   uploadThumbnail() {
     if (!this.currentActor) return;
 
@@ -767,6 +895,10 @@ export default class ActorDetails extends Vue {
       .finally(() => {
         this.thumbnailLoader = false;
       });
+  }
+
+  openAltThumbnailDialog() {
+    this.altThumbnailDialog = true;
   }
 
   openThumbnailDialog() {
@@ -881,6 +1013,34 @@ export default class ActorDetails extends Vue {
     })
       .then(res => {
         actorModule.setHero(id);
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
+
+  setAsAltThumbnail(id: string) {
+    if (!this.currentActor) return;
+
+    ApolloClient.mutate({
+      mutation: gql`
+        mutation($ids: [String!]!, $opts: ActorUpdateOpts!) {
+          updateActors(ids: $ids, opts: $opts) {
+            altThumbnail {
+              _id
+            }
+          }
+        }
+      `,
+      variables: {
+        ids: [this.currentActor._id],
+        opts: {
+          altThumbnail: id
+        }
+      }
+    })
+      .then(res => {
+        actorModule.setAltThumbnail(id);
       })
       .catch(err => {
         console.error(err);
@@ -1023,6 +1183,14 @@ export default class ActorDetails extends Vue {
         this.currentActor.thumbnail._id
       }?password=${localStorage.getItem("password")}`;
     return `${serverBase}/broken`;
+  }
+
+  get altThumbnail() {
+    if (this.currentActor && this.currentActor.altThumbnail)
+      return `${serverBase}/image/${
+        this.currentActor.altThumbnail._id
+      }?password=${localStorage.getItem("password")}`;
+    return null;
   }
 
   @Watch("$route.params.id")

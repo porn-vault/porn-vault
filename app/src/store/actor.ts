@@ -54,6 +54,15 @@ class ActorModule extends VuexModule {
   }
 
   @Mutation
+  setAltThumbnail(id: string) {
+    if (this.current) {
+      if (!this.current.altThumbnail)
+        this.current.altThumbnail = { _id: id, color: null };
+      this.current.altThumbnail._id = id;
+    }
+  }
+
+  @Mutation
   setHero(id: string) {
     if (this.current) {
       if (!this.current.hero) this.current.hero = { _id: id, color: null };

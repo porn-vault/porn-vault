@@ -14,6 +14,7 @@ export default class Actor {
   addedOn = +new Date();
   bornOn: number | null = null;
   thumbnail: string | null = null;
+  altThumbnail: string | null = null;
   hero?: string | null = null;
   favorite: boolean = false;
   bookmark: number | null = null;
@@ -104,7 +105,7 @@ export default class Actor {
     await database.update(
       database.store.actors,
       { thumbnail },
-      { $set: { thumbnail: null, hero: null } }
+      { $set: { thumbnail: null, altThumbnail: null, hero: null } }
     );
   }
 
