@@ -10,19 +10,6 @@ export async function getImages(
     const timeNow = +new Date();
     const res = await searchImages(query || "");
 
-    // Filter thumbnails, screenshots, previews
-    // TODO: reimplement in twigs
-    /* if (!auto)
-     filters.push(doc =>
-       [
-         "(thumbnail)",
-         "(preview)",
-         "(screenshot)",
-         "(front cover)",
-         "(back cover)"
-       ].every(ending => !doc.name.endsWith(ending))
-     ); */
-
     logger.log(
       `Search results: ${res.data.num_hits} hits found in ${res.data.time.sec} sec`
     );

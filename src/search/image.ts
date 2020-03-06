@@ -55,10 +55,22 @@ export async function removeImageDoc(imageId: string) {
   return Axios.delete("http://localhost:8000/image/" + imageId);
 }
 
+const blacklist = [
+  "(alt. thumbnail)",
+  "(thumbnail)",
+  "(preview)",
+  "(screenshot)",
+  "(front cover)",
+  "(back cover)",
+  "(hero image)"
+];
+
 export async function indexImages(images: Image[]) {
   let docs = [] as IImageSearchDoc[];
   let numItems = 0;
   for (const image of images) {
+    if (blacklist.some(ending => image.name.endsWith(ending))) continue;
+
     docs.push(await createImageSearchDoc(image));
 
     if (docs.length == (argv["index-slice-size"] || 2500)) {
