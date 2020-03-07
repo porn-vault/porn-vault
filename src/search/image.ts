@@ -62,6 +62,7 @@ const blacklist = [
   "(screenshot)",
   "(front cover)",
   "(back cover)",
+  "(spine cover)",
   "(hero image)"
 ];
 
