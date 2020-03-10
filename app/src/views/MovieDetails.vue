@@ -152,7 +152,7 @@
         <v-container fluid>
           <v-row>
             <v-col
-              class="pa-1"
+              class="pa-0"
               v-for="(image, index) in images"
               :key="image._id"
               cols="6"

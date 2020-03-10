@@ -65,7 +65,9 @@
               <v-icon>mdi-calendar</v-icon>
               <v-subheader>Release Date</v-subheader>
             </div>
-            <div class="med--text pa-2">{{ new Date(currentScene.releaseDate).toLocaleDateString() }}</div>
+            <div
+              class="med--text pa-2"
+            >{{ new Date(currentScene.releaseDate).toLocaleDateString() }}</div>
           </div>
 
           <div v-if="currentScene.description">
@@ -252,7 +254,7 @@
         <v-container fluid>
           <v-row>
             <v-col
-              class="pa-1"
+              class="pa-0"
               v-for="(image, index) in images"
               :key="image._id"
               cols="6"
