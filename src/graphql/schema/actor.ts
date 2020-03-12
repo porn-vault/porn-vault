@@ -25,6 +25,8 @@ export default gql`
     altThumbnail: Image
     hero: Image
     images: [Image!]!
+    movies: [Movie!]!
+    collabs: [Actor!]!
   }
 
   extend type Query {

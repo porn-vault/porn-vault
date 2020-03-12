@@ -43,5 +43,11 @@ export default {
   },
   age(actor: Actor) {
     return Actor.getAge(actor);
+  },
+  async movies(actor: Actor) {
+    return Actor.getMovies(actor);
+  },
+  async collabs(actor: Actor) {
+    return Actor.getCollabs(actor);
   }
 };
