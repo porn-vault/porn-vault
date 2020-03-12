@@ -7,6 +7,21 @@ import CrossReference from "./cross_references";
 import * as logger from "../logger";
 import moment = require("moment");
 
+function createObjectSet<T extends Record<string, any>>(
+  objs: T[],
+  key: keyof T & string
+) {
+  const dict = {} as { [key: string]: T };
+  for (const obj of objs) {
+    dict[obj[key]] = obj;
+  }
+  const set = [] as T[];
+  for (const key in dict) {
+    set.push(dict[key]);
+  }
+  return set;
+}
+
 export default class Actor {
   _id: string;
   name: string;
@@ -174,5 +189,17 @@ export default class Actor {
     this._id = "ac_" + generateHash();
     this.name = name.trim();
     this.aliases = [...new Set(aliases.map(tag => tag.trim()))];
+  }
+
+  static async getMovies(actor: Actor) {
+    const scenes = await Scene.getByActor(actor._id);
+    const movies = await mapAsync(scenes, Scene.getMovies);
+    return createObjectSet(movies.flat(), "_id");
+  }
+
+  static async getCollabs(actor: Actor) {
+    const scenes = await Scene.getByActor(actor._id);
+    const actors = (await mapAsync(scenes, Scene.getActors)).flat();
+    return createObjectSet(actors, "_id").filter(ac => ac._id != actor._id);
   }
 }

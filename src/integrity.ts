@@ -9,6 +9,7 @@ import readline from "readline";
 
 export function bookmarksToTimestamp(file: string) {
   let lines = [] as string[];
+  let modified = false;
 
   logger.log("Replacing bookmarks with timestamps in " + file);
 
@@ -24,14 +25,17 @@ export function bookmarksToTimestamp(file: string) {
       if (item.bookmark !== undefined) {
         if (item.bookmark) item.bookmark = item.addedOn;
         else item.bookmark = null;
+        modified = true;
       }
       lines.push(JSON.stringify(item));
     });
 
     rl.on("close", () => {
-      fs.unlinkSync(file);
-      for (const line of lines) {
-        fs.appendFileSync(file, line + "\n");
+      if (modified) {
+        fs.unlinkSync(file);
+        for (const line of lines) {
+          fs.appendFileSync(file, line + "\n");
+        }
       }
       resolve();
     });
