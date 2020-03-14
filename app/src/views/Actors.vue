@@ -45,7 +45,7 @@
 
     <div v-if="!fetchLoader">
       <div class="d-flex align-center">
-        <h1 class="font-weight-light mr-3">Actors</h1>
+        <h1 class="font-weight-light mr-3">{{ altActorName }}</h1>
         <v-btn @click="openCreateDialog" icon>
           <v-icon>mdi-plus</v-icon>
         </v-btn>
@@ -76,7 +76,7 @@
 
     <v-dialog v-model="createActorDialog" max-width="400px">
       <v-card :loading="addActorLoader">
-        <v-card-title>Add new actor/actress</v-card-title>
+        <v-card-title>Add new {{ altActorName.toLowerCase() }}</v-card-title>
         <v-card-text>
           <v-form v-model="validCreation">
             <v-text-field
@@ -146,7 +146,7 @@
 
     <v-dialog :persistent="bulkLoader" scrollable v-model="bulkImportDialog" max-width="400px">
       <v-card :loading="bulkLoader">
-        <v-card-title>Bulk import actor names</v-card-title>
+        <v-card-title>Bulk import {{ altActorName.toLowerCase() }}</v-card-title>
 
         <v-card-text style="max-height: 400px">
           <v-textarea
@@ -154,9 +154,9 @@
             v-model="actorsBulkText"
             auto-grow
             :rows="3"
-            placeholder="Actor names"
+            placeholder="Names"
             persistent-hint
-            hint="1 actor name per line"
+            hint="1 name per line"
           ></v-textarea>
         </v-card-text>
         <v-divider></v-divider>
@@ -169,7 +169,7 @@
             color="primary"
             class="text-none"
             :disabled="!actorsBulkImport.length"
-          >Add {{ actorsBulkImport.length }} actors</v-btn>
+          >Add {{ actorsBulkImport.length }} {{ altActorName }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -248,13 +248,17 @@ export default class SceneList extends mixins(DrawerMixin) {
     return [];
   }
 
+  get altActorName() {
+    return contextModule.renameActorLabel;
+  }
+
   waiting = false;
   allLabels = [] as ILabel[];
   selectedLabels = [] as number[]; // TODO: try to retrieve from localStorage
 
   validCreation = false;
   createActorDialog = false;
-  createActorName = "";
+  createActorName = "";    
   createActorAliases = [] as string[];
   createSelectedLabels = [] as number[];
   labelSelectorDialog = false;

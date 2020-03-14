@@ -14,7 +14,7 @@
         </div>
 
         <div>
-          <v-subheader>Actor cards aspect ratio</v-subheader>
+          <v-subheader>{{ altActorName }} cards aspect ratio</v-subheader>
           <v-radio-group v-model="actorRatio">
             <v-radio color="primary" :value="1" label="Square"></v-radio>
             <v-radio color="primary" :value="9/16" label="9:16"></v-radio>
@@ -50,6 +50,12 @@
             hide-details
             label="Fill actor thumbnails"
             v-model="fillActorCards"
+          />
+          <v-text-field
+            color="primary"
+            hide-details
+            label="Rename Actors"
+            v-model="renameActorLabel"
           />
         </div>
       </v-col>
@@ -134,6 +140,15 @@ export default class About extends Vue {
 
   get scenePauseOnUnfocus() {
     return contextModule.scenePauseOnUnfocus;
+  }
+
+  set renameActorLabel (val: string) {
+    localStorage.setItem("pm_renameActor", val.toString());
+    contextModule.setActorLabel(val);
+  }
+
+  get renameActorLabel() {
+    return contextModule.renameActorLabel;
   }
 
   toggleDarkMode() {

@@ -100,6 +100,7 @@ import StudioDetailsBar from "./components/AppBar/StudioDetails.vue";
 import { contextModule } from "./store/context";
 import moment from "moment";
 import { ensureDarkColor } from "./util/color";
+import { rename } from 'fs';
 
 @Component({
   components: {
@@ -223,6 +224,11 @@ export default class App extends Vue {
     if (showCardLabelsLocalStorage) {
       contextModule.toggleCardLabels(showCardLabelsLocalStorage == "true");
     }
+
+      const renameActorLocalStorage = localStorage.getItem("pm_renameActor");
+      if (renameActorLocalStorage) {
+          contextModule.setActorLabel(renameActorLocalStorage);
+      }
   }
 
   navItems = [
@@ -233,7 +239,7 @@ export default class App extends Vue {
     },
     {
       icon: "mdi-account-multiple",
-      text: "Actors",
+      text: contextModule.renameActorLabel,
       url: "/actors"
     },
     {

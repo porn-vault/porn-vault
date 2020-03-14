@@ -18,7 +18,7 @@
 
               <div class="my-4">
                 <span class="mr-2 d-inline-block display-1">{{ numActors }}</span>
-                <span class="subtitle-1">actors</span>
+                <span class="subtitle-1">{{ altActorName.toLowerCase() }}</span>
               </div>
               <v-divider></v-divider>
 
@@ -79,7 +79,7 @@
 
           <v-card v-if="scenesWithoutActors.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
-              <v-icon medium class="mr-2">mdi-account-alert</v-icon>Scenes without actors
+              <v-icon medium class="mr-2">mdi-account-alert</v-icon>Scenes without {{ altActorName.toLowerCase() }}
             </v-card-title>
             <v-card-text>
               <div
@@ -110,7 +110,7 @@
 
           <v-card v-if="actorsWithoutLabels.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
-              <v-icon medium class="mr-2">mdi-account-alert</v-icon>Actors without labels
+              <v-icon medium class="mr-2">mdi-account-alert</v-icon>{{ altActorName }} without labels
             </v-card-title>
             <v-card-text>
               <ActorGrid :value="actorsWithoutLabels" />
@@ -119,7 +119,7 @@
 
           <v-card v-if="actorsWithoutScenes.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
-              <v-icon medium class="mr-2">mdi-account-alert</v-icon>Actors without scenes
+              <v-icon medium class="mr-2">mdi-account-alert</v-icon>{{ altActorName }} without scenes
             </v-card-title>
             <v-card-text>
               <ActorGrid :value="actorsWithoutScenes" />
@@ -171,6 +171,10 @@ export default class Home extends Vue {
         actor.thumbnail._id
       }?password=${localStorage.getItem("password")}`;
     return ``;
+  }
+
+  get altActorName() {
+    return contextModule.renameActorLabel;
   }
 
   beforeMount() {

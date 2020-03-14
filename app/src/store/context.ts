@@ -8,7 +8,7 @@ class ContextModule extends VuexModule {
   actorAspectRatio = 1;
   scenePauseOnUnfocus = false;
   showCardLabels = true;
-
+  renameActorLabel = "Actors";
   fillActorCards = true;
 
   @Mutation
@@ -39,6 +39,11 @@ class ContextModule extends VuexModule {
   @Mutation
   setActorAspectRatio(val: number) {
     this.actorAspectRatio = val;
+  }
+
+  @Mutation
+  setActorLabel(text: string) {
+    this.renameActorLabel = text;
   }
 }
 
