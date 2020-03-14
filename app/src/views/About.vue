@@ -14,7 +14,7 @@
         </div>
 
         <div>
-          <v-subheader>{{ altActorName }} cards aspect ratio</v-subheader>
+          <v-subheader>Actor cards aspect ratio</v-subheader>
           <v-radio-group v-model="actorRatio">
             <v-radio color="primary" :value="1" label="Square"></v-radio>
             <v-radio color="primary" :value="9/16" label="9:16"></v-radio>

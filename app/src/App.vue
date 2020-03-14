@@ -100,7 +100,6 @@ import StudioDetailsBar from "./components/AppBar/StudioDetails.vue";
 import { contextModule } from "./store/context";
 import moment from "moment";
 import { ensureDarkColor } from "./util/color";
-import { rename } from 'fs';
 
 @Component({
   components: {
