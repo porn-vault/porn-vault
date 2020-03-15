@@ -2,7 +2,6 @@ import Actor from "../../types/actor";
 import Label from "../../types/label";
 import Scene from "../../types/scene";
 import Movie from "../../types/movie";
-import CrossReference from "../../types/cross_references";
 import { Dictionary, mapAsync } from "../../types/utility";
 import ProcessingQueue from "../../queue/index";
 import Studio from "../../types/studio";
@@ -124,32 +123,35 @@ export default {
     return labels.sort((a, b) => a.name.localeCompare(b.name));
   },
   async getAreaLabels(_, { idfront }: { idfront: string }) {
+    var table;
     switch (idfront) {
       case "ac_":
-        var table = Actor;
+        table = Actor;
         break;
       case "im_":
-        var table = Image;
+        table = Image;
         break;
       case "mo_":
-        var table = Movie;
+        table = Movie;
         break;
       case "sc_":
-        var table = Scene;
+        table = Scene;
         break;
       case "st_":
-        var table = Studio;
+        table = Studio;
         break;
     }
     
     const elements = await table.getAll();
     var element;
-    var labels = [];
+    var labels : Label[] = [];
     for (element of elements){
         labels = labels.concat(await table.getLabels(element));
     }
-    labels = labels.filter(Boolean) as Label[]
-    return [ ...new Set(labels)].sort((a, b) => a.name.localeCompare(b.name));
+    labels = labels.filter(Boolean);
+    labels = labels.filter((value, index, array) => !array.filter((v, i) => JSON.stringify(value) == JSON.stringify(v) && i < index).length);
+
+    return labels.sort((a, b) => a.name.localeCompare(b.name));
   },
   async numScenes() {
     return await database.count(database.store.scenes, {});
