@@ -199,7 +199,12 @@ export default class Actor {
 
   static async getCollabs(actor: Actor) {
     const scenes = await Scene.getByActor(actor._id);
-    const actors = (await mapAsync(scenes, Scene.getActors)).flat();
-    return createObjectSet(actors, "_id").filter(ac => ac._id != actor._id);
+
+    return await mapAsync(scenes, async scene => {
+      return {
+        scene,
+        actors: (await Scene.getActors(scene)).filter(ac => ac._id != actor._id)
+      };
+    });
   }
 }
