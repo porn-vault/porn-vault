@@ -14,10 +14,14 @@ import { getActors } from "./search/actor";
 import { getStudios } from "./search/studio";
 import { getMovies } from "./search/movie";
 import { twigsVersion } from "../../search/index";
+import { indexing } from "../../server";
 
 export default {
-  async twigsVersion() {
-    return twigsVersion();
+  async twigs() {
+    return {
+      version: await twigsVersion(),
+      indexing
+    };
   },
 
   async getScenesWithoutStudios(_, { num }: { num: number }) {
