@@ -48,6 +48,7 @@ export default {
     return Actor.getMovies(actor);
   },
   async collabs(actor: Actor) {
-    return Actor.getCollabs(actor);
+    const collabs = await Actor.getCollabs(actor);
+    return collabs.map(c => c.actors).flat();
   }
 };
