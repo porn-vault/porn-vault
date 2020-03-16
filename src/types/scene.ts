@@ -472,7 +472,11 @@ export default class Scene {
                 count: 1,
                 filename: `${scene._id} (thumbnail).jpg`,
                 timestamps: ["50%"],
-                size: config.COMPRESS_IMAGE_SIZE + "x?"
+                size:
+                  Math.min(
+                    scene.meta.dimensions.width || config.COMPRESS_IMAGE_SIZE,
+                    config.COMPRESS_IMAGE_SIZE
+                  ) + "x?"
               });
           });
         })();
@@ -622,7 +626,11 @@ export default class Scene {
                   index.toString().padStart(3, "0")
                 ),
                 folder: options.thumbnailPath,
-                size: config.COMPRESS_IMAGE_SIZE + "x?"
+                size:
+                  Math.min(
+                    scene.meta.dimensions.width || config.COMPRESS_IMAGE_SIZE,
+                    config.COMPRESS_IMAGE_SIZE
+                  ) + "x?"
               });
           });
         });
