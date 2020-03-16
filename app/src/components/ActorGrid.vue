@@ -2,7 +2,7 @@
   <v-row dense>
     <v-col :cols="cols" :sm="sm" :md="md" :lg="lg" :xl="xl" v-for="actor in value" :key="actor._id">
       <router-link :to="`/actor/${actor._id}`">
-        <v-img v-ripple height="100%" cover :src="thumbnail(actor)">
+        <v-img style="border-radius: 8px" v-ripple height="100%" cover :src="thumbnail(actor)">
           <v-fade-transition>
             <div class="white--text med--text py-1 bottom-bar text-center">
               <div class="font-weight-bold">{{ actor.name }}</div>
