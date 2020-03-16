@@ -2,6 +2,7 @@ import Scene from "../../types/scene";
 import Image from "../../types/image";
 import Actor from "../../types/actor";
 import CustomField, { CustomFieldTarget } from "../../types/custom_field";
+import { createObjectSet } from "../../types/utility";
 
 export default {
   async scenes(actor: Actor) {
@@ -49,6 +50,7 @@ export default {
   },
   async collabs(actor: Actor) {
     const collabs = await Actor.getCollabs(actor);
-    return collabs.map(c => c.actors).flat();
+    const actors = collabs.map(c => c.actors).flat();
+    return createObjectSet(actors, "_id");
   }
 };

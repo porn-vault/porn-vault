@@ -2,25 +2,10 @@ import * as database from "../database";
 import { generateHash } from "../hash";
 import Label from "./label";
 import Scene from "./scene";
-import { mapAsync } from "./utility";
+import { mapAsync, createObjectSet } from "./utility";
 import CrossReference from "./cross_references";
 import * as logger from "../logger";
 import moment = require("moment");
-
-function createObjectSet<T extends Record<string, any>>(
-  objs: T[],
-  key: keyof T & string
-) {
-  const dict = {} as { [key: string]: T };
-  for (const obj of objs) {
-    dict[obj[key]] = obj;
-  }
-  const set = [] as T[];
-  for (const key in dict) {
-    set.push(dict[key]);
-  }
-  return set;
-}
 
 export default class Actor {
   _id: string;
