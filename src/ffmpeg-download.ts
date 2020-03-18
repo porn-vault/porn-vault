@@ -90,9 +90,9 @@ export async function downloadFile(url: string, file: string) {
 
     await new Promise((resolve, reject) => {
       writer.on("finish", resolve);
-      writer.on("error", () => {
+      writer.on("error", err => {
         logger.error(`Error while downloading ${url}`);
-        process.exit(1);
+        reject(err);
       });
     });
 

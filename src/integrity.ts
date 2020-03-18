@@ -25,9 +25,11 @@ export function bookmarksToTimestamp(file: string) {
     rl.on("line", line => {
       const item = JSON.parse(line);
       if (item.bookmark !== undefined) {
-        if (item.bookmark) item.bookmark = item.addedOn;
-        else item.bookmark = null;
-        modified = true;
+        if (typeof item.bookmark == "boolean") {
+          if (item.bookmark) item.bookmark = item.addedOn;
+          else item.bookmark = null;
+          modified = true;
+        }
       }
       lines.push(JSON.stringify(item));
     });
