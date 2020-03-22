@@ -8,7 +8,7 @@
               <div
                 @mouseenter="mouseenter"
                 @mouseleave="mouseleave"
-                v-if="false && hover"
+                v-if="hover"
                 style="position: absolute: top: 0; left: 0; width: 100%; height: 100%"
               >
                 <div style="width: 100%; height: 100%; position: relative">
