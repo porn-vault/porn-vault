@@ -46,7 +46,8 @@ export default class Marker {
 
     logger.log("Creating thumbnail for marker " + marker._id);
     const image = new Image(`${marker.name} (thumbnail)`);
-    image.path = path.join(libraryPath("thumbnails/"), image._id) + ".jpg";
+    const imagePath = path.join(libraryPath("thumbnails/"), image._id) + ".jpg";
+    image.path = imagePath;
     image.scene = marker.scene;
 
     const actors = (await Scene.getActors(scene)).map(l => l._id);
@@ -55,7 +56,7 @@ export default class Marker {
     const labels = (await Marker.getLabels(marker)).map(l => l._id);
     await Image.setLabels(image, labels);
 
-    await singleScreenshot(scene.path, image.path, marker.time + 15);
+    await singleScreenshot(scene.path, imagePath, marker.time + 15);
     // await database.insert(database.store.images, image);
     await imageCollection.upsert(image._id, image);
     await database.update(

@@ -79,6 +79,8 @@ export async function onSceneCreate(
 
   if (typeof pluginResult.name === "string") scene.name = pluginResult.name;
 
+  if (typeof pluginResult.name === "string") scene.path = pluginResult.path;
+
   if (typeof pluginResult.description === "string")
     scene.description = pluginResult.description;
 

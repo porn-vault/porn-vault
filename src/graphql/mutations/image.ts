@@ -172,13 +172,13 @@ export default {
     }
 
     // Extract actors
-    const extractedActors = await extractActors(image.path);
+    const extractedActors = await extractActors(sourcePath);
     logger.log(`Found ${extractedActors.length} actors in image path.`);
     actors.push(...extractedActors);
     await Image.setActors(image, actors);
 
     // Extract labels
-    const extractedLabels = await extractLabels(image.path);
+    const extractedLabels = await extractLabels(sourcePath);
     logger.log(`Found ${extractedLabels.length} labels in image path.`);
     labels.push(...extractedLabels);
 

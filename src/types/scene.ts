@@ -1,5 +1,4 @@
 import mkdirp from "mkdirp";
-import * as database from "../database";
 import { generateHash } from "../hash";
 import ffmpeg, { FfprobeData } from "fluent-ffmpeg";
 import asyncPool from "tiny-async-pool";
@@ -103,6 +102,13 @@ export default class Scene {
         scene.meta.dimensions.width = stream.width;
         scene.meta.dimensions.height = stream.height;
         scene.meta.fps = parseInt(stream.r_frame_rate || "") || null;
+        if (scene.meta.fps) {
+          if (scene.meta.fps >= 10000) {
+            scene.meta.fps /= 1000;
+          } else if (scene.meta.fps >= 1000) {
+            scene.meta.fps /= 100;
+          }
+        }
         scene.meta.duration = parseInt(stream.duration || "") || null;
         scene.meta.size = (await statAsync(videoPath)).size;
         foundCorrectStream = true;
@@ -426,7 +432,8 @@ export default class Scene {
   }
 
   static async getSceneByPath(path: string) {
-    return sceneCollection.query("path-index", path);
+    const scenes = await sceneCollection.query("path-index", path);
+    return scenes[0] as Scene | undefined;
   }
 
   static async getById(_id: string) {
@@ -630,14 +637,15 @@ export default class Scene {
     const config = getConfig();
 
     const image = new Image(`${scene.name} (thumbnail)`);
-    image.path = path.join(libraryPath("thumbnails/"), image._id) + ".jpg";
+    const imagePath = path.join(libraryPath("thumbnails/"), image._id) + ".jpg";
+    image.path = imagePath;
     image.scene = scene._id;
 
     logger.log("Generating screenshot for scene...");
 
     await singleScreenshot(
       scene.path,
-      image.path,
+      imagePath,
       sec,
       config.COMPRESS_IMAGE_SIZE
     );

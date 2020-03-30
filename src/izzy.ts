@@ -65,7 +65,7 @@ export async function ensureIzzyExists() {
     logger.log("Izzy binary found");
     return true;
   } else {
-    logger.message("Downloading latest Izzy binary...");
+    logger.message("Downloading latest Izzy (database) binary...");
     await downloadIzzy();
     logger.success("Izzy downloaded. Please restart.");
     process.exit(0);

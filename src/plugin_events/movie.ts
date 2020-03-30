@@ -5,7 +5,6 @@ import { getConfig } from "../config";
 import { extname } from "path";
 import { downloadFile } from "../ffmpeg-download";
 import Image from "../types/image";
-import * as database from "../database/index";
 import * as logger from "../logger";
 import { indexImages } from "../search/image";
 import Movie from "../types/movie";

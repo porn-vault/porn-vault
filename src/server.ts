@@ -144,9 +144,10 @@ export default async () => {
   app.use("/image/:image", async (req, res, next) => {
     const image = await Image.getById(req.params.image);
 
-    if (image && image.path && (await existsAsync(image.path)))
-      res.sendFile(image.path);
-    else res.redirect("/broken");
+    if (image && image.path) {
+      if (await existsAsync(image.path)) res.redirect("/broken");
+      else res.sendFile(image.path);
+    } else res.redirect("/broken");
   });
 
   app.get("/log", async (req, res) => {

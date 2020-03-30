@@ -4,6 +4,7 @@ import Scene from "./types/scene";
 import Image from "./types/image";
 import { indexImages } from "./search/image";
 import { imageCollection, sceneCollection } from "./database/index";
+import * as logger from "./logger";
 
 const router = Router();
 
@@ -15,10 +16,14 @@ router.delete("/:id", async (req, res) => {
 router.post("/:id", async (req, res) => {
   await removeSceneFromQueue(req.params.id);
   if (req.body.scene) {
-    await sceneCollection.upsert(req.params.id, req.body.scene);
+    const scene = await Scene.getById(req.params.id);
+    Object.assign(scene, req.body.scene);
+    logger.log("Merging scene data:", req.body.scene);
+    await sceneCollection.upsert(req.params.id, scene);
   }
   if (req.body.images) {
     for (const image of req.body.images) {
+      logger.log("New image!", image);
       await imageCollection.upsert(image._id, image);
       await indexImages([image]);
       const scene = await Scene.getById(image.scene);
@@ -38,6 +43,7 @@ router.post("/:id", async (req, res) => {
   }
   if (req.body.thumbs) {
     for (const thumb of req.body.thumbs) {
+      logger.log("New thumbnail!", thumb);
       // await database.insert(database.store.images, thumb);
       await imageCollection.upsert(thumb._id, thumb);
     }

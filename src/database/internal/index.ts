@@ -14,6 +14,12 @@ export namespace Izzy {
       this.name = name;
     }
 
+    async compact() {
+      return Axios.patch(
+        `http://localhost:7999/collection/compact/${this.name}`
+      );
+    }
+
     async upsert(id: string, obj: T) {
       const { data } = await Axios.post(
         `http://localhost:7999/collection/${this.name}/${id}`,
@@ -31,7 +37,7 @@ export namespace Izzy {
 
     async getAll() {
       const { data } = await Axios.get(
-        `http://localhost:7999/collection/${this.name}/`
+        `http://localhost:7999/collection/${this.name}`
       );
       if (data.error) throw data.message;
       return data.items as T[];

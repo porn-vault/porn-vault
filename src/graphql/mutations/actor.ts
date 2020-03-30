@@ -10,7 +10,7 @@ import { indices } from "../../search/index";
 import { createActorSearchDoc } from "../../search/actor";
 import { onActorCreate } from "../../plugin_events/actor";
 import { updateSceneDoc } from "../../search/scene";
-import { updateImageDoc } from "../../search/image";
+import { updateImageDoc, isBlacklisted } from "../../search/image";
 import CrossReference from "../../types/cross_references";
 
 type IActorUpdateOpts = Partial<{
@@ -107,6 +107,8 @@ export default {
 
     for (const image of await Image.getAll()) {
       const perms = stripStr(image.name);
+
+      if (isBlacklisted(image.name)) continue;
 
       if (
         perms.includes(stripStr(actor.name)) ||

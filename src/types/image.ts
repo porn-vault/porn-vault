@@ -7,6 +7,14 @@ import { mapAsync } from "./utility";
 import CrossReference from "./cross_references";
 import Vibrant from "node-vibrant";
 import { imageCollection, crossReferenceCollection } from "../database";
+import {} from "./scene";
+
+type AES256 = {
+  encrypt: (str: string, key: string) => string;
+  decrypt: (str: string, key: string) => string;
+};
+
+const aes256 = require("aes256") as AES256;
 
 export class ImageDimensions {
   width: number | null = null;
@@ -259,9 +267,12 @@ export default class Image {
   }
 
   static async getImageByPath(path: string) {
-    return (await imageCollection.query("path-index", path))[0] as
-      | Image
-      | undefined;
+    return (
+      await imageCollection.query(
+        "path-index",
+        aes256.encrypt(path, "izzylushishot").replace(/[\\/]/g, "")
+      )
+    )[0] as Image | undefined;
   }
 
   constructor(name: string) {

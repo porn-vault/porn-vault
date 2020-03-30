@@ -1,11 +1,9 @@
-import { getConfig, IConfig } from "../config";
+import { getConfig } from "../config";
 import { walk, statAsync } from "../fs/async";
-import { filterAsync } from "../types/utility";
 import Scene from "../types/scene";
 import Image from "../types/image";
 import { basename } from "path";
 import * as logger from "../logger";
-import * as database from "../database";
 import { extractLabels, extractActors, extractScenes } from "../extractor";
 import Jimp from "jimp";
 import ora = require("ora");
@@ -18,7 +16,7 @@ const fileIsExcluded = (exclude: string[], file: string) =>
 export async function checkVideoFolders() {
   const config = getConfig();
 
-  const allFiles = [] as string[];
+  const unknownVideos = [] as string[];
 
   if (config.EXCLUDE_FILES.length)
     logger.log(`Will ignore files: ${config.EXCLUDE_FILES}.`);
@@ -37,17 +35,16 @@ export async function checkVideoFolders() {
         logger.log(`Ignoring file ${path}`);
       } else {
         logger.log(`Found matching file ${path}`);
-        allFiles.push(path);
+        logger.log(
+          "Checking if there is already a scene with that path: " +
+            (await Scene.getSceneByPath(path))
+        );
+        if (!(await Scene.getSceneByPath(path))) unknownVideos.push(path);
       }
     });
 
-    loader.succeed(`${folder} done`);
+    loader.succeed(`${folder} done (${numFiles} videos)`);
   }
-
-  const unknownVideos = await filterAsync(allFiles, async (path: string) => {
-    const scene = await Scene.getSceneByPath(path);
-    return !scene;
-  });
 
   logger.log(`Found ${unknownVideos.length} new videos.`);
 
@@ -71,11 +68,7 @@ async function imageWithPathExists(path: string) {
   return !!image;
 }
 
-async function processImage(
-  imagePath: string,
-  readImage = true,
-  config: IConfig
-) {
+async function processImage(imagePath: string, readImage = true) {
   try {
     const imageName = basename(imagePath);
     const image = new Image(imageName);
@@ -89,17 +82,17 @@ async function processImage(
     }
 
     // Extract scene
-    const extractedScenes = await extractScenes(image.path);
+    const extractedScenes = await extractScenes(imagePath);
     logger.log(`Found ${extractedScenes.length} scenes in image path.`);
     image.scene = extractedScenes[0] || null;
 
     // Extract actors
-    const extractedActors = await extractActors(image.path);
+    const extractedActors = await extractActors(imagePath);
     logger.log(`Found ${extractedActors.length} actors in image path.`);
     await Image.setActors(image, [...new Set(extractedActors)]);
 
     // Extract labels
-    const extractedLabels = await extractLabels(image.path);
+    const extractedLabels = await extractLabels(imagePath);
     logger.log(`Found ${extractedLabels.length} labels in image path.`);
     await Image.setLabels(image, [...new Set(extractedLabels)]);
 
@@ -140,7 +133,7 @@ export async function checkImageFolders() {
         return;
 
       if (!(await imageWithPathExists(path))) {
-        await processImage(path, config.READ_IMAGES_ON_IMPORT, config);
+        await processImage(path, config.READ_IMAGES_ON_IMPORT);
         numAddedImages++;
         logger.log(`Added image '${path}'.`);
       } else {

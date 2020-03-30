@@ -228,7 +228,7 @@ export async function createFromFileData(opts: ICreateOptions) {
 
       if (sceneToCreate.thumbnail) {
         const image = new Image(`${sceneToCreate.name} (thumbnail)`);
-        image.path = sceneToCreate.thumbnail;
+        image.path = (sceneToCreate.thumbnail);
         thumbnail = image._id;
 
         const reference = new CrossReference(_id, image._id);
@@ -320,7 +320,7 @@ export async function createFromFileData(opts: ICreateOptions) {
 
       if (movieToCreate.frontCover) {
         const image = new Image(`${movie.name} (front cover)`);
-        image.path = movieToCreate.frontCover;
+        image.path = (movieToCreate.frontCover);
         movie.frontCover = image._id;
 
         if (args["commit-import"])
@@ -329,7 +329,7 @@ export async function createFromFileData(opts: ICreateOptions) {
 
       if (movieToCreate.backCover) {
         const image = new Image(`${movie.name} (back cover)`);
-        image.path = movieToCreate.backCover;
+        image.path = (movieToCreate.backCover);
         movie.backCover = image._id;
 
         if (args["commit-import"])
@@ -338,7 +338,7 @@ export async function createFromFileData(opts: ICreateOptions) {
 
       if (movieToCreate.spineCover) {
         const image = new Image(`${movie.name} (back cover)`);
-        image.path = movieToCreate.spineCover;
+        image.path = (movieToCreate.spineCover);
         movie.spineCover = image._id;
 
         if (args["commit-import"])

@@ -7,7 +7,7 @@ import { writeFileAsync } from "./fs/async";
 if (process.env.NODE_ENV == "development") {
   debug.enable("porn:*");
 } else {
-  debug.enable("porn:warn,porn:error,porn:message,porn:plugin");
+  debug.enable("porn:success,porn:warn,porn:error,porn:message,porn:plugin");
 }
 
 enum LogType {

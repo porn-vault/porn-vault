@@ -67,16 +67,18 @@ export async function loadStores() {
     mkdirp.sync(libraryPath("previews/"));
   } catch (err) {}
 
-  const compatLoader = ora("Making .db files compatible (if needed)").start();
+  if (args["ignore-integrity"] != true) {
+    const compatLoader = ora("Making .db files compatible (if needed)").start();
 
-  await bookmarksToTimestamp(libraryPath("scenes.db"));
-  await bookmarksToTimestamp(libraryPath("actors.db"));
-  await bookmarksToTimestamp(libraryPath("images.db"));
-  await bookmarksToTimestamp(libraryPath("movies.db"));
-  await bookmarksToTimestamp(libraryPath("studios.db"));
-  await bookmarksToTimestamp(libraryPath("markers.db"));
+    await bookmarksToTimestamp(libraryPath("scenes.db"));
+    await bookmarksToTimestamp(libraryPath("actors.db"));
+    await bookmarksToTimestamp(libraryPath("images.db"));
+    await bookmarksToTimestamp(libraryPath("movies.db"));
+    await bookmarksToTimestamp(libraryPath("studios.db"));
+    await bookmarksToTimestamp(libraryPath("markers.db"));
 
-  compatLoader.succeed();
+    compatLoader.succeed();
+  }
 
   const dbLoader = ora("Loading DB...").start();
 
@@ -131,6 +133,14 @@ export async function loadStores() {
     ]
   );
 
+  if (!args["skip-compaction"]) {
+    const compactLoader = ora("Compacting DB...").start();
+    await sceneCollection.compact();
+    await imageCollection.compact();
+    await imageCollection.compact();
+    compactLoader.succeed("Compacted DB");
+  }
+
   store = {
     actors: await loadStore(libraryPath("actors.db")),
     labels: await loadStore(libraryPath("labels.db")),
@@ -157,7 +167,7 @@ export async function loadStores() {
 
   indexLoader.succeed();
 
-  if (args["ignore-integrity"]) {
+  if (args["ignore-integrity"] != true) {
     const integrityLoader = ora(
       "Checking database integrity. This might take a minute..."
     ).start();

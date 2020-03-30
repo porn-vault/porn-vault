@@ -6,7 +6,7 @@ import { Dictionary } from "../../types/utility";
 import { stripStr } from "../../extractor";
 import * as logger from "../../logger";
 import { updateSceneDoc } from "../../search/scene";
-import { updateImageDoc } from "../../search/image";
+import { updateImageDoc, isBlacklisted } from "../../search/image";
 import CrossReference from "../../types/cross_references";
 
 type ILabelUpdateOpts = Partial<{
@@ -47,7 +47,9 @@ export default {
     }
 
     for (const image of await Image.getAll()) {
-      const perms = stripStr(image.path || image.name);
+      const perms = stripStr(image.path ? image.path : image.name);
+
+      if (isBlacklisted(image.name)) continue;
 
       if (
         perms.includes(stripStr(label.name)) ||

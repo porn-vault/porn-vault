@@ -83,7 +83,7 @@ export const defaultConfig: IConfig = {
   LIBRARY_PATH: process.cwd(),
   FFMPEG_PATH: "",
   FFPROBE_PATH: "",
-  GENERATE_SCREENSHOTS: true,
+  GENERATE_SCREENSHOTS: false,
   GENERATE_PREVIEWS: true,
   SCREENSHOT_INTERVAL: 120,
   PASSWORD: null,
@@ -111,7 +111,7 @@ export const defaultConfig: IConfig = {
   CREATE_MISSING_LABELS: false,
   MAX_LOG_SIZE: 2500,
 
-  COMPRESS_IMAGE_SIZE: 540
+  COMPRESS_IMAGE_SIZE: 720
 };
 
 let loadedConfig;

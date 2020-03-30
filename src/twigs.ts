@@ -52,7 +52,7 @@ export async function ensureTwigsExists() {
     logger.log("Twigs binary found");
     return true;
   } else {
-    logger.message("Downloading latest Twigs binary...");
+    logger.message("Downloading latest Twigs (search engine) binary...");
     await downloadTwigs();
     logger.success("Twigs downloaded. Please restart.");
     process.exit(0);

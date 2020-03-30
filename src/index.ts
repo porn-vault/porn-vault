@@ -54,6 +54,7 @@ printMaxMemory();
 
   if (args["process-queue"] === true) {
     async function getQueueHead() {
+      logger.log("Getting queue head...");
       return (
         await Axios.get(
           `http://localhost:${config.PORT}/queue/head?password=${config.PASSWORD}`
@@ -137,8 +138,14 @@ printMaxMemory();
       } while (sha(password) != config.PASSWORD);
     }
 
-    await ensureTwigsExists();
-    await ensureIzzyExists();
-    startServer();
+    try {
+      await ensureTwigsExists();
+      await ensureIzzyExists();
+      startServer();
+    } catch (err) {
+      logger.log(err);
+      logger.error(err.message);
+      process.exit(1);
+    }
   }
 })();

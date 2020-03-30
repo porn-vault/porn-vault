@@ -70,11 +70,15 @@ const blacklist = [
   "(avatar)"
 ];
 
+export function isBlacklisted(name: string) {
+  return blacklist.some(ending => name.endsWith(ending));
+}
+
 export async function indexImages(images: Image[]) {
   let docs = [] as IImageSearchDoc[];
   let numItems = 0;
   for (const image of images) {
-    if (blacklist.some(ending => image.name.endsWith(ending))) continue;
+    if (isBlacklisted(image.name)) continue;
 
     docs.push(await createImageSearchDoc(image));
 
