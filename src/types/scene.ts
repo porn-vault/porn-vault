@@ -548,6 +548,10 @@ export default class Scene {
         path.join(tmpFolder, fileName)
       );
       logger.log(files);
+      if (!files.length) {
+        logger.error("Failed preview generation: no images");
+        return resolve();
+      }
 
       logger.log(`Creating preview strip for ${scene._id}...`);
 
@@ -625,8 +629,7 @@ export default class Scene {
         logger.success(`Generated 1 thumbnail.`);
 
         const thumb = thumbnailFiles[0];
-        if (!thumb)
-          throw new Error("Thumbnail generation failed");
+        if (!thumb) throw new Error("Thumbnail generation failed");
         resolve(thumb);
       } catch (err) {
         logger.error(err);
