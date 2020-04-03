@@ -78,6 +78,8 @@ export async function loadStores() {
     await bookmarksToTimestamp(libraryPath("markers.db"));
 
     compatLoader.succeed();
+  } else {
+    logger.log("Skipping bookmark integrity");
   }
 
   const dbLoader = ora("Loading DB...").start();
@@ -137,6 +139,8 @@ export async function loadStores() {
     libraryPath("actors.db")
   );
 
+  logger.log("Created Izzy collections");
+
   if (!args["skip-compaction"]) {
     const compactLoader = ora("Compacting DB...").start();
     await sceneCollection.compact();
@@ -144,7 +148,11 @@ export async function loadStores() {
     await crossReferenceCollection.compact();
     await actorCollection.compact();
     compactLoader.succeed("Compacted DB");
+  } else {
+    logger.log("Skipping compaction");
   }
+
+  logger.log("Loading remaining NeDB stores");
 
   store = {
     labels: await loadStore(libraryPath("labels.db")),

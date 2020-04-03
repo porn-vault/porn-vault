@@ -7,7 +7,12 @@ import { checkPassword, passwordHandler } from "./password";
 import { getConfig, watchConfig } from "./config/index";
 import { checkVideoFolders, checkImageFolders } from "./queue/check";
 import { checkSceneSources, checkImageSources } from "./integrity";
-import { loadStores } from "./database/index";
+import {
+  loadStores,
+  actorCollection,
+  imageCollection,
+  sceneCollection
+} from "./database/index";
 import { existsAsync } from "./fs/async";
 import { createBackup } from "./backup";
 import BROKEN_IMAGE from "./broken_image";
@@ -70,6 +75,16 @@ export default async () => {
   app.use(cors);
 
   app.use(httpLog);
+
+  app.get("/debug/timings/scenes", async (req, res) => {
+    res.json(await sceneCollection.times());
+  });
+  app.get("/debug/timings/actors", async (req, res) => {
+    res.json(await actorCollection.times());
+  });
+  app.get("/debug/timings/images", async (req, res) => {
+    res.json(await imageCollection.times());
+  });
 
   app.get("/setup", (req, res) => {
     res.json({

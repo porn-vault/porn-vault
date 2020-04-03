@@ -16,18 +16,14 @@ export namespace Izzy {
     }
 
     async count() {
-      const res = await Axios.options(
+      const res = await Axios.get(
         `http://localhost:7999/collection/${this.name}/count`
       );
-      if (res.data.error) {
-        console.log(res);
-        throw res.data.message;
-      }
       return res.data.count;
     }
 
     async compact() {
-      return Axios.patch(
+      return Axios.post(
         `http://localhost:7999/collection/compact/${this.name}`
       );
     }
@@ -37,10 +33,6 @@ export namespace Izzy {
         `http://localhost:7999/collection/${this.name}/${id}`,
         obj
       );
-      if (res.data.error) {
-        console.log(res);
-        throw res.data.message;
-      }
       return res.data as T;
     }
 
@@ -48,10 +40,6 @@ export namespace Izzy {
       const res = await Axios.delete(
         `http://localhost:7999/collection/${this.name}/${id}`
       );
-      if (res.data.error) {
-        console.log(res);
-        throw res.data.message;
-      }
       return res.data as T;
     }
 
@@ -59,37 +47,41 @@ export namespace Izzy {
       const res = await Axios.get(
         `http://localhost:7999/collection/${this.name}`
       );
-      if (res.data.error) {
-        console.log(res);
-        throw res.data.message;
-      }
       return res.data.items as T[];
     }
 
     async get(id: string) {
-      const res = await Axios.get(
-        `http://localhost:7999/collection/${this.name}/${id}`
-      );
-      if (res.data.error) {
-        if (res.data.status == 404) return null;
-        throw res.data.message;
+      logger.log(`Getting ${this.name}/${id}...`);
+      try {
+        const res = await Axios.get(
+          `http://localhost:7999/collection/${this.name}/${id}`
+        );
+        return res.data as T;
+      } catch (error) {
+        if (!error.response) throw error;
+        if (error.response.status == 404) return null;
+        throw error;
       }
-      return res.data as T;
     }
 
     async query(index: string, key: string | null) {
+      logger.log(`Getting indexed: ${this.name}/${key}...`);
       const res = await Axios.get(
         `http://localhost:7999/collection/${this.name}/${index}/${key}`
       );
-      if (res.data.error) {
-        console.log(res);
-        throw res.data.message;
-      }
       return res.data.items as T[];
+    }
+
+    async times() {
+      logger.log(`Getting times: ${this.name}...`);
+      const res = await Axios.get(
+        `http://localhost:7999/collection/${this.name}/times`
+      );
+      return res.data.query_times as [number, number][];
     }
   }
 
-  export async function createCollection<T = any>(
+  export async function createCollection(
     name: string,
     file?: string | null,
     indexes = [] as IIndexCreation[]
