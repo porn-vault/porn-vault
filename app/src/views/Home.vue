@@ -199,21 +199,39 @@ export default class Home extends Vue {
         {
           topActors(num: 4) {
             ...ActorFragment
+            thumbnail {
+              _id
+            }
           }
           getActorsWithoutScenes(num: 4) {
             ...ActorFragment
+            thumbnail {
+              _id
+            }
           }
           getScenesWithoutActors(num: 4) {
             ...SceneFragment
+            thumbnail {
+              _id
+            }
           }
           getActorsWithoutLabels(num: 4) {
             ...ActorFragment
+            thumbnail {
+              _id
+            }
           }
           getScenesWithoutLabels(num: 4) {
             ...SceneFragment
+            thumbnail {
+              _id
+            }
           }
           getScenesWithoutStudios(num: 4) {
             ...SceneFragment
+            thumbnail {
+              _id
+            }
           }
         }
         ${sceneFragment}

@@ -26,7 +26,6 @@ export let movieCollection!: Izzy.Collection<Movie>;
 
 let store = {} as {
   labels: DataStore;
-  // movies: DataStore;
   studios: DataStore;
   processing: DataStore;
   markers: DataStore;
@@ -168,7 +167,6 @@ export async function loadStores() {
 
   store = {
     labels: await loadStore(libraryPath("labels.db")),
-    // movies: await loadStore(libraryPath("movies.db")),
     studios: await loadStore(libraryPath("studios.db")),
     processing: await loadStore(libraryPath("processing.db")),
     markers: await loadStore(libraryPath("markers.db")),
@@ -179,9 +177,6 @@ export async function loadStores() {
 
   const indexLoader = ora("Building DB indices...").start();
 
-  /* await buildIndex(store.movies, {
-    fieldName: "studio",
-  }); */
   await buildIndex(store.studios, {
     fieldName: "parent",
   });
