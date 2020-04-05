@@ -77,14 +77,12 @@ There's a Discord channel now! Join in to the discussion. https://discord.gg/t49
 - Clone the repository
   - `git clone https://github.com/boi123212321/porn-manager.git`
 - Install dependencies
-  - ```npm install
-  npm install typescript -g
-  npm install ts-node -g
-     ```
+  - `npm install`
+  - `npm install typescript -g`
+  - `npm install ts-node -g`
 - Build web app dependencies
-  - ```cd app
-  npm install
-    ```
+  - `cd app`
+  - `npm install`
 - Run web app in dev mode (in app/ folder)
   - `npm run serve`
 - Build web app (in app/ folder)
