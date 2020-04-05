@@ -37,7 +37,7 @@ There's a Discord channel now! Join in to the discussion. https://discord.gg/t49
 
 ## Config
 
-| Key | [Default](src/config/index.ts) | Description |
+| Key | [Default](src/config/index.ts#L75) | Description |
 | --- | ------- | ----------- |
 | `VIDEO_PATHS` | (empty) | Paths of video files that will be imported - subfolders will be searched recursively |
 | `IMAGE_PATHS` | (empty) | Paths of image files that will be imported - subfolders will be searched recursively |
