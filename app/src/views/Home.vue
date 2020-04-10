@@ -99,7 +99,7 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-card class="mb-3" style="border-radius: 10px">
+          <v-card v-if="topActors.length" class="mb-3" style="border-radius: 10px">
             <v-card-title>
               <v-icon medium class="mr-2">mdi-heart</v-icon>Your favorites
             </v-card-title>
@@ -194,7 +194,7 @@ export default class Home extends Vue {
         console.error(err);
       });
 
-    ApolloClient.query({
+    /* ApolloClient.query({
       query: gql`
         {
           topActors(num: 4) {
@@ -250,7 +250,7 @@ export default class Home extends Vue {
       })
       .catch(err => {
         console.error(err);
-      });
+      }); */
   }
 }
 </script>
