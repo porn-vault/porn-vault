@@ -1,6 +1,6 @@
 import Scene from "../types/scene";
 import { runPluginsSerial } from "../plugins/index";
-import { libraryPath } from "../types/utility";
+import { libraryPath, validRating } from "../types/utility";
 import {
   extractLabels,
   extractStudios,
@@ -95,9 +95,7 @@ export async function onSceneCreate(
     }
   }
 
-  const ra = pluginResult.rating;
-  if (typeof ra === "number" && ra >= 0 && ra <= 10 && Number.isInteger(ra))
-    scene.rating = pluginResult.rating;
+  if (validRating(pluginResult.rating)) scene.rating = pluginResult.rating;
 
   if (typeof pluginResult.favorite === "boolean")
     scene.favorite = pluginResult.favorite;

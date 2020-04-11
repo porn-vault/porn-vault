@@ -1,6 +1,6 @@
 import Actor from "../types/actor";
 import { runPluginsSerial } from "../plugins/index";
-import { libraryPath } from "../types/utility";
+import { libraryPath, validRating } from "../types/utility";
 import { extractLabels, extractFields } from "../extractor";
 import { getConfig } from "../config";
 import { extname } from "path";
@@ -58,7 +58,7 @@ export async function onActorCreate(
         await indexImages([img]);
       }
       return img._id;
-    }
+    },
   });
 
   if (
@@ -110,9 +110,7 @@ export async function onActorCreate(
     }
   }
 
-  const ra = pluginResult.rating;
-  if (typeof ra === "number" && ra >= 0 && ra <= 10 && Number.isInteger(ra))
-    actor.rating = pluginResult.rating;
+  if (validRating(pluginResult.rating)) actor.rating = pluginResult.rating;
 
   if (typeof pluginResult.favorite === "boolean")
     actor.favorite = pluginResult.favorite;
