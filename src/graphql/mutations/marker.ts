@@ -1,7 +1,8 @@
 import Marker from "../../types/marker";
 import * as database from "../../database";
-import CrossReference from "../../types/cross_references";
-import { crossReferenceCollection } from "../../database";
+import MarkerReference from "../../types/marker_reference";
+import { markerReferenceCollection } from "../../database";
+import LabelledItem from "../../types/labelled_item";
 
 interface ICreateMarkerArgs {
   scene: string;
@@ -33,8 +34,8 @@ export default {
 
     await database.insert(database.store.markers, marker);
 
-    const crossReference = new CrossReference(scene, marker._id);
-    await crossReferenceCollection.upsert(crossReference._id, crossReference);
+    const reference = new MarkerReference(scene, marker._id, "marker");
+    await markerReferenceCollection.upsert(reference._id, reference);
 
     await Marker.createMarkerThumbnail(marker);
 
@@ -43,8 +44,9 @@ export default {
   async removeMarkers(_: any, { ids }: { ids: string[] }) {
     for (const id of ids) {
       await Marker.remove(id);
-      await CrossReference.clear(id);
+      await MarkerReference.removeByMarker(id);
+      await LabelledItem.removeByItem(id);
     }
     return true;
-  }
+  },
 };
