@@ -69,9 +69,10 @@ function loadStore(path: string): Promise<DataStore> {
 
 export async function loadStores() {
   if (await existsAsync(libraryPath("cross_references.db"))) {
-    logger.message("Looks like you haven't ported your library yet");
-    logger.message("cross_references.db is deprecated and needs to be");
-    logger.message("transformed to new files");
+    logger.message(
+      "Looks like you haven't ported your library yet",
+      "cross_references.db is deprecated and needs to be transformed to new files"
+    );
     process.exit(1);
   }
 

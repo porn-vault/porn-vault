@@ -91,10 +91,10 @@ rl.on("line", (line) => {
     }
 
     try {
-      if (obj.to.startsWith("la_")) transferLabel(obj);
-      if (obj.from.startsWith("mo_")) transferMovieScene(obj);
-      if (obj.to.startsWith("ac_")) transferActorReferences(obj);
-      if (obj.to.startsWith("mk_")) transferMarkerReferences(obj);
+      if (obj.to.startsWith("la_")) return transferLabel(obj);
+      if (obj.from.startsWith("mo_")) return transferMovieScene(obj);
+      if (obj.to.startsWith("ac_")) return transferActorReferences(obj);
+      if (obj.to.startsWith("mk_")) return transferMarkerReferences(obj);
     } catch (error) {
       console.error(error.message, line);
       process.exit(1);
