@@ -58,14 +58,8 @@ async function tryStartProcessing() {
 
 async function scanFolders() {
   logger.warn("Scanning folders...");
-
   await checkVideoFolders();
   checkImageFolders();
-
-  tryStartProcessing().catch((err) => {
-    logger.error("Couldn't start processing...");
-    logger.error(err.message);
-  });
 }
 
 export default async () => {
@@ -225,11 +219,19 @@ export default async () => {
   watchConfig();
 
   if (config.SCAN_ON_STARTUP) {
-    scanFolders();
-    setInterval(scanFolders, config.SCAN_INTERVAL);
+    await scanFolders();
   } else {
     logger.warn(
       "Scanning folders is currently disabled. Enable in config.json & restart."
     );
   }
+
+  if (config.DO_PROCESSING) {
+    tryStartProcessing().catch((err) => {
+      logger.error("Couldn't start processing...");
+      logger.error(err.message);
+    });
+  }
+
+  setInterval(scanFolders, config.SCAN_INTERVAL);
 };

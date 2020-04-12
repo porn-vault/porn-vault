@@ -30,6 +30,7 @@ export interface IConfig {
   BULK_IMPORT_PATHS: string[];
 
   SCAN_ON_STARTUP: boolean;
+  DO_PROCESSING: boolean;
   SCAN_INTERVAL: number;
 
   LIBRARY_PATH: string;
@@ -81,6 +82,7 @@ export const defaultConfig: IConfig = {
   BULK_IMPORT_PATHS: [],
 
   SCAN_ON_STARTUP: false,
+  DO_PROCESSING: true,
   SCAN_INTERVAL: 10800000,
   LIBRARY_PATH: process.cwd(),
   FFMPEG_PATH: "",
