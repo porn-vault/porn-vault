@@ -42,7 +42,8 @@ let serverReady = false;
 let setupMessage = "Setting up...";
 
 async function tryStartProcessing() {
-  if ((await getLength()) > 0 && !isProcessing()) {
+  const queueLen = await getLength();
+  if (queueLen > 0 && !isProcessing()) {
     logger.message("Starting processing worker...");
     setProcessingStatus(true);
     spawn(process.argv[0], process.argv.slice(1).concat(["--process-queue"]), {
@@ -53,11 +54,13 @@ async function tryStartProcessing() {
       logger.log("Processing process exited with code " + code);
       setProcessingStatus(false);
     });
+  } else if (!queueLen) {
+    logger.success("No more videos to process.");
   }
 }
 
 async function scanFolders() {
-  logger.warn("Scanning folders...");
+  logger.message("Scanning folders...");
   await checkVideoFolders();
   logger.success("Scan done.");
   checkImageFolders();
