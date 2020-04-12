@@ -100,6 +100,8 @@ export const getSlices = (size: number) => <T>(arr: T[]) => {
 export async function indexImages(images: Image[]) {
   const slices = getSlices(2500)(images);
 
+  if (!slices.length) return 0;
+
   await asyncPool(4, slices, async (slice) => {
     const docs = [] as IImageSearchDoc[];
     await asyncPool(16, slice, async (image) => {
