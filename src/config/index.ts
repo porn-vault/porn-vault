@@ -117,7 +117,7 @@ export const defaultConfig: IConfig = {
 
   COMPRESS_IMAGE_SIZE: 720,
 
-  CACHE_TIME: 15,
+  CACHE_TIME: 0,
 };
 
 let loadedConfig;
