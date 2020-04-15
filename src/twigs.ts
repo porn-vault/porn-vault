@@ -50,12 +50,11 @@ async function downloadTwigs() {
 export async function ensureTwigsExists() {
   if (await existsAsync(twigsPath)) {
     logger.log("Twigs binary found");
-    return true;
+    return 0;
   } else {
     logger.message("Downloading latest Twigs (search engine) binary...");
     await downloadTwigs();
-    logger.success("Twigs downloaded. Please restart.");
-    process.exit(0);
+    return 1;
   }
 }
 

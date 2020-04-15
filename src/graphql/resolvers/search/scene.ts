@@ -26,7 +26,7 @@ export async function getScenes(
     logger.log(
       `Search results: ${res.data.num_hits} hits found in ${res.data.time.sec} sec`
     );
-
+    console.log(res.data.items, await Scene.getAll());
     const scenes = await Promise.all(res.data.items.map(Scene.getById));
     logger.log(`Search done in ${(Date.now() - timeNow) / 1000}s.`);
     return scenes.filter(Boolean);

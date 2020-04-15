@@ -51,7 +51,7 @@ async function tryStartProcessing() {
       detached: false,
       stdio: "inherit",
     }).on("exit", (code) => {
-      logger.log("Processing process exited with code " + code);
+      logger.warn("Processing process exited with code " + code);
       setProcessingStatus(false);
     });
   } else if (!queueLen) {

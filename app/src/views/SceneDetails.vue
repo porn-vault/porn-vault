@@ -618,12 +618,41 @@ export default class SceneDetails extends Vue {
       mutation: gql`
         mutation($ids: [String!]!) {
           runScenePlugins(ids: $ids) {
+            processed
+            preview {
+              _id
+            }
             ...SceneFragment
             actors {
               ...ActorFragment
+              thumbnail {
+                _id
+                color
+              }
             }
             studio {
               ...StudioFragment
+            }
+            movies {
+              ...MovieFragment
+              scenes {
+                ...SceneFragment
+              }
+              actors {
+                ...ActorFragment
+              }
+            }
+            markers {
+              _id
+              name
+              time
+              labels {
+                _id
+                name
+              }
+              thumbnail {
+                _id
+              }
             }
           }
         }

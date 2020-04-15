@@ -63,12 +63,11 @@ async function downloadIzzy() {
 export async function ensureIzzyExists() {
   if (await existsAsync(izzyPath)) {
     logger.log("Izzy binary found");
-    return true;
+    return 0;
   } else {
     logger.message("Downloading latest Izzy (database) binary...");
     await downloadIzzy();
-    logger.success("Izzy downloaded. Please restart.");
-    process.exit(0);
+    return 1;
   }
 }
 
