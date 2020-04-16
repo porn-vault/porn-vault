@@ -19,7 +19,6 @@ import ActorReference from "../types/actor_reference";
 import MarkerReference from "../types/marker_reference";
 import { existsAsync, unlinkAsync } from "../fs/async";
 import { convertCrossReferences } from "../compat";
-import args from "../args";
 
 mkdirp.sync("backups/");
 mkdirp.sync("tmp/");
@@ -70,7 +69,7 @@ function loadStore(path: string): Promise<DataStore> {
 }
 
 export async function loadStores() {
-  const crossReferencePath=libraryPath("cross_references.db")
+  const crossReferencePath = libraryPath("cross_references.db");
   if (await existsAsync(crossReferencePath)) {
     logger.message("Making DB compatible...");
     await convertCrossReferences();
