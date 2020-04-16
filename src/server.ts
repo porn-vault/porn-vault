@@ -149,7 +149,8 @@ export default async () => {
     const scene = await Scene.getById(req.params.scene);
 
     if (scene && scene.path) {
-      res.sendFile(scene.path);
+      const resolved = path.resolve(scene.path);
+      res.sendFile(resolved);
     } else next(404);
   });
 
@@ -157,8 +158,9 @@ export default async () => {
     const image = await Image.getById(req.params.image);
 
     if (image && image.path) {
-      if (!(await existsAsync(image.path))) res.redirect("/broken");
-      else res.sendFile(image.path);
+      const resolved = path.resolve(image.path);
+      if (!(await existsAsync(resolved))) res.redirect("/broken");
+      else res.sendFile(resolved);
     } else res.redirect("/broken");
   });
 
