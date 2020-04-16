@@ -19,6 +19,7 @@ import ActorReference from "../types/actor_reference";
 import MarkerReference from "../types/marker_reference";
 import { existsAsync, unlinkAsync } from "../fs/async";
 import { convertCrossReferences } from "../compat";
+import args from "../args";
 
 mkdirp.sync("backups/");
 mkdirp.sync("tmp/");

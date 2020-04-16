@@ -64,6 +64,11 @@ async function scanFolders() {
   await checkVideoFolders();
   logger.success("Scan done.");
   checkImageFolders();
+  
+  tryStartProcessing().catch((err) => {
+    logger.error("Couldn't start processing...");
+    logger.error(err.message);
+  });
 }
 
 export default async () => {
@@ -203,9 +208,6 @@ export default async () => {
   }
   await loadStores();
 
-  setupMessage = "Checking imports...";
-  await checkImportFolders();
-
   setupMessage = "Starting search engine...";
   if (await twigsVersion()) {
     logger.log("Twigs already running, clearing indices...");
@@ -214,6 +216,9 @@ export default async () => {
   } else {
     await spawnTwigs();
   }
+
+  setupMessage = "Checking imports...";
+  await checkImportFolders();
 
   setupMessage = "Building search indices...";
   await buildIndices();

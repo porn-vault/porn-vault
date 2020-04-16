@@ -89,7 +89,7 @@ export default class Scene {
   studio: string | null = null;
   processed?: boolean = false;
 
-  static async onImport(videoPath: string) {
+  static async onImport(videoPath: string, extractInfo = true) {
     logger.log("Importing " + videoPath);
     const config = getConfig();
 
@@ -126,46 +126,50 @@ export default class Scene {
     }
 
     let sceneActors = [] as string[];
-
-    // Extract actors
-    let extractedActors = [] as string[];
-    extractedActors = await extractActors(videoPath);
-    sceneActors.push(...extractedActors);
-
-    logger.log(`Found ${extractedActors.length} actors in scene path.`);
-
     let sceneLabels = [] as string[];
 
-    // Extract labels
-    const extractedLabels = await extractLabels(videoPath);
-    sceneLabels.push(...extractedLabels);
-    logger.log(`Found ${extractedLabels.length} labels in scene path.`);
+    if (extractInfo) {
+      // Extract actors
+      let extractedActors = [] as string[];
+      extractedActors = await extractActors(videoPath);
+      sceneActors.push(...extractedActors);
 
-    if (config.APPLY_ACTOR_LABELS === true) {
-      logger.log("Applying actor labels to scene");
-      sceneLabels.push(
-        ...(
-          await Promise.all(
-            extractedActors.map(async (id) => {
-              const actor = await Actor.getById(id);
-              if (!actor) return [];
-              return (await Actor.getLabels(actor)).map((l) => l._id);
-            })
-          )
-        ).flat()
-      );
+      logger.log(`Found ${extractedActors.length} actors in scene path.`);
+
+      if (config.APPLY_ACTOR_LABELS === true) {
+        logger.log("Applying actor labels to scene");
+        sceneLabels.push(
+          ...(
+            await Promise.all(
+              extractedActors.map(async (id) => {
+                const actor = await Actor.getById(id);
+                if (!actor) return [];
+                return (await Actor.getLabels(actor)).map((l) => l._id);
+              })
+            )
+          ).flat()
+        );
+      }
     }
 
-    // Extract studio
-    const extractedStudios = await extractStudios(videoPath);
+    if (extractInfo) {
+      // Extract labels
+      const extractedLabels = await extractLabels(videoPath);
+      sceneLabels.push(...extractedLabels);
+      logger.log(`Found ${extractedLabels.length} labels in scene path.`);
+    }
 
-    scene.studio = extractedStudios[0] || null;
+    if (extractInfo) {
+      // Extract studio
+      const extractedStudios = await extractStudios(videoPath);
 
-    if (scene.studio) {
-      logger.log("Found studio in scene path");
+      scene.studio = extractedStudios[0] || null;
 
-      if (config.APPLY_STUDIO_LABELS === true) {
-        const studio = await Studio.getById(scene.studio);
+      if (scene.studio) {
+        logger.log("Found studio in scene path");
+
+        if (config.APPLY_STUDIO_LABELS === true) {
+          const studio = await Studio.getById(scene.studio);
 
         if (studio) {
           logger.log("Applying studio labels to scene");
@@ -209,6 +213,8 @@ export default class Scene {
 
     logger.log(`Queueing ${scene._id} for further processing...`);
     await enqueueScene(scene._id);
+
+    return scene;
   }
 
   static async checkIntegrity() {
