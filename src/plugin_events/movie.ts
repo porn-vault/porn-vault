@@ -57,19 +57,22 @@ export async function onMovieCreate(movie: Movie, event = "movieCreated") {
 
   if (
     typeof pluginResult.frontCover == "string" &&
-    pluginResult.frontCover.startsWith("im_")
+    pluginResult.frontCover.startsWith("im_") &&
+    (!movie.frontCover || config.ALLOW_PLUGINS_OVERWRITE_MOVIE_THUMBNAILS)
   )
     movie.frontCover = pluginResult.frontCover;
 
   if (
     typeof pluginResult.backCover == "string" &&
-    pluginResult.backCover.startsWith("im_")
+    pluginResult.backCover.startsWith("im_") &&
+    (!movie.backCover || config.ALLOW_PLUGINS_OVERWRITE_MOVIE_THUMBNAILS)
   )
     movie.backCover = pluginResult.backCover;
 
   if (
     typeof pluginResult.spineCover == "string" &&
-    pluginResult.spineCover.startsWith("im_")
+    pluginResult.spineCover.startsWith("im_") &&
+    (!movie.spineCover || config.ALLOW_PLUGINS_OVERWRITE_MOVIE_THUMBNAILS)
   )
     movie.spineCover = pluginResult.spineCover;
 

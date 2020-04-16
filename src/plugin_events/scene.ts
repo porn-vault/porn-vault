@@ -81,7 +81,8 @@ export async function onSceneCreate(
 
   if (
     typeof pluginResult.thumbnail == "string" &&
-    pluginResult.thumbnail.startsWith("im_")
+    pluginResult.thumbnail.startsWith("im_") &&
+    (!scene.thumbnail || config.ALLOW_PLUGINS_OVERWRITE_SCENE_THUMBNAILS)
   )
     scene.thumbnail = pluginResult.thumbnail;
 

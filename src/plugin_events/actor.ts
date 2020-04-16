@@ -64,28 +64,28 @@ export async function onActorCreate(
   if (
     typeof pluginResult.thumbnail == "string" &&
     pluginResult.thumbnail.startsWith("im_") &&
-    !actor.thumbnail
+    (!actor.thumbnail || config.ALLOW_PLUGINS_OVERWRITE_ACTOR_THUMBNAILS)
   )
     actor.thumbnail = pluginResult.thumbnail;
 
   if (
     typeof pluginResult.altThumbnail == "string" &&
     pluginResult.altThumbnail.startsWith("im_") &&
-    !actor.altThumbnail
+    (!actor.altThumbnail || config.ALLOW_PLUGINS_OVERWRITE_ACTOR_THUMBNAILS)
   )
     actor.altThumbnail = pluginResult.altThumbnail;
 
   if (
     typeof pluginResult.avatar == "string" &&
     pluginResult.avatar.startsWith("im_") &&
-    !actor.avatar
+    (!actor.avatar || config.ALLOW_PLUGINS_OVERWRITE_ACTOR_THUMBNAILS)
   )
     actor.avatar = pluginResult.avatar;
 
   if (
     typeof pluginResult.hero == "string" &&
     pluginResult.hero.startsWith("im_") &&
-    !actor.hero
+    (!actor.hero || config.ALLOW_PLUGINS_OVERWRITE_ACTOR_THUMBNAILS)
   )
     actor.hero = pluginResult.hero;
 
