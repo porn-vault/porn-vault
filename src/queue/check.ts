@@ -26,7 +26,7 @@ export async function checkVideoFolders() {
     let numFiles = 0;
     const loader = ora(`Scanned ${numFiles} videos`).start();
 
-    await walk(folder, [".mp4"], async (path) => {
+    await walk(folder, [".mp4", ".webm"], async (path) => {
       loader.text = `Scanned ${++numFiles} videos`;
       if (
         basename(path).startsWith(".") ||
