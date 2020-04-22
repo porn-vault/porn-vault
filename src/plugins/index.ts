@@ -1,5 +1,5 @@
 import { IConfig } from "../config/index";
-import { readFileAsync, existsAsync } from "../fs/async";
+import { existsAsync } from "../fs/async";
 import axios from "axios";
 import cheerio from "cheerio";
 import debug from "debug";
@@ -12,6 +12,9 @@ import * as nodepath from "path";
 import ffmpeg from "fluent-ffmpeg";
 import jimp from "jimp";
 import YAML from "yaml";
+import inquirer from "inquirer";
+import readline from "readline";
+import * as os from "os";
 
 function requireUncached(module: string) {
   delete require.cache[require.resolve(module)];
@@ -104,6 +107,14 @@ export async function runPlugin(
           moment: moment
         }, */
         // TODO: deprecate at some point, replace with ^
+        $require: (partial: string) => {
+          if (typeof partial != "string")
+            throw new TypeError("$require: String required");
+          return requireUncached(nodepath.join(path, partial));
+        },
+        $os: os,
+        $readline: readline,
+        $inquirer: inquirer,
         $yaml: YAML,
         $jimp: jimp,
         $ffmpeg: ffmpeg,
