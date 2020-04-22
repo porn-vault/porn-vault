@@ -110,7 +110,7 @@ export async function runPlugin(
         $require: (partial: string) => {
           if (typeof partial != "string")
             throw new TypeError("$require: String required");
-          return requireUncached(nodepath.join(path, partial));
+          return requireUncached(nodepath.resolve(path, partial));
         },
         $os: os,
         $readline: readline,
