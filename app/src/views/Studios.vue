@@ -12,6 +12,7 @@
           color="primary"
           v-model="query"
           label="Search query"
+          class="mb-2"
         ></v-text-field>
 
         <div class="d-flex align-center">
