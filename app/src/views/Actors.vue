@@ -639,6 +639,10 @@ export default class SceneList extends mixins(DrawerMixin) {
     })
       .then(res => {
         this.allLabels = res.data.getLabels;
+        if (!this.allLabels.length) {
+          this.selectedLabels.include = [];
+          this.selectedLabels.exclude = [];
+        }
       })
       .catch(err => {
         console.error(err);

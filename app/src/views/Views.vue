@@ -79,7 +79,6 @@ export default class About extends Vue {
 
   @Watch("recentIndex")
   onIndexChange(val: number) {
-    console.log(val);
     const time = this.views[val].date;
     this.loadingItem = true;
     this.getMostRecent(time)

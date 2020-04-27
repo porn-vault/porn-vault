@@ -219,7 +219,6 @@ export async function createFromFileData(opts: ICreateOptions) {
   }
 
   if (opts.scenes) {
-    console.log();
     for (const sceneId in opts.scenes) {
       const sceneToCreate = opts.scenes[sceneId];
 

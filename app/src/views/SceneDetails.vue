@@ -659,6 +659,7 @@ export default class SceneDetails extends Vue {
         ${sceneFragment}
         ${actorFragment}
         ${studioFragment}
+        ${movieFragment}
       `,
       variables: {
         ids: [this.currentScene._id]
