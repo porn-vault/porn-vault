@@ -79,6 +79,10 @@ export default class LabelFilter extends Vue {
   exclude = arrayToObject(this.value.exclude) as Record<string, boolean>;
 
   emit() {
+    this.$emit("change", {
+      include: Object.keys(this.include),
+      exclude: Object.keys(this.exclude)
+    });
     this.$emit("input", {
       include: Object.keys(this.include),
       exclude: Object.keys(this.exclude)

@@ -39,7 +39,12 @@
 
         <Divider icon="mdi-label">Labels</Divider>
 
-        <LabelFilter class="mt-0" v-model="selectedLabels" :items="allLabels" />
+        <LabelFilter
+          @change="onSelectedLabelsChange"
+          class="mt-0"
+          v-model="selectedLabels"
+          :items="allLabels"
+        />
 
         <Divider icon="mdi-sort">Sort</Divider>
 
@@ -290,7 +295,6 @@ export default class SceneList extends mixins(DrawerMixin) {
     exclude: this.tryReadLabelsFromLocalStorage("pm_actorExclude")
   };
 
-  @Watch("selectedLabels", { deep: true })
   onSelectedLabelsChange(val: any) {
     localStorage.setItem(
       "pm_actorInclude",
