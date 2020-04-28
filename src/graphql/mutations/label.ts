@@ -3,7 +3,7 @@ import Label from "../../types/label";
 import Scene from "../../types/scene";
 import Image from "../../types/image";
 import { Dictionary } from "../../types/utility";
-import { stripStr } from "../../extractor";
+import { stripStr, isMatchingItem } from "../../extractor";
 import * as logger from "../../logger";
 import { updateSceneDoc } from "../../search/scene";
 import { updateImageDoc, isBlacklisted } from "../../search/image";
@@ -32,12 +32,7 @@ export default {
     const label = new Label(args.name, args.aliases);
 
     for (const scene of await Scene.getAll()) {
-      const perms = stripStr(scene.path || scene.name);
-
-      if (
-        perms.includes(stripStr(label.name)) ||
-        label.aliases.some((alias) => perms.includes(stripStr(alias)))
-      ) {
+      if (isMatchingItem(scene.path || scene.name, label, false)) {
         const labels = (await Scene.getLabels(scene)).map((l) => l._id);
         labels.push(label._id);
         await Scene.setLabels(scene, labels);
@@ -47,14 +42,9 @@ export default {
     }
 
     for (const image of await Image.getAll()) {
-      const perms = stripStr(image.path ? image.path : image.name);
-
       if (isBlacklisted(image.name)) continue;
 
-      if (
-        perms.includes(stripStr(label.name)) ||
-        label.aliases.some((alias) => perms.includes(stripStr(alias)))
-      ) {
+      if (isMatchingItem(image.path || image.name, label, false)) {
         const labels = (await Image.getLabels(image)).map((l) => l._id);
         labels.push(label._id);
         await Image.setLabels(image, labels);

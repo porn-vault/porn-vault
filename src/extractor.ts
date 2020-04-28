@@ -22,17 +22,20 @@ export function ignoreSingleNames(arr: string[]) {
 
 export function isMatchingItem(
   str: string,
-  actor: { name: string; aliases?: string[] }
+  item: { name: string; aliases?: string[] },
+  ignoreSingle: boolean
 ) {
-  if (isSingleWord(actor.name)) return false;
+  if (ignoreSingle && isSingleWord(item.name)) return false;
 
   const originalStr = stripStr(str);
 
-  if (originalStr.includes(stripStr(actor.name))) return true;
+  if (originalStr.includes(stripStr(item.name))) return true;
 
-  return ignoreSingleNames(actor.aliases || []).some((alias) =>
-    new RegExp(alias, "i").test(originalStr)
-  );
+  const aliases = ignoreSingle
+    ? ignoreSingleNames(item.aliases || [])
+    : item.aliases || [];
+
+  return aliases.some((alias) => new RegExp(alias, "i").test(originalStr));
 }
 
 export function stripStr(str: string) {
@@ -58,7 +61,7 @@ export async function extractLabels(str: string): Promise<string[]> {
   const allLabels = await Label.getAll();
 
   allLabels.forEach((label) => {
-    if (isMatchingItem(str, label)) {
+    if (isMatchingItem(str, label, false)) {
       foundLabels.push(label._id);
     }
   });
@@ -71,7 +74,7 @@ export async function extractActors(str: string): Promise<string[]> {
   const allActors = await Actor.getAll();
 
   allActors.forEach((actor) => {
-    if (isMatchingItem(str, actor)) {
+    if (isMatchingItem(str, actor, true)) {
       foundActors.push(actor._id);
     }
   });
@@ -82,7 +85,7 @@ export async function extractActors(str: string): Promise<string[]> {
 export async function extractStudios(str: string): Promise<string[]> {
   const allStudios = await Studio.getAll();
   return allStudios
-    .filter((studio) => isMatchingItem(str, studio))
+    .filter((studio) => isMatchingItem(str, studio, false))
     .sort((a, b) => b.name.length - a.name.length)
     .map((s) => s._id);
 }
