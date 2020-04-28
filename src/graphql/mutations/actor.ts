@@ -82,9 +82,10 @@ export default {
     await actorCollection.upsert(actor._id, actor);
 
     if (isSingleWord(actor.name)) {
+      // Skip
     } else {
       for (const scene of await Scene.getAll()) {
-        if (isMatchingItem(scene.path || scene.name, actor)) {
+        if (isMatchingItem(scene.path || scene.name, actor, true)) {
           if (config.APPLY_ACTOR_LABELS === true) {
             const sceneLabels = (await Scene.getLabels(scene)).map(
               (l) => l._id
@@ -107,7 +108,7 @@ export default {
 
       for (const image of await Image.getAll()) {
         if (isBlacklisted(image.name)) continue;
-        if (isMatchingItem(image.name, actor)) {
+        if (isMatchingItem(image.name, actor, true)) {
           if (config.APPLY_ACTOR_LABELS === true) {
             const imageLabels = (await Image.getLabels(image)).map(
               (l) => l._id

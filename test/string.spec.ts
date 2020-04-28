@@ -11,10 +11,11 @@ import { removeExtension } from "../src/types/utility";
 describe("String functions", () => {
   describe("removeExtension", () => {
     const tests = require("./remove_extension.fixture").default;
-    for (const test of tests)
+    for (const test of tests) {
       it("Should work as expected", () => {
         expect(removeExtension(test[0])).equals(test[1]);
       });
+    }
   });
 
   describe("isSingleWord", () => {
@@ -27,10 +28,11 @@ describe("String functions", () => {
       "avi love",
       "some fairly long sentence",
       "even works with 124124 numbers",
-    ])
+    ]) {
       it("Should not be a seen as a single word", () => {
         expect(isSingleWord(word)).to.be.false;
       });
+    }
   });
 
   describe("ignoreSingleNames", () => {
@@ -49,17 +51,28 @@ describe("String functions", () => {
 
   describe("Strip string", () => {
     const tests = require("./strip_string.fixture").default;
-    for (const test of tests)
+    for (const test of tests) {
       it("Should work as expected", () => {
         expect(stripStr(test[0])).equals(test[1]);
       });
+    }
   });
 
-  describe("isMatchingItem", () => {
+  describe("Is matching actor", () => {
     const tests = require("./matching_actor.fixture").default;
-    for (const test of tests)
-      it("Should work as expected", () => {
-        expect(isMatchingItem(test[0], test[1])).equals(test[2]);
+    for (const test of tests) {
+      it(`Should ${test[2] ? "" : "not "}match ${test[1].name}`, () => {
+        expect(isMatchingItem(test[0], test[1], true)).equals(test[2]);
       });
+    }
+  });
+
+  describe("Is matching label", () => {
+    const tests = require("./matching_label.fixture").default;
+    for (const test of tests) {
+      it(`Should ${test[2] ? "" : "not "}match ${test[1].name}`, () => {
+        expect(isMatchingItem(test[0], test[1], false)).equals(test[2]);
+      });
+    }
   });
 });

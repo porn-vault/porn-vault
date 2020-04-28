@@ -51,7 +51,7 @@ export default [
     "Kali Rose - Scene",
     {
       name: "Kali Roses",
-      aliases: ["Kali Roses"],
+      aliases: ["Kali Rose"],
     },
     true,
   ],
@@ -102,5 +102,13 @@ export default [
       aliases: [],
     },
     true,
+  ],
+  [
+    "[jill kassidy] swallowed",
+    {
+      name: "Test",
+      aliases: ["jill"],
+    },
+    false,
   ],
 ] as [string, { name: string; aliases: string[] }, boolean][];
