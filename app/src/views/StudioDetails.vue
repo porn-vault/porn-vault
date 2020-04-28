@@ -2,140 +2,184 @@
   <v-container fluid>
     <div v-if="currentStudio">
       <BindTitle :value="currentStudio.name" />
-      <div class="text-center" v-if="!currentStudio.thumbnail">
-        <v-btn @click="openThumbnailDialog">Upload logo</v-btn>
-      </div>
-      <div class="d-flex" v-else>
-        <v-spacer></v-spacer>
-        <v-hover>
-          <template v-slot:default="{ hover }">
-            <v-img
-              @click="openThumbnailDialog"
-              v-ripple
-              style="width: 50vw; max-width: 400px;"
-              eager
-              :src="thumbnail"
-            >
-              <v-fade-transition>
-                <v-overlay v-if="hover" absolute color="primary">
-                  <v-icon x-large>mdi-upload</v-icon>
-                </v-overlay>
-              </v-fade-transition>
-            </v-img>
-          </template>
-        </v-hover>
-        <v-spacer></v-spacer>
-      </div>
-      <div class="mt-3" v-if="currentStudio.parent">
-        Part of
-        <router-link
-          class="primary--text"
-          :to="`/studio/${currentStudio.parent._id}`"
-        >{{ currentStudio.parent.name }}</router-link>
-      </div>
-
-      <div v-if="currentStudio.description" class="med--text pa-2">{{ currentStudio.description }}</div>
-
-      <div class="pt-5 pa-2">
-        <div class="d-flex align-center">
-          <v-icon>mdi-label</v-icon>
-          <v-subheader>Labels</v-subheader>
-        </div>
-        <v-chip
-          label
-          class="mr-1 mb-1"
-          small
-          outlined
-          v-for="label in labelNames"
-          :key="label"
-        >{{ label }}</v-chip>
-        <v-chip
-          label
-          color="primary"
-          v-ripple
-          @click="openLabelSelector"
-          small
-          :class="`mr-1 mb-1 hover ${$vuetify.theme.dark ? 'black--text' : 'white--text'}`"
-        >+ Add</v-chip>
-      </div>
 
       <v-row>
-        <v-col
-          class="pa-1"
-          v-for="studio in currentStudio.substudios"
-          :key="studio._id"
-          cols="12"
-          sm="6"
-          md="4"
-          lg="3"
-          xl="2"
-        >
-          <studio-card :studio="studio" style="height: 100%" />
+        <v-col cols="12" sm="6">
+          <div class="text-center" v-if="!currentStudio.thumbnail">
+            <v-btn @click="openThumbnailDialog">Upload logo</v-btn>
+          </div>
+          <div class="d-flex" v-else>
+            <v-spacer></v-spacer>
+            <v-hover>
+              <template v-slot:default="{ hover }">
+                <v-img
+                  @click="openThumbnailDialog"
+                  v-ripple
+                  style="width: 50vw; max-width: 400px;"
+                  eager
+                  :src="thumbnail"
+                  class="hover"
+                >
+                  <v-fade-transition>
+                    <v-overlay v-if="hover" absolute color="primary">
+                      <v-icon x-large>mdi-upload</v-icon>
+                    </v-overlay>
+                  </v-fade-transition>
+                </v-img>
+              </template>
+            </v-hover>
+            <v-spacer></v-spacer>
+          </div>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <div v-if="currentStudio.parent">
+            Part of
+            <router-link
+              class="primary--text"
+              :to="`/studio/${currentStudio.parent._id}`"
+            >{{ currentStudio.parent.name }}</router-link>
+          </div>
+          <div
+            v-if="currentStudio.description"
+            class="med--text pa-2"
+          >{{ currentStudio.description }}</div>
+
+          <div class="pt-5 pa-2">
+            <div class="d-flex align-center">
+              <v-icon>mdi-label</v-icon>
+              <v-subheader>Labels</v-subheader>
+            </div>
+            <v-chip
+              label
+              class="mr-1 mb-1"
+              small
+              outlined
+              v-for="label in labelNames"
+              :key="label"
+            >{{ label }}</v-chip>
+            <v-chip
+              label
+              color="primary"
+              v-ripple
+              @click="openLabelSelector"
+              small
+              :class="`mr-1 mb-1 hover ${$vuetify.theme.dark ? 'black--text' : 'white--text'}`"
+            >+ Add</v-chip>
+          </div>
         </v-col>
       </v-row>
 
-      <v-row v-if="movies.length">
-        <v-col cols="12">
-          <h1 class="text-center font-weight-light">{{ movies.length }} movies</h1>
+      <v-tabs v-model="activeTab" background-color="transparent" color="primary" centered grow>
+        <v-tab>Substudios</v-tab>
+        <v-tab>Scenes</v-tab>
+        <v-tab>Movies</v-tab>
+        <v-tab>Actors</v-tab>
+      </v-tabs>
 
-          <v-row>
-            <v-col
-              class="pa-1"
-              v-for="(movie, i) in movies"
-              :key="movie._id"
-              cols="12"
-              sm="6"
-              md="4"
-              lg="3"
-              xl="2"
-            >
-              <movie-card v-model="movies[i]" style="height: 100%" />
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
+      <div class="pa-2" v-if="activeTab == 0">
+        <v-row v-if="currentStudio.substudios.length">
+          <v-col
+            class="pa-1"
+            v-for="studio in currentStudio.substudios"
+            :key="studio._id"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+            xl="2"
+          >
+            <studio-card :studio="studio" style="height: 100%" />
+          </v-col>
+        </v-row>
+        <div
+          class="mt-3 subtitle-1 text-center"
+          v-else
+        >No substudios found for {{ currentStudio.name }}</div>
+      </div>
 
-      <v-row v-if="actors.length">
-        <v-col cols="12">
-          <h1 class="font-weight-light text-center">Featuring</h1>
+      <div class="pa-2" v-if="activeTab == 1">
+        <v-row>
+          <v-col cols="12">
+            <h1 class="text-center font-weight-light">{{ currentStudio.numScenes }} scenes</h1>
 
-          <v-row>
-            <v-col
-              class="pa-1"
-              v-for="(actor, i) in actors"
-              :key="actor._id"
-              cols="12"
-              sm="6"
-              md="3"
-              lg="2"
-              xl="2"
-            >
-              <actor-card style="height: 100%" v-model="actors[i]" />
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
+            <v-row>
+              <v-col
+                class="pa-1"
+                v-for="(scene, i) in scenes"
+                :key="scene._id"
+                cols="12"
+                sm="6"
+                md="4"
+                lg="3"
+                xl="2"
+              >
+                <scene-card v-model="scenes[i]" style="height: 100%" />
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
 
-      <v-row v-if="scenes.length">
-        <v-col cols="12">
-          <h1 class="text-center font-weight-light">{{ scenes.length }} scenes</h1>
+        <infinite-loading v-if="currentStudio" :identifier="infiniteId" @infinite="infiniteHandler">
+          <div slot="no-results">
+            <v-icon large>mdi-close</v-icon>
+            <div>Nothing found!</div>
+          </div>
 
-          <v-row>
-            <v-col
-              class="pa-1"
-              v-for="(scene, i) in scenes"
-              :key="scene._id"
-              cols="12"
-              sm="6"
-              md="4"
-              lg="3"
-              xl="2"
-            >
-              <scene-card v-model="scenes[i]" style="height: 100%" />
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
+          <div slot="spinner">
+            <v-progress-circular indeterminate></v-progress-circular>
+            <div>Loading...</div>
+          </div>
+
+          <div slot="no-more">
+            <v-icon large>mdi-emoticon-wink</v-icon>
+            <div>That's all!</div>
+          </div>
+        </infinite-loading>
+      </div>
+
+      <div class="pa-2" v-if="activeTab == 2">
+        <v-row>
+          <v-col cols="12">
+            <h1 class="text-center font-weight-light">{{ movies.length }} movies</h1>
+
+            <v-row>
+              <v-col
+                class="pa-1"
+                v-for="(movie, i) in movies"
+                :key="movie._id"
+                cols="12"
+                sm="6"
+                md="4"
+                lg="3"
+                xl="2"
+              >
+                <movie-card v-model="movies[i]" style="height: 100%" />
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </div>
+
+      <div v-if="activeTab == 3">
+        <v-row>
+          <v-col cols="12">
+            <v-row>
+              <v-col
+                class="pa-1"
+                v-for="(actor, i) in actors"
+                :key="actor._id"
+                cols="12"
+                sm="6"
+                md="3"
+                lg="2"
+                xl="2"
+              >
+                <actor-card style="height: 100%" v-model="actors[i]" />
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </div>
     </div>
 
     <v-dialog scrollable v-model="labelSelectorDialog" max-width="400px">
@@ -179,23 +223,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <infinite-loading v-if="currentStudio" :identifier="infiniteId" @infinite="infiniteHandler">
-      <div slot="no-results">
-        <v-icon large>mdi-close</v-icon>
-        <div>Nothing found!</div>
-      </div>
-
-      <div slot="spinner">
-        <v-progress-circular indeterminate></v-progress-circular>
-        <div>Loading...</div>
-      </div>
-
-      <div slot="no-more">
-        <v-icon large>mdi-emoticon-wink</v-icon>
-        <div>That's all!</div>
-      </div>
-    </infinite-loading>
   </v-container>
 </template>
 
@@ -258,6 +285,8 @@ export default class StudioDetails extends Vue {
   selectedThumbnail = null as File | null;
 
   labelSearchQuery = "";
+
+  activeTab = 0;
 
   uploadThumbnail() {
     if (!this.currentStudio) return;
@@ -510,6 +539,72 @@ export default class StudioDetails extends Vue {
     this.onLoad();
   }
 
+  @Watch("activeTab")
+  onTabChange(val: number) {
+    if (val === 2 && !this.movies.length) this.loadMovies();
+    if (val === 3 && !this.actors.length) this.loadActors();
+  }
+
+  loadActors() {
+    ApolloClient.query({
+      query: gql`
+        query($id: String!) {
+          getStudioById(id: $id) {
+            actors {
+              ...ActorFragment
+              thumbnail {
+                _id
+                color
+              }
+              labels {
+                _id
+                name
+              }
+            }
+          }
+        }
+        ${actorFragment}
+      `,
+      variables: {
+        id: (<any>this).$route.params.id
+      }
+    }).then(res => {
+      this.actors = res.data.getStudioById.actors;
+    });
+  }
+
+  loadMovies() {
+    ApolloClient.query({
+      query: gql`
+        query($id: String!) {
+          getStudioById(id: $id) {
+            movies {
+              ...MovieFragment
+              actors {
+                ...ActorFragment
+              }
+              scenes {
+                ...SceneFragment
+              }
+              studio {
+                ...StudioFragment
+              }
+            }
+          }
+        }
+        ${movieFragment}
+        ${actorFragment}
+        ${sceneFragment}
+        ${studioFragment}
+      `,
+      variables: {
+        id: (<any>this).$route.params.id
+      }
+    }).then(res => {
+      this.movies = res.data.getStudioById.movies;
+    });
+  }
+
   onLoad() {
     ApolloClient.query({
       query: gql`
@@ -531,39 +626,6 @@ export default class StudioDetails extends Vue {
                 _id
                 name
               }
-              parent {
-                _id
-                name
-              }
-            }
-            actors {
-              ...ActorFragment
-              thumbnail {
-                _id
-                color
-              }
-              labels {
-                _id
-                name
-              }
-            }
-            movies {
-              ...MovieFragment
-              actors {
-                ...ActorFragment
-              }
-              scenes {
-                ...SceneFragment
-                actors {
-                  ...ActorFragment
-                }
-                studio {
-                  ...StudioFragment
-                }
-              }
-              studio {
-                ...StudioFragment
-              }
             }
             substudios {
               ...StudioFragment
@@ -578,18 +640,13 @@ export default class StudioDetails extends Vue {
             }
           }
         }
-        ${sceneFragment}
-        ${actorFragment}
         ${studioFragment}
-        ${movieFragment}
       `,
       variables: {
         id: (<any>this).$route.params.id
       }
     }).then(res => {
       studioModule.setCurrent(res.data.getStudioById);
-      this.movies = res.data.getStudioById.movies;
-      this.actors = res.data.getStudioById.actors;
     });
   }
 
