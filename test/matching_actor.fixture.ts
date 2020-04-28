@@ -59,7 +59,7 @@ export default [
     "Kali Rose - Swallowed",
     {
       name: "Kali Roses",
-      aliases: ["(Kali.*Swallowed)|(Swallowed.*Kali)"],
+      aliases: ["regex:(Kali.*Swallowed)|(Swallowed.*Kali)"],
     },
     true,
   ],
@@ -67,7 +67,7 @@ export default [
     "Swallowed - Kali Rose",
     {
       name: "Kali Roses",
-      aliases: ["(Kali.*Swallowed)|(Swallowed.*Kali)"],
+      aliases: ["regex:(Kali.*Swallowed)|(Swallowed.*Kali)"],
     },
     true,
   ],

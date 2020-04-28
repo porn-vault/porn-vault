@@ -261,14 +261,8 @@ export default class MovieList extends mixins(DrawerMixin) {
   };
 
   onSelectedLabelsChange(val: any) {
-    localStorage.setItem(
-      "pm_movieInclude",
-      this.selectedLabels.include.join(",")
-    );
-    localStorage.setItem(
-      "pm_movieExclude",
-      this.selectedLabels.exclude.join(",")
-    );
+    localStorage.setItem("pm_movieInclude", val.include.join(","));
+    localStorage.setItem("pm_movieExclude", val.exclude.join(","));
 
     this.page = 0;
     this.movies = [];

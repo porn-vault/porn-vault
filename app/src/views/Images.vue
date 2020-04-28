@@ -224,14 +224,8 @@ export default class ImagesView extends mixins(DrawerMixin) {
   };
 
   onSelectedLabelsChange(val: any) {
-    localStorage.setItem(
-      "pm_imageInclude",
-      this.selectedLabels.include.join(",")
-    );
-    localStorage.setItem(
-      "pm_imageExclude",
-      this.selectedLabels.exclude.join(",")
-    );
+    localStorage.setItem("pm_imageInclude", val.include.join(","));
+    localStorage.setItem("pm_imageExclude", val.exclude.join(","));
 
     this.page = 0;
     this.images = [];

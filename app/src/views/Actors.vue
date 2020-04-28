@@ -296,14 +296,8 @@ export default class SceneList extends mixins(DrawerMixin) {
   };
 
   onSelectedLabelsChange(val: any) {
-    localStorage.setItem(
-      "pm_actorInclude",
-      this.selectedLabels.include.join(",")
-    );
-    localStorage.setItem(
-      "pm_actorExclude",
-      this.selectedLabels.exclude.join(",")
-    );
+    localStorage.setItem("pm_actorInclude", val.include.join(","));
+    localStorage.setItem("pm_actorExclude", val.exclude.join(","));
 
     this.page = 0;
     this.actors = [];
