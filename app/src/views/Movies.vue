@@ -80,7 +80,7 @@
     <div v-if="!fetchLoader">
       <div class="d-flex align-center">
         <h1 class="font-weight-light mr-3">Movies</h1>
-        <v-btn class="mr-3" @click="openCreateDialog" icon>
+        <v-btn class="mr-2" @click="openCreateDialog" icon>
           <v-icon>mdi-plus</v-icon>
         </v-btn>
         <v-btn @click="bulkImportDialog = true" icon>
@@ -261,14 +261,8 @@ export default class MovieList extends mixins(DrawerMixin) {
   };
 
   onSelectedLabelsChange(val: any) {
-    localStorage.setItem(
-      "pm_movieInclude",
-      this.selectedLabels.include.join(",")
-    );
-    localStorage.setItem(
-      "pm_movieExclude",
-      this.selectedLabels.exclude.join(",")
-    );
+    localStorage.setItem("pm_movieInclude", val.include.join(","));
+    localStorage.setItem("pm_movieExclude", val.exclude.join(","));
 
     this.page = 0;
     this.movies = [];
@@ -548,7 +542,7 @@ export default class MovieList extends mixins(DrawerMixin) {
     ApolloClient.query({
       query: gql`
         {
-          getLabels {
+          getLabels(type: "scene") {
             _id
             name
             aliases

@@ -222,14 +222,8 @@ export default class StudioList extends mixins(DrawerMixin) {
   };
 
   onSelectedLabelsChange(val: any) {
-    localStorage.setItem(
-      "pm_studioInclude",
-      this.selectedLabels.include.join(",")
-    );
-    localStorage.setItem(
-      "pm_studioExclude",
-      this.selectedLabels.exclude.join(",")
-    );
+    localStorage.setItem("pm_studioInclude", val.include.join(","));
+    localStorage.setItem("pm_studioExclude", val.exclude.join(","));
 
     this.page = 0;
     this.studios = [];
@@ -470,7 +464,7 @@ export default class StudioList extends mixins(DrawerMixin) {
     ApolloClient.query({
       query: gql`
         {
-          getLabels {
+          getLabels(type: "studio") {
             _id
             name
             aliases

@@ -44,8 +44,8 @@ describe("String functions", () => {
 
     it("Should not ignore regex", () => {
       expect(
-        ignoreSingleNames(["(avi love)|(avi looove)", "[a-z]+"])
-      ).deep.equals(["(avi love)|(avi looove)", "[a-z]+"]);
+        ignoreSingleNames(["regex:(avi love)|(avi looove)", "regex:[a-z]+"])
+      ).deep.equals(["regex:(avi love)|(avi looove)", "regex:[a-z]+"]);
     });
   });
 

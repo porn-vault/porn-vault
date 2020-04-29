@@ -164,7 +164,7 @@
               <v-subheader style="min-width: 150px">View counter</v-subheader>
               {{ currentScene.watches.length }}
               <v-btn
-                :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
+                :class="`${$vuetify.theme.dark ? 'black--text' : ''}`"
                 fab
                 color="primary"
                 class="mx-3"
@@ -175,7 +175,7 @@
               </v-btn>
               <v-btn
                 :disabled="!currentScene || !currentScene.watches.length"
-                :class="`${$vuetify.theme.dark ? '' : 'black--text'}`"
+                :class="`${$vuetify.theme.dark ? 'black--text' : ''}`"
                 fab
                 color="primary"
                 x-small
@@ -1215,6 +1215,13 @@ export default class SceneDetails extends Vue {
               }
               actors {
                 ...ActorFragment
+              }
+            }
+            studio {
+              _id
+              name
+              thumbnail {
+                _id
               }
             }
             markers {

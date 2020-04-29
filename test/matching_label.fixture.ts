@@ -27,8 +27,40 @@ export default [
     "7on1 Double Anal GangBang with Kira Thorn",
     {
       name: "Double penetration",
+      aliases: ["regex:double.*"],
+    },
+    true,
+  ],
+  [
+    "7on1 Double Anal GangBang with Kira Thorn",
+    {
+      name: "Double penetration",
       aliases: ["double.*"],
     },
     true,
+  ],
+  [
+    "7on1 Double Anal GangBang with Kira Thorn",
+    {
+      name: "Double anal",
+      aliases: [],
+    },
+    true,
+  ],
+  [
+    "7on1 Double Anal GangBang with Kira Thorn",
+    {
+      name: "dap",
+      aliases: ["double anal"],
+    },
+    true,
+  ],
+  [
+    "7on1 Double Anal GangBang with Kira Thorn",
+    {
+      name: "dap",
+      aliases: ["regex:double anal"],
+    },
+    false,
   ],
 ] as [string, { name: string; aliases: string[] }, boolean][];

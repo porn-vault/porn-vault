@@ -160,14 +160,17 @@ export default {
         if (typeof opts.description == "string")
           actor.description = opts.description.trim();
 
-        if (typeof opts.avatar == "string") actor.avatar = opts.avatar;
+        if (typeof opts.avatar == "string" || opts.avatar === null)
+          actor.avatar = opts.avatar;
 
-        if (typeof opts.thumbnail == "string") actor.thumbnail = opts.thumbnail;
+        if (typeof opts.thumbnail == "string" || opts.thumbnail === null)
+          actor.thumbnail = opts.thumbnail;
 
-        if (typeof opts.altThumbnail == "string")
+        if (typeof opts.altThumbnail == "string" || opts.altThumbnail === null)
           actor.altThumbnail = opts.altThumbnail;
 
-        if (typeof opts.hero == "string") actor.hero = opts.hero;
+        if (typeof opts.hero == "string" || opts.hero === null)
+          actor.hero = opts.hero;
 
         if (typeof opts.rating == "number") actor.rating = opts.rating;
 

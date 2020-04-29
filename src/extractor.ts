@@ -9,13 +9,17 @@ export function isSingleWord(str: string) {
   return str.split(" ").length == 1;
 }
 
+function isRegex(str: string) {
+  return str.startsWith("regex:");
+}
+
 export function ignoreSingleNames(arr: string[]) {
   return arr.filter((str) => {
     if (!str.length) return false;
 
     // Check if string is a viable name
-    if (str.match(/^[a-z0-9']+$/i)) return !isSingleWord(str); // Cut it out if it's just one name
-    // Otherwise, it's *probably* a regex, so leave it be
+    if (!isRegex(str)) return !isSingleWord(str); // Cut it out if it's just one name
+    // Otherwise, it's a regex, so leave it be
     return true;
   });
 }
@@ -35,7 +39,11 @@ export function isMatchingItem(
     ? ignoreSingleNames(item.aliases || [])
     : item.aliases || [];
 
-  return aliases.some((alias) => new RegExp(alias, "i").test(originalStr));
+  return aliases.some((alias) => {
+    if (isRegex(alias))
+      return new RegExp(alias.replace("regex:", ""), "i").test(originalStr);
+    return originalStr.includes(stripStr(alias));
+  });
 }
 
 export function stripStr(str: string) {

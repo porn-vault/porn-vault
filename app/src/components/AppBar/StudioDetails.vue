@@ -54,7 +54,7 @@
               placeholder="Alias names"
             />
 
-            <v-subheader>Parent studio</v-subheader>
+            <Divider icon="mdi-file-tree">Parent studio</Divider>
             <StudioSelector :ignore="currentStudio._id" v-model="editParent" />
           </v-form>
         </v-card-text>
