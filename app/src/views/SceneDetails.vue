@@ -1217,6 +1217,13 @@ export default class SceneDetails extends Vue {
                 ...ActorFragment
               }
             }
+            studio {
+              _id
+              name
+              thumbnail {
+                _id
+              }
+            }
             markers {
               _id
               name
