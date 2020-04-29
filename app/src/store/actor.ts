@@ -45,36 +45,53 @@ class ActorModule extends VuexModule {
   }
 
   @Mutation
-  setThumbnail(id: string) {
+  setThumbnail(id: string | null) {
     if (this.current) {
-      if (!this.current.thumbnail)
-        this.current.thumbnail = { _id: id, color: null };
-      this.current.thumbnail._id = id;
+      if (id) {
+        if (!this.current.thumbnail)
+          this.current.thumbnail = { _id: id, color: null };
+        this.current.thumbnail._id = id;
+      } else {
+        this.current.thumbnail = null;
+      }
     }
   }
 
   @Mutation
-  setAltThumbnail(id: string) {
+  setAltThumbnail(id: string | null) {
     if (this.current) {
-      if (!this.current.altThumbnail)
-        this.current.altThumbnail = { _id: id, color: null };
-      this.current.altThumbnail._id = id;
+      if (id) {
+        if (!this.current.altThumbnail)
+          this.current.altThumbnail = { _id: id, color: null };
+        this.current.altThumbnail._id = id;
+      } else {
+        this.current.altThumbnail = null;
+      }
     }
   }
 
   @Mutation
-  setAvatar(id: string) {
+  setAvatar(id: string | null) {
     if (this.current) {
-      if (!this.current.avatar) this.current.avatar = { _id: id, color: null };
-      this.current.avatar._id = id;
+      if (id) {
+        if (!this.current.avatar)
+          this.current.avatar = { _id: id, color: null };
+        this.current.avatar._id = id;
+      } else {
+        this.current.avatar = null;
+      }
     }
   }
 
   @Mutation
-  setHero(id: string) {
+  setHero(id: string | null) {
     if (this.current) {
-      if (!this.current.hero) this.current.hero = { _id: id, color: null };
-      this.current.hero._id = id;
+      if (id) {
+        if (!this.current.hero) this.current.hero = { _id: id, color: null };
+        this.current.hero._id = id;
+      } else {
+        this.current.hero = null;
+      }
     }
   }
 

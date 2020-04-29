@@ -12,7 +12,7 @@
         <v-row>
           <v-col cols="12" sm="4" md="3" lg="2" xl="2">
             <v-row>
-              <v-col cols="6" sm="12">
+              <v-col class="pb-0" cols="6" sm="12">
                 <div
                   v-if="avatar"
                   :class="($vuetify.breakpoint.xsOnly || !heroImage) ? '' : 'avatar-margin-top'"
@@ -20,7 +20,7 @@
                 >
                   <v-avatar
                     class="elevation-8"
-                    size="180"
+                    :size="$vuetify.breakpoint.xsOnly ? 150 : 180"
                     color="white"
                     style="border: 3px solid white"
                   >
@@ -73,10 +73,11 @@
               </v-col>
 
               <v-col cols="6" sm="12">
-                <div class="d-flex align-center">
+                <!-- <div class="d-flex align-center">
                   <v-icon>mdi-information-outline</v-icon>
                   <v-subheader>General</v-subheader>
-                </div>
+                </div>-->
+                <v-divider class="mb-2"></v-divider>
                 <div class="px-2">
                   <div
                     v-if="currentActor.aliases.length"
@@ -101,8 +102,17 @@
                     >Last watched: {{ new Date(currentActor.watches[currentActor.watches.length - 1]).toLocaleString() }}</span>
                     <span v-else>You haven't watched {{ currentActor.name }} yet!</span>
                   </v-tooltip>
+                  <v-divider class="mt-2"></v-divider>
+                  <div class="text-center mt-2">
+                    <v-btn
+                      color="primary"
+                      text
+                      class="text-none"
+                      @click="imageDialog=true"
+                    >Manage images</v-btn>
+                  </div>
 
-                  <div class="text-center mt-3">
+                  <div class="text-center mt-2">
                     <v-btn
                       color="primary"
                       :loading="pluginLoader"
@@ -110,34 +120,6 @@
                       class="text-none"
                       @click="runPlugins"
                     >Run plugins</v-btn>
-
-                    <v-btn
-                      color="primary"
-                      text
-                      class="text-none"
-                      @click="avatarDialog=true"
-                    >Change avatar</v-btn>
-
-                    <v-btn
-                      color="primary"
-                      text
-                      class="text-none"
-                      @click="thumbnailDialog=true"
-                    >Change thumbnail</v-btn>
-
-                    <v-btn
-                      color="primary"
-                      text
-                      class="text-none"
-                      @click="altThumbnailDialog=true"
-                    >Change alt. thumbnail</v-btn>
-
-                    <v-btn
-                      color="primary"
-                      text
-                      class="text-none"
-                      @click="heroDialog=true"
-                    >Change hero image</v-btn>
                   </div>
                 </div>
               </v-col>
@@ -513,6 +495,116 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="imageDialog" max-width="700px">
+      <v-card v-if="currentActor">
+        <v-card-title>Change images for '{{ currentActor.name }}'</v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col class="text-center pa-2" cols="12" sm="6">
+              <v-hover>
+                <template v-slot:default="{ hover }">
+                  <v-img contain height="200px" :src="thumbnail" v-if="currentActor.thumbnail">
+                    <v-fade-transition>
+                      <v-overlay v-if="hover" absolute color="primary">
+                        <v-btn
+                          class="black--text text-none"
+                          color="error"
+                          @click="setAsThumbnail(null)"
+                        >Delete</v-btn>
+                      </v-overlay>
+                    </v-fade-transition>
+                  </v-img>
+                </template>
+              </v-hover>
+              <v-btn
+                color="primary"
+                text
+                class="mt-1 text-none"
+                @click="thumbnailDialog=true"
+              >Change thumbnail</v-btn>
+            </v-col>
+
+            <v-col class="text-center pa-2" cols="12" sm="6">
+              <v-hover>
+                <template v-slot:default="{ hover }">
+                  <v-img
+                    contain
+                    height="200px"
+                    :src="altThumbnail"
+                    v-if="currentActor.altThumbnail"
+                  >
+                    <v-fade-transition>
+                      <v-overlay v-if="hover" absolute color="primary">
+                        <v-btn
+                          class="black--text text-none"
+                          color="error"
+                          @click="setAsAltThumbnail(null)"
+                        >Delete</v-btn>
+                      </v-overlay>
+                    </v-fade-transition>
+                  </v-img>
+                </template>
+              </v-hover>
+              <v-btn
+                color="primary"
+                text
+                class="mt-1 text-none"
+                @click="altThumbnailDialog=true"
+              >Change alt. thumbnail</v-btn>
+            </v-col>
+
+            <v-col class="text-center pa-2" cols="12" sm="6">
+              <v-hover>
+                <template v-slot:default="{ hover }">
+                  <v-img contain height="200px" :src="avatar" v-if="currentActor.avatar">
+                    <v-fade-transition>
+                      <v-overlay v-if="hover" absolute color="primary">
+                        <v-btn
+                          class="black--text text-none"
+                          color="error"
+                          @click="setAsAvatar(null)"
+                        >Delete</v-btn>
+                      </v-overlay>
+                    </v-fade-transition>
+                  </v-img>
+                </template>
+              </v-hover>
+              <v-btn
+                color="primary"
+                text
+                class="mt-1 text-none"
+                @click="avatarDialog=true"
+              >Change avatar</v-btn>
+            </v-col>
+
+            <v-col class="text-center pa-2" cols="12" sm="6">
+              <v-hover>
+                <template v-slot:default="{ hover }">
+                  <v-img contain height="200px" :src="heroImage" v-if="currentActor.hero">
+                    <v-fade-transition>
+                      <v-overlay v-if="hover" absolute color="primary">
+                        <v-btn
+                          class="black--text text-none"
+                          color="error"
+                          @click="setAsHero(null)"
+                        >Delete</v-btn>
+                      </v-overlay>
+                    </v-fade-transition>
+                  </v-img>
+                </template>
+              </v-hover>
+              <v-btn
+                color="primary"
+                text
+                class="mt-1 text-none"
+                @click="heroDialog=true"
+              >Change hero image</v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -593,6 +685,8 @@ export default class ActorDetails extends Vue {
 
   infiniteId = 0;
   page = 0;
+
+  imageDialog = false;
 
   avatarDialog = false;
   avatarLoader = false;
@@ -1186,7 +1280,7 @@ export default class ActorDetails extends Vue {
     return actorModule.current;
   }
 
-  setAsAvatar(id: string) {
+  setAsAvatar(id: string | null) {
     if (!this.currentActor) return;
 
     console.log("Set image as avatar...");
@@ -1216,7 +1310,7 @@ export default class ActorDetails extends Vue {
       });
   }
 
-  setAsHero(id: string) {
+  setAsHero(id: string | null) {
     if (!this.currentActor) return;
 
     ApolloClient.mutate({
@@ -1245,7 +1339,7 @@ export default class ActorDetails extends Vue {
       });
   }
 
-  setAsAltThumbnail(id: string) {
+  setAsAltThumbnail(id: string | null) {
     if (!this.currentActor) return;
 
     ApolloClient.mutate({
@@ -1273,7 +1367,7 @@ export default class ActorDetails extends Vue {
       });
   }
 
-  setAsThumbnail(id: string) {
+  setAsThumbnail(id: string | null) {
     if (!this.currentActor) return;
 
     ApolloClient.mutate({
