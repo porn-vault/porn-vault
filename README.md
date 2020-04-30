@@ -1,4 +1,4 @@
-## porn manager
+## Porn Vault
 
 Manage your ever-growing porn collection
 
