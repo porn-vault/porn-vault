@@ -2,7 +2,7 @@
 
 Manage your ever-growing porn collection
 
-There's a Discord channel now! Join in to the discussion. https://discord.gg/t499hxK
+There's a Discord channel! Join in to the discussion: https://discord.gg/t499hxK
 
 ## Support
 
