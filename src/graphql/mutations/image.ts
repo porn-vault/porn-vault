@@ -2,13 +2,13 @@ import Actor from "../../types/actor";
 import Label from "../../types/label";
 import Scene from "../../types/scene";
 import Image from "../../types/image";
-import { ReadStream, createWriteStream } from "fs";
+import { ReadStream, createWriteStream, copyFileSync } from "fs";
 import { extname } from "path";
 import * as logger from "../../logger";
 import { extractLabels, extractActors } from "../../extractor";
 import { Dictionary, libraryPath, mapAsync } from "../../types/utility";
 import Jimp from "jimp";
-import { statAsync, unlinkAsync } from "../../fs/async";
+import { statAsync, unlinkAsync, copyFileAsync } from "../../fs/async";
 import { getConfig } from "../../config";
 import Studio from "../../types/studio";
 import { removeImageDoc, indexImages } from "../../search/image";
@@ -92,19 +92,22 @@ export default {
     if (args.lossless === true) {
       processedExt = ".png";
     }
+    if (filename.includes(".gif")) {
+      processedExt = ".gif";
+    }
 
     const sourcePath = libraryPath(`images/${image._id}${processedExt}`);
     image.path = sourcePath;
 
-    if (args.crop) {
-      args.crop.left = Math.round(args.crop.left);
-      args.crop.top = Math.round(args.crop.top);
-      args.crop.width = Math.round(args.crop.width);
-      args.crop.height = Math.round(args.crop.height);
-    }
-
     // Process image
-    {
+    if (!filename.includes(".gif")) {
+      if (args.crop) {
+        args.crop.left = Math.round(args.crop.left);
+        args.crop.top = Math.round(args.crop.top);
+        args.crop.width = Math.round(args.crop.width);
+        args.crop.height = Math.round(args.crop.height);
+      }
+
       const _image = await Jimp.read(outPath);
 
       if (args.crop) {
@@ -141,6 +144,8 @@ export default {
       image.hash = _image.hash();
 
       logger.success(`Image processing done.`);
+    } else {
+      await copyFileAsync(outPath, sourcePath);
     }
 
     let actors = [] as string[];
