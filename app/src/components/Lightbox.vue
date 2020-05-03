@@ -14,15 +14,17 @@
         @click.native.stop
       ></v-img>
 
-      <v-card class="pa-2 actions-card">
-        <v-btn :disabled="index <= 0" icon @click.stop="decrementIndex">
-          <v-icon color="white">mdi-chevron-left</v-icon>
-        </v-btn>
-
-        <v-btn :disabled="index >= items.length - 1" icon @click.stop="incrementIndex">
-          <v-icon color="white">mdi-chevron-right</v-icon>
-        </v-btn>
-      </v-card>
+      <v-hover v-slot:default="{ hover }">
+        <v-card :style="`opacity: ${hover ? '100%' : '50%'}`" class="pa-2 actions-card">
+          <v-btn :disabled="index <= 0" icon @click.stop="decrementIndex">
+            <v-icon color="white">mdi-chevron-left</v-icon>
+          </v-btn>
+          <div style="width: 50px"></div>
+          <v-btn :disabled="index >= items.length - 1" icon @click.stop="incrementIndex">
+            <v-icon color="white">mdi-chevron-right</v-icon>
+          </v-btn>
+        </v-card>
+      </v-hover>
     </div>
 
     <v-card class="pa-2" :style="sidebarCss" tile v-if="showImageDetails">
@@ -587,9 +589,12 @@ export default class Lightbox extends Vue {
 }
 
 .actions-card {
+  display: flex;
+  transition: opacity 0.15s ease-in-out;
   pointer-events: initial;
   position: absolute;
-  right: 50%;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 5px;
 }
 </style>
