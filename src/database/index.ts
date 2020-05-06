@@ -32,7 +32,7 @@ export let movieCollection!: Izzy.Collection<Movie>;
 export let labelledItemCollection!: Izzy.Collection<LabelledItem>;
 export let movieSceneCollection!: Izzy.Collection<MovieScene>;
 export let actorReferenceCollection!: Izzy.Collection<ActorReference>;
-export let markerReferenceCollection!: Izzy.Collection<MarkerReference>;
+// export let markerReferenceCollection!: Izzy.Collection<MarkerReference>;
 export let viewCollection!: Izzy.Collection<SceneView>;
 export let labelCollection!: Izzy.Collection<Label>;
 export let customFieldCollection!: Izzy.Collection<CustomField>;
@@ -125,7 +125,7 @@ export async function loadStores() {
     ]
   );
 
-  markerReferenceCollection = await Izzy.createCollection(
+  /* markerReferenceCollection = await Izzy.createCollection(
     "marker-references",
     libraryPath("marker_references.db"),
     [
@@ -138,7 +138,8 @@ export async function loadStores() {
         key: "scene",
       },
     ]
-  );
+  ); */
+
   actorReferenceCollection = await Izzy.createCollection(
     "actor-references",
     libraryPath("actor_references.db"),
@@ -157,6 +158,7 @@ export async function loadStores() {
       },
     ]
   );
+
   movieSceneCollection = await Izzy.createCollection(
     "movie-scenes",
     libraryPath("movie_scenes.db"),
@@ -171,6 +173,7 @@ export async function loadStores() {
       },
     ]
   );
+
   labelledItemCollection = await Izzy.createCollection(
     "labelled-items",
     libraryPath("labelled_items.db"),
@@ -189,6 +192,7 @@ export async function loadStores() {
       },
     ]
   );
+
   imageCollection = await Izzy.createCollection(
     "images",
     libraryPath("images.db"),
@@ -207,6 +211,7 @@ export async function loadStores() {
       },
     ]
   );
+
   sceneCollection = await Izzy.createCollection(
     "scenes",
     libraryPath("scenes.db"),
@@ -225,10 +230,12 @@ export async function loadStores() {
       },
     ]
   );
+
   actorCollection = await Izzy.createCollection(
     "actors",
     libraryPath("actors.db")
   );
+
   movieCollection = await Izzy.createCollection(
     "movies",
     libraryPath("movies.db"),
@@ -249,7 +256,7 @@ export async function loadStores() {
     await labelledItemCollection.compact();
     await movieSceneCollection.compact();
     await actorReferenceCollection.compact();
-    await markerReferenceCollection.compact();
+    // await markerReferenceCollection.compact();
     await actorCollection.compact();
     await movieCollection.compact();
     await viewCollection.compact();

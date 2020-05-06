@@ -29,7 +29,7 @@ import {
   actorCollection,
   actorReferenceCollection,
   insert,
-  markerReferenceCollection,
+  //markerReferenceCollection,
   labelCollection,
   customFieldCollection,
 } from "../database/index";
@@ -382,12 +382,12 @@ export async function createFromFileData(opts: ICreateOptions) {
       if (args["commit-import"]) {
         await Marker.setLabels(marker, labels);
 
-        const reference = new MarkerReference(
+        /* const reference = new MarkerReference(
           markerToCreate.scene,
           marker._id,
           "marker"
         );
-        await markerReferenceCollection.upsert(reference._id, reference);
+        await markerReferenceCollection.upsert(reference._id, reference); */
 
         await insert(database.store.markers, marker);
       }

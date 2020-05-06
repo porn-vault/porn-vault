@@ -2,7 +2,6 @@ import CustomField, {
   CustomFieldType,
   CustomFieldTarget,
 } from "../../types/custom_field";
-import * as database from "../../database";
 import { customFieldCollection } from "../../database";
 
 export default {

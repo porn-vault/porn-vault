@@ -1,7 +1,7 @@
 import Marker from "../../types/marker";
 import * as database from "../../database";
-import MarkerReference from "../../types/marker_reference";
-import { markerReferenceCollection } from "../../database";
+// import MarkerReference from "../../types/marker_reference";
+// import { markerReferenceCollection } from "../../database";
 import LabelledItem from "../../types/labelled_item";
 
 interface ICreateMarkerArgs {
@@ -34,8 +34,8 @@ export default {
 
     await database.insert(database.store.markers, marker);
 
-    const reference = new MarkerReference(scene, marker._id, "marker");
-    await markerReferenceCollection.upsert(reference._id, reference);
+    /* const reference = new MarkerReference(scene, marker._id, "marker");
+    await markerReferenceCollection.upsert(reference._id, reference); */
 
     await Marker.createMarkerThumbnail(marker);
 
@@ -44,7 +44,7 @@ export default {
   async removeMarkers(_: any, { ids }: { ids: string[] }) {
     for (const id of ids) {
       await Marker.remove(id);
-      await MarkerReference.removeByMarker(id);
+      // await MarkerReference.removeByMarker(id);
       await LabelledItem.removeByItem(id);
     }
     return true;

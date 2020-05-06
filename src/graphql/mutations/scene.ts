@@ -271,7 +271,7 @@ export default {
         logger.success("Deleted scene " + scene._id);
 
         await LabelledItem.removeByItem(scene._id);
-        await MarkerReference.removeByScene(scene._id);
+        // await MarkerReference.removeByScene(scene._id);
         await ActorReference.removeByItem(scene._id);
         await MovieScene.removeByScene(scene._id);
 

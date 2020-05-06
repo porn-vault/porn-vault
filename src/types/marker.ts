@@ -15,7 +15,7 @@ export default class Marker {
   name: string;
   addedOn = +new Date();
   favorite: boolean = false;
-  bookmark: number | null = null; // TODO: replace with timestamp
+  bookmark: number | null = null;
   rating: number = 0;
   customFields: any = {};
   scene: string;
@@ -98,6 +98,12 @@ export default class Marker {
     this.name = name;
     this.scene = scene;
     this.time = Math.round(time);
+  }
+
+  static async getByScene(sceneId: string) {
+    return (await database.find(database.store.markers, {
+      scene: sceneId,
+    })) as Marker[];
   }
 
   static async getById(_id: string) {
