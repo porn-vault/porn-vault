@@ -20,6 +20,7 @@ import MarkerReference from "../types/marker_reference";
 import { existsAsync, unlinkAsync } from "../fs/async";
 import { convertCrossReferences } from "../compat";
 import SceneView from "../types/watch";
+import CustomField from "../types/custom_field";
 
 mkdirp.sync("backups/");
 mkdirp.sync("tmp/");
@@ -34,12 +35,12 @@ export let actorReferenceCollection!: Izzy.Collection<ActorReference>;
 export let markerReferenceCollection!: Izzy.Collection<MarkerReference>;
 export let viewCollection!: Izzy.Collection<SceneView>;
 export let labelCollection!: Izzy.Collection<Label>;
+export let customFieldCollection!: Izzy.Collection<CustomField>;
 
 let store = {} as {
   studios: DataStore;
   processing: DataStore;
   markers: DataStore;
-  customFields: DataStore;
 };
 
 function buildIndex(store: DataStore, opts: EnsureIndexOptions) {
@@ -100,6 +101,12 @@ export async function loadStores() {
   }
 
   const dbLoader = ora("Loading DB...").start();
+
+  customFieldCollection = await Izzy.createCollection(
+    "custom_fields",
+    libraryPath("custom_fields.db"),
+    []
+  );
 
   labelCollection = await Izzy.createCollection(
     "labels",
@@ -247,6 +254,7 @@ export async function loadStores() {
     await movieCollection.compact();
     await viewCollection.compact();
     await labelCollection.compact();
+    await customFieldCollection.compact();
     compactLoader.succeed("Compacted DB");
   } else {
     logger.message("Skipping compaction");
@@ -258,7 +266,6 @@ export async function loadStores() {
     studios: await loadStore(libraryPath("studios.db")),
     processing: await loadStore(libraryPath("processing.db")),
     markers: await loadStore(libraryPath("markers.db")),
-    customFields: await loadStore(libraryPath("custom_fields.db")),
   };
 
   dbLoader.succeed();

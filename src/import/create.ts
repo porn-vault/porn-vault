@@ -31,6 +31,7 @@ import {
   insert,
   markerReferenceCollection,
   labelCollection,
+  customFieldCollection,
 } from "../database/index";
 import ActorReference from "../types/actor_reference";
 import { existsAsync } from "../fs/async";
@@ -126,7 +127,7 @@ export async function createFromFileData(opts: ICreateOptions) {
       field.values = [...new Set(fieldToCreate.values || [])];
 
       if (args["commit-import"])
-        await database.insert(database.store.customFields, field);
+        await customFieldCollection.upsert(field._id, field);
       createdFields[fieldId] = field;
     }
   }
