@@ -192,7 +192,7 @@ export async function onSceneCreate(
       const sceneIds = (await Movie.getScenes(movie)).map((sc) => sc._id);
       await Movie.setScenes(movie, sceneIds.concat(scene._id));
       indices.movies.update(movie._id, await createMovieSearchDoc(movie));
-    } else if (config.CREATE_MISSING_STUDIOS) {
+    } else if (config.CREATE_MISSING_MOVIES) {
       let movie = new Movie(pluginResult.movie);
 
       try {
