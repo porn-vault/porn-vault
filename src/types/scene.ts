@@ -272,6 +272,7 @@ export default class Scene {
     logger.log("Watch scene " + scene._id);
     const watchItem = new SceneView(scene._id, +new Date());
     await viewCollection.upsert(watchItem._id, watchItem);
+    await indexScenes([scene]);
   }
 
   static async unwatch(scene: Scene) {
@@ -281,6 +282,7 @@ export default class Scene {
       logger.log("Remove most recent view of scene " + scene._id);
       await viewCollection.remove(last._id);
     }
+    await indexScenes([scene]);
   }
 
   static async remove(scene: Scene) {
