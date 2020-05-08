@@ -102,6 +102,9 @@ docker create \
   .
 ```
 
+If you want to create using an image from Docker Hub, replace the last `.` with the docker image name from the registry
+Example: `dummy_username/porn-vault:latest`
+
 ### docker-compose
 
 ```
@@ -122,6 +125,9 @@ services:
       - "3000:3000"
     restart: unless-stopped
 ```
+
+If you want to create using an image from Docker Hub, replace `build: ./path/to/Dockerfile_directory` with `image: <image_name>` using the image name in the registry.
+Example: `image: dummy_username/porn-vault:latest`
 
 ### Docker parameters
 
