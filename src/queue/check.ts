@@ -9,9 +9,7 @@ import Jimp from "jimp";
 import ora = require("ora");
 import { indexImages } from "../search/image";
 import { imageCollection, sceneCollection } from "../database";
-
-const fileIsExcluded = (exclude: string[], file: string) =>
-  exclude.some((regStr) => new RegExp(regStr, "i").test(file.toLowerCase()));
+import { fileIsExcluded } from "../types/utility";
 
 export async function checkVideoFolders() {
   const config = getConfig();
