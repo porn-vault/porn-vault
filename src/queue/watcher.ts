@@ -29,8 +29,9 @@ export default class Watcher {
 
     this.watchOptions = {
       ignored: excludePaths,
-      usePolling: true, // Necessary for network watching
-      interval: 1000 * 2,
+      usePolling: true, // Necessary to avoid overloading network. TODO: get from config ?
+      interval: 1000 * 2, // TODO: get from config?
+      binaryInterval: 1000 * 2, // TODO: get from config?
       awaitWriteFinish: true,
     };
 
