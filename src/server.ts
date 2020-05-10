@@ -35,6 +35,7 @@ import { clearImageIndex } from "./search/image";
 import { spawnIzzy, izzyVersion, resetIzzy } from "./izzy";
 import https from "https";
 import { fstat, readFile, readFileSync } from "fs";
+import { watchVideoFolders } from "./queue/watchVideos";
 
 logger.message(
   "Check https://github.com/boi123212321/porn-vault for discussion & updates"
@@ -63,13 +64,20 @@ async function tryStartProcessing() {
 
 async function scanFolders() {
   logger.message("Scanning folders...");
-  await checkVideoFolders();
-  logger.success("Scan done.");
-  checkImageFolders();
 
-  tryStartProcessing().catch((err) => {
-    logger.error("Couldn't start processing...");
-    logger.error(err.message);
+  const watchPromise = new Promise((resolve) => watchVideoFolders(resolve));
+  const checkImagePromise = new Promise((resolve) => {
+    // TODO:
+    // checkImageFolders();
+    resolve();
+  });
+
+  Promise.all([watchPromise, checkImagePromise]).then(() => {
+    logger.success("Scan done.");
+    tryStartProcessing().catch((err) => {
+      logger.error("Couldn't start processing...");
+      logger.error(err.message);
+    });
   });
 }
 
@@ -254,12 +262,12 @@ export default async () => {
     );
   }
 
-  if (config.DO_PROCESSING) {
-    tryStartProcessing().catch((err) => {
-      logger.error("Couldn't start processing...");
-      logger.error(err.message);
-    });
-  }
+  // if (config.DO_PROCESSING) {
+  //   tryStartProcessing().catch((err) => {
+  //     logger.error("Couldn't start processing...");
+  //     logger.error(err.message);
+  //   });
+  // }
 
   if (config.SCAN_INTERVAL > 0) setInterval(scanFolders, config.SCAN_INTERVAL);
 };
