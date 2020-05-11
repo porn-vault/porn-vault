@@ -3,6 +3,7 @@ import * as database from "../../database";
 // import MarkerReference from "../../types/marker_reference";
 // import { markerReferenceCollection } from "../../database";
 import LabelledItem from "../../types/labelled_item";
+import { markerCollection } from "../../database";
 
 interface ICreateMarkerArgs {
   scene: string;
@@ -32,7 +33,8 @@ export default {
 
     if (typeof bookmark == "number") marker.bookmark = bookmark;
 
-    await database.insert(database.store.markers, marker);
+    // await database.insert(database.store.markers, marker);
+    await markerCollection.upsert(marker._id, marker);
 
     /* const reference = new MarkerReference(scene, marker._id, "marker");
     await markerReferenceCollection.upsert(reference._id, reference); */

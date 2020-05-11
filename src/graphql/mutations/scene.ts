@@ -266,7 +266,7 @@ export default {
           logger.success("Deleted images of scene " + scene._id);
         }
 
-        await Marker.removeByScene(scene);
+        await Marker.removeByScene(scene._id);
 
         logger.success("Deleted scene " + scene._id);
 

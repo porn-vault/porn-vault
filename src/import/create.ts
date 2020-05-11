@@ -32,6 +32,7 @@ import {
   //markerReferenceCollection,
   labelCollection,
   customFieldCollection,
+  markerCollection,
 } from "../database/index";
 import ActorReference from "../types/actor_reference";
 import { existsAsync } from "../fs/async";
@@ -389,7 +390,7 @@ export async function createFromFileData(opts: ICreateOptions) {
         );
         await markerReferenceCollection.upsert(reference._id, reference); */
 
-        await insert(database.store.markers, marker);
+        await markerCollection.upsert(marker._id, marker);
       }
       createdMarkers[markerId] = marker;
     }

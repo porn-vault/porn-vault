@@ -36,11 +36,12 @@ export let actorReferenceCollection!: Izzy.Collection<ActorReference>;
 export let viewCollection!: Izzy.Collection<SceneView>;
 export let labelCollection!: Izzy.Collection<Label>;
 export let customFieldCollection!: Izzy.Collection<CustomField>;
+export let markerCollection!: Izzy.Collection<Marker>;
 
 let store = {} as {
   studios: DataStore;
   processing: DataStore;
-  markers: DataStore;
+  // markers: DataStore;
 };
 
 function buildIndex(store: DataStore, opts: EnsureIndexOptions) {
@@ -247,6 +248,17 @@ export async function loadStores() {
     ]
   );
 
+  markerCollection = await Izzy.createCollection(
+    "markers",
+    libraryPath("markers.db"),
+    [
+      {
+        name: "scene-index",
+        key: "scene",
+      },
+    ]
+  );
+
   logger.log("Created Izzy collections");
 
   if (!args["skip-compaction"]) {
@@ -262,6 +274,7 @@ export async function loadStores() {
     await viewCollection.compact();
     await labelCollection.compact();
     await customFieldCollection.compact();
+    await markerCollection.compact();
     compactLoader.succeed("Compacted DB");
   } else {
     logger.message("Skipping compaction");
@@ -272,7 +285,7 @@ export async function loadStores() {
   store = {
     studios: await loadStore(libraryPath("studios.db")),
     processing: await loadStore(libraryPath("processing.db")),
-    markers: await loadStore(libraryPath("markers.db")),
+    // markers: await loadStore(libraryPath("markers.db")),
   };
 
   dbLoader.succeed();
@@ -282,9 +295,9 @@ export async function loadStores() {
   await buildIndex(store.studios, {
     fieldName: "parent",
   });
-  await buildIndex(store.markers, {
+  /* await buildIndex(store.markers, {
     fieldName: "scene",
-  });
+  }); */
 
   indexLoader.succeed();
 
