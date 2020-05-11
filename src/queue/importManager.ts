@@ -56,7 +56,7 @@ export function getOldFoundVideosCount() {
 }
 
 export function resetFoundImagesCount() {
-  oldNumFoundImagePaths = numFoundVideoPaths;
+  oldNumFoundImagePaths = numFoundImagePaths;
   numFoundImagePaths = 0;
 }
 
