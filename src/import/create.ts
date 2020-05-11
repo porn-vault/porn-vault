@@ -28,7 +28,6 @@ import {
   imageCollection,
   actorCollection,
   actorReferenceCollection,
-  insert,
   //markerReferenceCollection,
   labelCollection,
   customFieldCollection,

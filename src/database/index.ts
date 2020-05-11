@@ -1,4 +1,3 @@
-import DataStore, { EnsureIndexOptions } from "nedb";
 import mkdirp from "mkdirp";
 import { libraryPath } from "../types/utility";
 import * as logger from "../logger";
@@ -21,6 +20,7 @@ import { existsAsync, unlinkAsync } from "../fs/async";
 import { convertCrossReferences } from "../compat";
 import SceneView from "../types/watch";
 import CustomField from "../types/custom_field";
+import { ISceneProcessingItem } from "../queue/processing";
 
 mkdirp.sync("backups/");
 mkdirp.sync("tmp/");
@@ -38,39 +38,7 @@ export let labelCollection!: Izzy.Collection<Label>;
 export let customFieldCollection!: Izzy.Collection<CustomField>;
 export let markerCollection!: Izzy.Collection<Marker>;
 export let studioCollection!: Izzy.Collection<Studio>;
-
-let store = {} as {
-  // studios: DataStore;
-  processing: DataStore;
-};
-
-function buildIndex(store: DataStore, opts: EnsureIndexOptions) {
-  return new Promise((resolve, reject) => {
-    store.ensureIndex(opts, (err) => {
-      if (err) reject(err);
-      else {
-        logger.log("Built DB index " + JSON.stringify(opts));
-        resolve(store);
-      }
-    });
-  });
-}
-
-function loadStore(path: string): Promise<DataStore> {
-  return new Promise((resolve, reject) => {
-    const store = new DataStore({
-      autoload: true,
-      filename: path,
-      onload: (err) => {
-        if (err) reject(err);
-        else {
-          logger.log("Loaded store " + path);
-          resolve(store);
-        }
-      },
-    });
-  });
-}
+export let processingCollection!: Izzy.Collection<ISceneProcessingItem>;
 
 export async function loadStores() {
   const crossReferencePath = libraryPath("cross_references.db");
@@ -270,6 +238,12 @@ export async function loadStores() {
     ]
   );
 
+  processingCollection = await Izzy.createCollection(
+    "processing",
+    libraryPath("processing.db"),
+    []
+  );
+
   logger.log("Created Izzy collections");
 
   if (!args["skip-compaction"]) {
@@ -287,16 +261,11 @@ export async function loadStores() {
     await customFieldCollection.compact();
     await markerCollection.compact();
     await studioCollection.compact();
+    await processingCollection.compact();
     compactLoader.succeed("Compacted DB");
   } else {
     logger.message("Skipping compaction");
   }
-
-  logger.log("Loading remaining NeDB stores");
-
-  store = {
-    processing: await loadStore(libraryPath("processing.db")),
-  };
 
   dbLoader.succeed();
 
@@ -317,100 +286,3 @@ export async function loadStores() {
     logger.message("Skipping integrity checks");
   }
 }
-
-export function count(store: DataStore, query: any): Promise<number> {
-  return new Promise((resolve, reject) => {
-    store.count(query, (err, num) => {
-      if (err) return reject(err);
-      resolve(num);
-    });
-  });
-}
-
-export function insert<T>(store: DataStore, doc: T | T[]) {
-  return new Promise((resolve, reject) => {
-    store.insert(doc, (err, doc) => {
-      if (err) return reject(err);
-      resolve(doc);
-    });
-  });
-}
-
-export function getOne(store: DataStore, skip = 0) {
-  return new Promise((resolve, reject) => {
-    store
-      .find({})
-      .skip(skip)
-      .limit(1)
-      .exec(function (err, docs) {
-        if (err) return reject(err);
-        resolve(docs[0]);
-      });
-  });
-}
-
-export function getAllIterative<T>(
-  store: DataStore,
-  cb: (doc: T) => Promise<void>
-) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let skip = 0;
-      let doc = await getOne(store, skip++);
-      while (doc) {
-        await cb(<T>doc);
-        doc = await getOne(store, skip++);
-      }
-      resolve();
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
-export function getAll(store: DataStore) {
-  return new Promise((resolve, reject) => {
-    store.find({}, (err, docs) => {
-      if (err) return reject(err);
-      resolve(docs);
-    });
-  });
-}
-
-export function update(store: DataStore, query: any, update: any) {
-  return new Promise((resolve, reject) => {
-    store.update(query, update, { multi: true }, (err) => {
-      if (err) return reject(err);
-      resolve();
-    });
-  });
-}
-
-export function remove(store: DataStore, query: any) {
-  return new Promise((resolve, reject) => {
-    store.remove(query, (err) => {
-      if (err) return reject(err);
-      resolve();
-    });
-  });
-}
-
-export function find(store: DataStore, query: any) {
-  return new Promise((resolve, reject) => {
-    store.find(query, (err, doc) => {
-      if (err) return reject(err);
-      resolve(doc);
-    });
-  });
-}
-
-export function findOne(store: DataStore, query: any) {
-  return new Promise((resolve, reject) => {
-    store.findOne(query, (err, doc) => {
-      if (err) return reject(err);
-      resolve(doc);
-    });
-  });
-}
-
-export { store };
