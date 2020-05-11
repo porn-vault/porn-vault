@@ -37,11 +37,11 @@ export let viewCollection!: Izzy.Collection<SceneView>;
 export let labelCollection!: Izzy.Collection<Label>;
 export let customFieldCollection!: Izzy.Collection<CustomField>;
 export let markerCollection!: Izzy.Collection<Marker>;
+export let studioCollection!: Izzy.Collection<Studio>;
 
 let store = {} as {
-  studios: DataStore;
+  // studios: DataStore;
   processing: DataStore;
-  // markers: DataStore;
 };
 
 function buildIndex(store: DataStore, opts: EnsureIndexOptions) {
@@ -259,6 +259,17 @@ export async function loadStores() {
     ]
   );
 
+  studioCollection = await Izzy.createCollection(
+    "studios",
+    libraryPath("studios.db"),
+    [
+      {
+        key: "parent",
+        name: "parent-index",
+      },
+    ]
+  );
+
   logger.log("Created Izzy collections");
 
   if (!args["skip-compaction"]) {
@@ -275,6 +286,7 @@ export async function loadStores() {
     await labelCollection.compact();
     await customFieldCollection.compact();
     await markerCollection.compact();
+    await studioCollection.compact();
     compactLoader.succeed("Compacted DB");
   } else {
     logger.message("Skipping compaction");
@@ -283,23 +295,10 @@ export async function loadStores() {
   logger.log("Loading remaining NeDB stores");
 
   store = {
-    studios: await loadStore(libraryPath("studios.db")),
     processing: await loadStore(libraryPath("processing.db")),
-    // markers: await loadStore(libraryPath("markers.db")),
   };
 
   dbLoader.succeed();
-
-  const indexLoader = ora("Building DB indices...").start();
-
-  await buildIndex(store.studios, {
-    fieldName: "parent",
-  });
-  /* await buildIndex(store.markers, {
-    fieldName: "scene",
-  }); */
-
-  indexLoader.succeed();
 
   if (!args["ignore-integrity"]) {
     const integrityLoader = ora(

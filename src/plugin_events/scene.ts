@@ -12,7 +12,6 @@ import { getConfig } from "../config";
 import { extname } from "path";
 import { downloadFile } from "../ffmpeg-download";
 import Image from "../types/image";
-import * as database from "../database/index";
 import * as logger from "../logger";
 import Studio from "../types/studio";
 import Label from "../types/label";
@@ -27,6 +26,7 @@ import {
   movieCollection,
   viewCollection,
   labelCollection,
+  studioCollection,
 } from "../database/index";
 import Movie from "../types/movie";
 import { onMovieCreate } from "./movie";
@@ -179,7 +179,7 @@ export async function onSceneCreate(
     else if (config.CREATE_MISSING_STUDIOS) {
       const studio = new Studio(pluginResult.studio);
       scene.studio = studio._id;
-      await database.insert(database.store.studios, studio);
+      await studioCollection.upsert(studio._id, studio);
       indices.studios.add(await createStudioSearchDoc(studio));
       logger.log("Created studio " + studio.name);
     }

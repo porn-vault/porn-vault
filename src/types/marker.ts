@@ -1,4 +1,3 @@
-import * as database from "../database";
 import { generateHash } from "../hash";
 import Scene from "./scene";
 import * as logger from "../logger";

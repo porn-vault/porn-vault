@@ -33,6 +33,7 @@ import {
   labelCollection,
   customFieldCollection,
   markerCollection,
+  studioCollection,
 } from "../database/index";
 import ActorReference from "../types/actor_reference";
 import { existsAsync } from "../fs/async";
@@ -160,8 +161,9 @@ export async function createFromFileData(opts: ICreateOptions) {
           await imageCollection.upsert(image._id, image);
       }
 
-      if (args["commit-import"])
-        await database.insert(database.store.studios, studio);
+      if (args["commit-import"]) {
+        await studioCollection.upsert(studio._id, studio);
+      }
       createdStudios[studioId] = studio;
     }
   }
