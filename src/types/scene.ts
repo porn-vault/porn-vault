@@ -317,10 +317,11 @@ export default class Scene {
   }
 
   static async getMarkers(scene: Scene) {
-    const references = await MarkerReference.getByScene(scene._id);
+    return Marker.getByScene(scene._id);
+    /* const references = await MarkerReference.getByScene(scene._id);
     return (await mapAsync(references, (r) => Marker.getById(r.marker))).filter(
       Boolean
-    ) as Marker[];
+    ) as Marker[]; */
   }
 
   static async getMovies(scene: Scene) {
@@ -351,26 +352,11 @@ export default class Scene {
   }
 
   static async setLabels(scene: Scene, labelIds: string[]) {
-    const references = await LabelledItem.getByItem(scene._id);
-
-    const oldLabelReferences = references.map((r) => r._id);
-
-    for (const id of oldLabelReferences) {
-      await labelledItemCollection.remove(id);
-    }
-
-    for (const id of [...new Set(labelIds)]) {
-      const labelledItem = new LabelledItem(scene._id, id, "scene");
-      logger.log("Adding label to scene: " + JSON.stringify(labelledItem));
-      await labelledItemCollection.upsert(labelledItem._id, labelledItem);
-    }
+    return Label.setForItem(scene._id, labelIds, "scene");
   }
 
   static async getLabels(scene: Scene) {
-    const references = await LabelledItem.getByItem(scene._id);
-    return (await mapAsync(references, (r) => Label.getById(r.label))).filter(
-      Boolean
-    ) as Label[];
+    return Label.getForItem(scene._id);
   }
 
   static async getSceneByPath(path: string) {
