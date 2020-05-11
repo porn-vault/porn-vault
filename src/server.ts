@@ -22,21 +22,19 @@ import { spawnTwigs } from "./twigs";
 import { httpLog } from "./logger";
 import { renderHandlebars } from "./render";
 import { dvdRenderer } from "./dvd_renderer";
-import {
-  getLength,
-  isProcessing,
-  setProcessingStatus,
-} from "./queue/processing";
 import queueRouter from "./queue_router";
-import { spawn } from "child_process";
 import { clearSceneIndex } from "./search/scene";
 import { clearImageIndex } from "./search/image";
 import { spawnIzzy, izzyVersion, resetIzzy } from "./izzy";
 import https from "https";
-import { fstat, readFile, readFileSync } from "fs";
-import LibraryWatcher from "./queue/libraryWatcher";
-import { checkImageFolders, checkVideoFolders } from "./queue/check";
-import debounce from "lodash.debounce";
+import { readFileSync } from "fs";
+import {
+  destroyImporter,
+  debouncedProcessLibrary,
+  scheduleManualScan,
+  scanFolders,
+  getIsManualScanningLibrary,
+} from "./queue/importer";
 
 logger.message(
   "Check https://github.com/boi123212321/porn-vault for discussion & updates"
@@ -44,156 +42,6 @@ logger.message(
 
 let serverReady = false;
 let setupMessage = "Setting up...";
-
-let libraryWatcher: LibraryWatcher | null;
-let scheduledScanTimeout: NodeJS.Timeout | null;
-
-let isManualScanningLibrary = false;
-let isProcessingLibrary = false;
-
-async function tryStartProcessing() {
-  const queueLen = await getLength();
-  if (queueLen > 0 && !isProcessing()) {
-    logger.message("Starting processing worker...");
-    setProcessingStatus(true);
-    spawn(process.argv[0], process.argv.slice(1).concat(["--process-queue"]), {
-      cwd: process.cwd(),
-      detached: false,
-      stdio: "inherit",
-    }).on("exit", (code) => {
-      logger.warn("Processing process exited with code " + code);
-      setProcessingStatus(false);
-    });
-  } else if (!queueLen) {
-    logger.success("No more videos to process.");
-  }
-}
-
-async function processLibrary() {
-  if (isProcessingLibrary) {
-    logger.message("Is already processing library, will skip this one");
-  }
-
-  isProcessingLibrary = true;
-  try {
-    logger.message("Starting processing...");
-    await tryStartProcessing();
-    logger.message("Processing done");
-  } catch (err) {
-    logger.error("Couldn't start processing...");
-    logger.error(err.message);
-  }
-  isProcessingLibrary = false;
-
-  // When this round of processing is done, we assume
-  // it's because the whole library is already scanned.
-  // So only now, we can schedule another scan
-  scheduleManualScan();
-}
-
-// Debounce the processing call to ensure that we only start processing
-// once all videos are imported
-const debouncedProcessLibrary = debounce(processLibrary, 10 * 1000, {
-  trailing: true,
-});
-
-/**
- * @param forceManualScan - if should scan via manual scan,
- * even if we are in watch mode
- */
-async function scanFolders(forceManualScan = false) {
-  if (isManualScanningLibrary) {
-    logger.message(
-      "Received request to scan, but a scan is already in progress. Will skip this one"
-    );
-  }
-
-  if (forceManualScan) {
-    logger.message("Scheduled manual library scan starting...");
-  } else {
-    logger.message("Scanning library folders...");
-  }
-
-  const config = getConfig();
-
-  if (!forceManualScan && config.WATCH_LIBRARY) {
-    logger.message("Scanning library via file watching");
-
-    if (libraryWatcher) {
-      logger.message("Already watching library, will not recreate watcher");
-    } else {
-      libraryWatcher = new LibraryWatcher(debouncedProcessLibrary, () => {
-        logger.message("Finished library watch initialization");
-      });
-    }
-
-    return;
-  }
-
-  isManualScanningLibrary = true;
-
-  logger.message("Scanning library via manual scan");
-
-  // If we switched to manual scans: destroy the watcher
-  if (libraryWatcher) {
-    logger.message("File watcher was previously active, will destroy...");
-    // Do not await
-    libraryWatcher
-      .stopWatching()
-      .then(() => {
-        libraryWatcher = null;
-      })
-      .catch((err) => {
-        logger.error(
-          "Error stopping file watch while switching to manual scan"
-        );
-        logger.error(err);
-      });
-  }
-
-  try {
-    logger.message("Launching manual video library scan");
-    await checkVideoFolders();
-    logger.success("Manual video library scan done.");
-  } catch (err) {
-    logger.error("Manual video library scan failed");
-    logger.error(err);
-  }
-
-  // If the video import failed halfway through, we still want to
-  // process the videos that did import
-  logger.message("Will now start processing the imported videos");
-  debouncedProcessLibrary(); // Do not await
-
-  // Launch image import AFTER the video succeeds/fails
-  try {
-    logger.message("Launching manual image library scan");
-    await checkImageFolders();
-    logger.success("Manual image library scan done.");
-  } catch (err) {
-    logger.error("Manual image library scan failed");
-    logger.error(err);
-  }
-
-  isManualScanningLibrary = false;
-}
-
-function scheduleManualScan() {
-  const config = getConfig();
-
-  if (scheduledScanTimeout) {
-    clearTimeout(scheduledScanTimeout);
-    scheduledScanTimeout = null;
-  }
-
-  if (config.SCAN_INTERVAL > 0) {
-    logger.message(`Setting up a manual scan in ${config.SCAN_INTERVAL}ms`);
-    scheduledScanTimeout = setTimeout(
-      () => scanFolders(true),
-      config.SCAN_INTERVAL
-    );
-  }
-}
 
 export default async () => {
   const app = express();
@@ -329,7 +177,7 @@ export default async () => {
   app.use("/queue", queueRouter);
 
   app.get("/force-scan", (req, res) => {
-    if (isManualScanningLibrary) {
+    if (getIsManualScanningLibrary()) {
       res.json("Scan already in progress.");
     } else {
       scanFolders(true);
@@ -376,6 +224,7 @@ export default async () => {
 
   if (config.SCAN_ON_STARTUP) {
     willAutoIntervalScan = true;
+    logger.message("Server start: will start scanning folders");
     await scanFolders();
   } else {
     logger.warn(
@@ -384,10 +233,8 @@ export default async () => {
   }
 
   if (config.DO_PROCESSING) {
-    tryStartProcessing().catch((err) => {
-      logger.error("Couldn't start processing...");
-      logger.error(err.message);
-    });
+    logger.message("Server start: will start processing");
+    debouncedProcessLibrary();
   }
 
   if (!willAutoIntervalScan) {
@@ -398,14 +245,5 @@ export default async () => {
 export async function killServer() {
   logger.message("Cleaning up server resources");
 
-  try {
-    if (libraryWatcher) {
-      logger.message("File watcher was previously active, will destroy...");
-
-      await libraryWatcher.stopWatching();
-    }
-  } catch (err) {
-    logger.error("Error cleaning up server resourced");
-    logger.error(err);
-  }
+  await destroyImporter();
 }
