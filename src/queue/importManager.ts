@@ -5,9 +5,11 @@ import VideoQueue from "./video/videoQueue";
 export type onQueueEmptied = () => void;
 
 export default class ImportManager {
+  private oldNumFoundVideoPaths: number;
   private numFoundVideoPaths: number;
   private videoQueue: VideoQueue;
 
+  private oldNumFoundImagePaths: number;
   private numFoundImagePaths: number;
   private imageQueue: ImageQueue;
 
@@ -22,9 +24,11 @@ export default class ImportManager {
     onVideoProcesingQueueEmpty?: onQueueEmptied,
     onImageProcesingQueueEmpty?: onQueueEmptied
   ) {
+    this.oldNumFoundVideoPaths = 0;
     this.numFoundVideoPaths = 0;
     this.videoQueue = new VideoQueue(onVideoProcesingQueueEmpty);
 
+    this.oldNumFoundImagePaths = 0;
     this.numFoundImagePaths = 0;
     this.imageQueue = new ImageQueue(onImageProcesingQueueEmpty);
   }
@@ -62,6 +66,7 @@ export default class ImportManager {
   }
 
   public resetFoundVideosCount() {
+    this.oldNumFoundVideoPaths = this.numFoundVideoPaths;
     this.numFoundVideoPaths = 0;
   }
 
@@ -69,11 +74,20 @@ export default class ImportManager {
     return this.numFoundVideoPaths;
   }
 
+  public getOldFoundVideosCount() {
+    return this.oldNumFoundVideoPaths;
+  }
+
   public resetFoundImagesCount() {
+    this.oldNumFoundImagePaths = this.numFoundVideoPaths;
     this.numFoundImagePaths = 0;
   }
 
   public getFoundImagesCount() {
     return this.numFoundImagePaths;
+  }
+
+  public getOldFoundImagesCount() {
+    return this.oldNumFoundImagePaths;
   }
 }
