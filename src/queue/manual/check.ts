@@ -1,18 +1,18 @@
 import ora = require("ora");
 
-import { getConfig } from "../config";
-import { imageCollection, sceneCollection } from "../database";
-import { statAsync, walk } from "../fs/async";
-import * as logger from "../logger";
-import { indexImages } from "../search/image";
-import Image from "../types/image";
-import Scene from "../types/scene";
+import { getConfig } from "../../config";
+import { imageCollection, sceneCollection } from "../../database";
+import { statAsync, walk } from "../../fs/async";
+import * as logger from "../../logger";
+import { indexImages } from "../../search/image";
+import Image from "../../types/image";
+import Scene from "../../types/scene";
 import {
   imageWithPathExists,
   isImportableImage,
   processImage,
-} from "./image/utility";
-import { isImportableVideo } from "./video/utility";
+} from "../image/utility";
+import { isImportableVideo } from "../video/utility";
 
 export async function checkVideoFolders() {
   const config = getConfig();

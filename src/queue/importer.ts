@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 
 import { getConfig } from "../config";
 import * as logger from "../logger";
-import { checkImageFolders, checkVideoFolders } from "./check";
+import { checkImageFolders, checkVideoFolders } from "./manual/check";
 import LibraryWatcher from "./watch/libraryWatcher";
 import {
   getLength,
