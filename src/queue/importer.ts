@@ -202,8 +202,9 @@ export async function scanFolders(isScheduledManualScan = false) {
 
   logger.message("Scanning library via manual scan");
 
-  // If we switched to manual scans: destroy the watcher
-  if (isWatchingLibrary()) {
+  // If we are only supposed to be running manual scans
+  // and for some reason we are watching the library: destroy the watcher
+  if (!isScheduledManualScan && isWatchingLibrary()) {
     logger.message("File watcher was previously active, will destroy...");
     // Do not await
     stopWatchingLibrary().catch((err) => {
