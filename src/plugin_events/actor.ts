@@ -125,7 +125,7 @@ export async function onActorCreate(
       typeof pluginResult.nationality === "string" &&
       isValidCountryCode(pluginResult.nationality)
     ) {
-      actor.nationality = pluginResult.nationality;
+      actor.nationality = pluginResult.nationality.toUpperCase();
     } else if (pluginResult.nationality === null) {
       actor.nationality = pluginResult.nationality;
     }
