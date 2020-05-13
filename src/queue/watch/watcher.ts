@@ -11,7 +11,7 @@ interface WatcherOptions {
 const DEFAULT_OPTIONS = {
   includePaths: [],
   excludePaths: [],
-  pollingInterval: 2 * 1000,
+  pollingInterval: 0,
 };
 
 /**

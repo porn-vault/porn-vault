@@ -1,6 +1,6 @@
 import { LibraryTypeQueueManager, LibraryTypes } from "./constants";
-import { ImageImportQueueManager } from "./image/imageQueue";
-import { VideoImportQueueManager } from "./video/videoQueue";
+import { ImageImportQueueManager } from "./imageQueue";
+import { VideoImportQueueManager } from "./videoQueue";
 
 const LibraryQueueManagerMapping: {
   [key in LibraryTypes]: LibraryTypeQueueManager;
@@ -18,33 +18,13 @@ export function attachOnQueueEmptiedListenerForLibraryType(
   ].attachOnQueueEmptiedListener(callback);
 }
 
-const LibraryTypeImporterMapping: {
-  [key in LibraryTypes]: (...paths: string[]) => void;
-} = {
-  [LibraryTypes.VIDEOS]: importVideoPaths,
-  [LibraryTypes.IMAGES]: importImagePaths,
-};
-
 export function importPathsForLibraryType(
   libraryType: keyof typeof LibraryTypes,
   ...paths: string[]
 ) {
-  // Use our custom importers
-  const importer = LibraryTypeImporterMapping[LibraryTypes[libraryType]];
-  importer(...paths);
-}
-
-function importVideoPaths(...addedPaths: string[]) {
-  incrementFoundCountForLibraryType("VIDEOS", addedPaths.length);
-  LibraryQueueManagerMapping[LibraryTypes.VIDEOS].addPathsToQueue(
-    ...addedPaths
-  );
-}
-
-function importImagePaths(...addedPaths: string[]) {
-  incrementFoundCountForLibraryType("IMAGES", addedPaths.length);
-  LibraryQueueManagerMapping[LibraryTypes.IMAGES].addPathsToQueue(
-    ...addedPaths
+  incrementFoundCountForLibraryType(libraryType, paths.length);
+  LibraryQueueManagerMapping[LibraryTypes[libraryType]].addPathsToQueue(
+    ...paths
   );
 }
 

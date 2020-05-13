@@ -50,3 +50,8 @@ export interface LibraryTypeQueueManager {
    */
   isQueueRunning: () => boolean;
 }
+
+export enum ScanType {
+  MANUAL = "manual",
+  WATCHER = "watcher",
+}

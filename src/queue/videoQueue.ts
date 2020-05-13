@@ -1,9 +1,24 @@
 import { queue } from "async";
+import { basename, extname } from "path";
 
-import * as logger from "../../logger";
-import Scene from "../../types/scene";
-import { LibraryTypeQueueManager } from "../constants";
-import { isImportableVideo } from "./utility";
+import { getConfig } from "../config";
+import * as logger from "../logger";
+import Scene from "../types/scene";
+import {
+  LibraryTypeQueueManager,
+  SUPPORTED_VIDEO_EXTENSIONS,
+} from "./constants";
+import { fileIsExcluded } from "./utility";
+
+function isImportableVideo(path) {
+  const config = getConfig();
+
+  return (
+    SUPPORTED_VIDEO_EXTENSIONS.includes(extname(path)) &&
+    !basename(path).startsWith(".") &&
+    !fileIsExcluded(config.EXCLUDE_FILES, path)
+  );
+}
 
 const onVideoQueueEmptiedListeners: (() => void)[] = [];
 
@@ -25,7 +40,17 @@ videoProcessingQueue.error(onImportQueueError);
  */
 async function importVideoFromPath(path: string, callback: () => void) {
   try {
-    await Scene.onImport(path);
+    const existingScene = await Scene.getSceneByPath(path);
+    logger.log(
+      `[videoQueue]: Path ${path} exists already ?: ${!!existingScene}`
+    );
+
+    if (!existingScene) {
+      logger.log(
+        `[videoQueue]: No existing scene, will import video '${path}'.`
+      );
+      await Scene.onImport(path);
+    }
   } catch (error) {
     logger.log(error.stack);
     logger.error("[videoQueue]:Error when importing " + path);
@@ -36,7 +61,7 @@ async function importVideoFromPath(path: string, callback: () => void) {
 }
 
 function onImportQueueEmptied() {
-  logger.log("[videoQueue]: Processing queue empty");
+  logger.log("[videoQueue]: Import processing queue empty");
 
   for (const listener of onVideoQueueEmptiedListeners) {
     listener();
@@ -44,7 +69,7 @@ function onImportQueueEmptied() {
 }
 
 function onImportQueueError(error: Error, task: string) {
-  logger.error("[videoQueue]: path processing encountered an error");
+  logger.error("[videoQueue]: Path import processing encountered an error");
   logger.error(error);
 }
 
@@ -59,21 +84,14 @@ function onImportQueueError(error: Error, task: string) {
  */
 export async function addVideoPathToQueue(...paths: string[]) {
   for (const path of paths) {
-    if (!isImportableVideo(path)) {
-      logger.log(`[videoQueue]: Ignoring file ${path}`);
-      return;
-    }
+    if (isImportableVideo(path)) {
+      logger.log(
+        `[videoQueue]: Found matching file ${path}, adding to import queue`
+      );
 
-    logger.log(`[videoQueue]: Found matching file ${path}`);
-
-    const existingScene = await Scene.getSceneByPath(path);
-    logger.log(
-      "[videoQueue]: Scene with that path exists already ?: " + !!existingScene
-    );
-
-    if (!existingScene) {
       videoProcessingQueue.push(path);
-      logger.log(`[videoQueue]: Added video to processing queue '${path}'.`);
+    } else {
+      logger.log(`[videoQueue]: Ignoring file ${path}`);
     }
   }
 }

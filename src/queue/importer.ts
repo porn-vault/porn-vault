@@ -2,8 +2,9 @@ import { spawn } from "child_process";
 
 import { getConfig } from "../config";
 import * as logger from "../logger";
+import { LibraryTypes, ScanType } from "./constants";
 import { attachOnQueueEmptiedListenerForLibraryType } from "./importManager";
-import { checkImageFolders, checkVideoFolders } from "./manual/check";
+import { checkImageFolders, checkVideoFolders } from "./manualCheck";
 import {
   getHead,
   getLength,
@@ -12,7 +13,7 @@ import {
 } from "./processing";
 import {
   initLibraryWatcher,
-  isWatchingLibrary,
+  isWatchingAnyLibrary,
   stopWatchingLibrary,
 } from "./watch/libraryWatcher";
 
@@ -26,7 +27,17 @@ let oldProcessingHead: { _id: string } | null = null;
 
 let scheduledScanTimeout: NodeJS.Timeout | null;
 
-let isManualScanningLibrary = false;
+/**
+ * If the next scan will be the first scan since the server startup
+ */
+let isFirstScan = true;
+
+const isManualScanning: {
+  [key in LibraryTypes]: Boolean;
+} = {
+  [LibraryTypes.VIDEOS]: false,
+  [LibraryTypes.IMAGES]: false,
+};
 
 attachOnQueueEmptiedListenerForLibraryType("VIDEOS", () => {
   logger.message(
@@ -36,7 +47,29 @@ attachOnQueueEmptiedListenerForLibraryType("VIDEOS", () => {
 });
 
 export function getIsManualScanningLibrary() {
-  return isManualScanningLibrary;
+  return !!Object.values(isManualScanning).find((isScanning) => isScanning);
+}
+
+export function getIsManualScanningLibraryType(
+  libraryType: keyof typeof LibraryTypes
+) {
+  return !!isManualScanning[LibraryTypes[libraryType]];
+}
+
+export function getCurrentScanTypes(libraryType: keyof typeof LibraryTypes) {
+  let scanTypes: string[] = [];
+
+  const config = getConfig();
+
+  if (!config.WATCH_LIBRARY || getIsManualScanningLibraryType(libraryType)) {
+    scanTypes.push(ScanType.MANUAL);
+  }
+
+  if (config.WATCH_LIBRARY) {
+    scanTypes.push(ScanType.WATCHER);
+  }
+
+  return scanTypes;
 }
 
 /**
@@ -174,7 +207,7 @@ export async function processLibrary() {
  * even if we are in watch mode. Will not execute if one is already ongoing
  */
 export async function scanFolders(isScheduledManualScan = false) {
-  if (isManualScanningLibrary) {
+  if (getIsManualScanningLibrary()) {
     logger.message(
       "Received request to scan, but a scan is already in progress. Will skip this one"
     );
@@ -182,59 +215,60 @@ export async function scanFolders(isScheduledManualScan = false) {
   }
 
   if (isScheduledManualScan) {
-    logger.message("Scheduled manual library scan starting...");
+    logger.message(
+      "Scheduled library scan starting... (manual scan except if is the first scan since startup)"
+    );
   } else {
     logger.message("Scanning library folders...");
   }
 
   const config = getConfig();
 
-  if (!isScheduledManualScan && config.WATCH_LIBRARY) {
+  if ((isFirstScan || !isScheduledManualScan) && config.WATCH_LIBRARY) {
     logger.message("Scanning library via file watching");
 
-    if (isWatchingLibrary()) {
-      logger.message("Already watching library, will not recreate watcher");
-    } else {
-      initLibraryWatcher({
-        videos: () => {
-          logger.message("Videos library watching has been initialized");
-          // We do not need to call 'processLibrary' here, since it will be done
-          // when the import queue is emptied
-        },
+    for (const type in LibraryTypes) {
+      const libraryType = <keyof typeof LibraryTypes>type;
+
+      initLibraryWatcher(libraryType, () => {
+        logger.message(
+          `Library watching has been initialized for ${libraryType} (all files globbed)`
+        );
+        // We do not need to call 'processLibrary' here, since it will be done
+        // when the import queue is emptied
       });
     }
 
     return;
   }
 
-  isManualScanningLibrary = true;
-
   logger.message("Scanning library via manual scan");
 
-  // If we are only supposed to be running manual scans
-  // and for some reason we are watching the library: destroy the watcher
-  if (!isScheduledManualScan && isWatchingLibrary()) {
-    logger.message("File watcher was previously active, will destroy...");
-    // Do not await
-    stopWatchingLibrary().catch((err) => {
-      logger.error("Error stopping file watch while switching to manual scan");
-      logger.error(err);
+  if (!isScheduledManualScan && isWatchingAnyLibrary()) {
+    stopWatchingLibrary().catch((error) => {
+      logger.error(
+        "Error stopping file watch for library while switching to manual scan"
+      );
+      logger.error(error);
     });
   }
 
+  isManualScanning[LibraryTypes.VIDEOS] = true;
   try {
     logger.message("Launching manual video library scan");
     await checkVideoFolders();
     logger.success("Manual video library scan done.");
+    // Video processing will start automatically once the import
+    // queue is emptied
   } catch (err) {
     logger.error("Manual video library scan failed");
     logger.error(err);
   }
-
-  // Video processing will start automatically once the import
-  // queue is emptied
+  isManualScanning[LibraryTypes.VIDEOS] = false;
 
   // Launch image import AFTER the video succeeds/fails
+
+  isManualScanning[LibraryTypes.IMAGES] = true;
   try {
     logger.message("Launching manual image library scan");
     await checkImageFolders();
@@ -244,7 +278,9 @@ export async function scanFolders(isScheduledManualScan = false) {
     logger.error(err);
   }
 
-  isManualScanningLibrary = false;
+  isManualScanning[LibraryTypes.IMAGES] = false;
+
+  isFirstScan = false;
 }
 
 /**
@@ -274,8 +310,8 @@ export function scheduleManualScan() {
  */
 export async function destroyImporter() {
   try {
-    if (isWatchingLibrary()) {
-      logger.message("File watcher was previously active, will destroy...");
+    if (isWatchingAnyLibrary()) {
+      logger.message("A file watcher was previously active, will destroy...");
 
       await stopWatchingLibrary();
     }

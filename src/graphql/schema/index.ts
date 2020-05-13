@@ -41,6 +41,10 @@ export default gql`
     oldFoundCount: Int!
     importQueueLength: Int!
     running: Boolean!
+    runningCount: Int!
+    scanTypes: [String!]!
+    isManualScanning: Boolean!
+    isWatching: Boolean!
   }
 
   type QueueInfo {

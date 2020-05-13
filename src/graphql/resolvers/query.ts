@@ -7,12 +7,18 @@ import {
   studioCollection,
 } from "../../database";
 import {
+  getCurrentScanTypes,
+  getIsManualScanningLibraryType,
+} from "../../queue/importer";
+import {
   getFoundCountForLibraryType,
   getOldFoundCountForLibraryType,
   getQueueLengthForLibraryType,
+  getRunningCountForLibraryType,
   isQueueRunningForLibraryType,
 } from "../../queue/importManager";
 import { getLength, isProcessing } from "../../queue/processing";
+import { isWatchingLibraryType } from "../../queue/watch/libraryWatcher";
 import { twigsVersion } from "../../search";
 import Actor from "../../types/actor";
 import CustomField from "../../types/custom_field";
@@ -113,6 +119,10 @@ export default {
       oldFoundCount: getOldFoundCountForLibraryType("VIDEOS"),
       importQueueLength: getQueueLengthForLibraryType("VIDEOS"),
       running: isQueueRunningForLibraryType("VIDEOS"),
+      runningCount: getRunningCountForLibraryType("VIDEOS"),
+      scanTypes: getCurrentScanTypes("VIDEOS"),
+      isManualScanning: getIsManualScanningLibraryType("VIDEOS"),
+      isWatching: isWatchingLibraryType("VIDEOS"),
     };
   },
 
@@ -122,6 +132,10 @@ export default {
       oldFoundCount: getOldFoundCountForLibraryType("IMAGES"),
       importQueueLength: getQueueLengthForLibraryType("IMAGES"),
       running: isQueueRunningForLibraryType("IMAGES"),
+      runningCount: getRunningCountForLibraryType("VIDEOS"),
+      scanTypes: getCurrentScanTypes("IMAGES"),
+      isManualScanning: getIsManualScanningLibraryType("IMAGES"),
+      isWatching: isWatchingLibraryType("IMAGES"),
     };
   },
 

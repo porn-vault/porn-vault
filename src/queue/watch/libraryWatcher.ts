@@ -16,16 +16,16 @@ const libraryWatchers: { [key in LibraryTypes]: Watcher | null } = {
 /**
  * Generates an array of glob paths to watch for the library
  *
- * @param videoPaths - paths to watch for videos
- * @param imagePaths - paths to watch for images
+ * @param libraryType - the library type for which to create the globs
  */
 const createWatchPaths = (libraryType: keyof typeof LibraryTypes) => {
   const config = getConfig();
 
-  const paths = config[LibraryTypesConfigPathsMapping[libraryType]];
+  const paths =
+    config[LibraryTypesConfigPathsMapping[LibraryTypes[libraryType]]];
 
   return paths.flatMap((path: string) =>
-    LibraryTypesExtensionMapping[libraryType].map(
+    LibraryTypesExtensionMapping[LibraryTypes[libraryType]].map(
       (extension: string) => `${path}/**/*${extension}`
     )
   );
@@ -35,51 +35,44 @@ const createWatchPaths = (libraryType: keyof typeof LibraryTypes) => {
  * Initializes a watcher for all the library types in `LibraryTypes`
  */
 export function initLibraryWatcher(
-  callbacks: { [key in LibraryTypes]?: () => void }
+  libraryType: keyof typeof LibraryTypes,
+  onInitialScanCompletedCb?: () => void
 ) {
   const config = getConfig();
 
-  for (const type in LibraryTypes) {
-    const libraryType = <keyof typeof LibraryTypes>type;
-
-    if (libraryWatchers[LibraryTypes[libraryType]]) {
-      logger.message(
-        `Already watching library type"${libraryType}", will not recreate watcher`
-      );
-      break;
-    }
-
-    const watchPaths = createWatchPaths(libraryType);
-
-    const watcher = new Watcher(
-      {
-        includePaths: watchPaths,
-        excludePaths: config.EXCLUDE_FILES,
-        pollingInterval: config.WATCH_POLLING_INTERVAL,
-      },
-      (addedPath) => {
-        logger.log(
-          `[libraryWatcher]: for library type ${libraryType} found path ${addedPath}`
-        );
-
-        importPathsForLibraryType(
-          <keyof typeof LibraryTypes>libraryType,
-          addedPath
-        );
-      },
-      () => {
-        const onInitialScanCompletedCb = !!callbacks[libraryType]
-          ? callbacks[libraryType].onInitialScanCompleted
-          : null;
-
-        if (onInitialScanCompletedCb) {
-          onInitialScanCompletedCb();
-        }
-      }
+  if (libraryWatchers[LibraryTypes[libraryType]]) {
+    logger.message(
+      `Already watching library type"${libraryType}", will not recreate watcher`
     );
-
-    libraryWatchers[LibraryTypes[libraryType]] = watcher;
+    return;
   }
+
+  const watchPaths = createWatchPaths(libraryType);
+
+  const watcher = new Watcher(
+    {
+      includePaths: watchPaths,
+      excludePaths: config.EXCLUDE_FILES,
+      pollingInterval: config.WATCH_POLLING_INTERVAL,
+    },
+    (addedPath) => {
+      logger.log(
+        `[libraryWatcher]: for library type ${libraryType} found path ${addedPath}`
+      );
+
+      importPathsForLibraryType(
+        <keyof typeof LibraryTypes>libraryType,
+        addedPath
+      );
+    },
+    () => {
+      if (onInitialScanCompletedCb) {
+        onInitialScanCompletedCb();
+      }
+    }
+  );
+
+  libraryWatchers[LibraryTypes[libraryType]] = watcher;
 }
 /**
  * Stops watching all for library watchers
@@ -116,6 +109,10 @@ export async function stopWatchingForLibraryType(
 /**
  * @returns if is watching at least one library type is being watched
  */
-export function isWatchingLibrary() {
+export function isWatchingAnyLibrary() {
   return Object.values(libraryWatchers).find((watcher) => !!watcher);
+}
+
+export function isWatchingLibraryType(libraryType: keyof typeof LibraryTypes) {
+  return !!libraryWatchers[LibraryTypes[libraryType]];
 }
