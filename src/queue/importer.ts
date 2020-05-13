@@ -3,7 +3,10 @@ import { spawn } from "child_process";
 import { getConfig } from "../config";
 import * as logger from "../logger";
 import { LibraryTypes, ScanType } from "./constants";
-import { attachOnQueueEmptiedListenerForLibraryType } from "./importManager";
+import {
+  attachOnQueueEmptiedListenerForLibraryType,
+  resumeQueueForLibraryType,
+} from "./importManager";
 import { checkImageFolders, checkVideoFolders } from "./manualCheck";
 import {
   getHead,
@@ -234,6 +237,17 @@ export async function scanFolders(isScheduledManualScan = false) {
         logger.message(
           `Library watching has been initialized for ${libraryType} (all files globbed)`
         );
+
+        // If we are in watch mode, and a manual scan has not
+        // started since we started watching:
+        // we can start importing the videos
+        if (
+          libraryType === "VIDEOS" &&
+          !isManualScanning[LibraryTypes.VIDEOS]
+        ) {
+          resumeQueueForLibraryType("VIDEOS");
+        }
+
         // We do not need to call 'processLibrary' here, since it will be done
         // when the import queue is emptied
       });

@@ -32,6 +32,11 @@ const videoProcessingQueue = queue(importVideoFromPath, 1);
 videoProcessingQueue.drain(onImportQueueEmptied);
 videoProcessingQueue.error(onImportQueueError);
 
+// The video queue should be paused by default
+// because we only want to start it once all paths have
+// been discovered
+videoProcessingQueue.pause();
+
 /**
  * Processes a path in the queue by importing the scene
  *
