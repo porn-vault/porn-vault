@@ -141,8 +141,7 @@ export default {
     return await Label.getById(id);
   },
   async getCustomFields() {
-    const fields = await CustomField.getAll();
-    return fields.sort((a, b) => a.name.localeCompare(b.name));
+    return await CustomField.getAll();
   },
   async getLabels(_, { type }: { type?: string | null }) {
     let labels = await Label.getAll();

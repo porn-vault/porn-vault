@@ -49,6 +49,7 @@ export default class CustomField {
   }
 
   static async getAll() {
-    return customFieldCollection.getAll();
+    const fields = await customFieldCollection.getAll();
+    return fields.sort((a, b) => a.name.localeCompare(b.name));
   }
 }
