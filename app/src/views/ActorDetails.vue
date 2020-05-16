@@ -281,7 +281,7 @@
                                 icon
                                 style="background: #fafafa;"
                               >
-                                <v-icon>mdi-filter_2</v-icon>
+                                <v-icon>mdi-numeric-2-box-multiple-outline</v-icon>
                               </v-btn>
                             </template>
                             <span>Set as alt thumbnail</span>
@@ -296,7 +296,7 @@
                                 icon
                                 style="background: #fafafa;"
                               >
-                                <v-icon>mdi-camera_alt</v-icon>
+                                <v-icon>mdi-camera</v-icon>
                               </v-btn>
                             </template>
                             <span>Set as Avatar</span>
