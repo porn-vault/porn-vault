@@ -254,6 +254,7 @@
                         width="100%"
                         height="100%"
                         :image="image"
+                        :contain="true"
                       >
                         <template v-slot:action>
                           <v-tooltip top>
@@ -321,15 +322,6 @@
                     </v-col>
                   </v-row>
 
-                  <transition name="fade">
-                    <Lightbox
-                      @delete="removeImage"
-                      @update="updateImage"
-                      :items="images"
-                      :index="lightboxIndex"
-                      @index="lightboxIndex = $event"
-                    />
-                  </transition>
                 </v-container>
               </div>
 
@@ -356,6 +348,15 @@
             </div>
           </v-col>
         </v-row>
+        <transition name="fade">
+          <Lightbox
+            @delete="removeImage"
+            @update="updateImage"
+            :items="images"
+            :index="lightboxIndex"
+            @index="lightboxIndex = $event"
+          />
+        </transition>
       </v-container>
     </div>
     <div v-else class="mt-3 text-center">
@@ -1271,8 +1272,19 @@ export default class ActorDetails extends Vue {
           query($query: String, $auto: Boolean) {
             getImages(query: $query, auto: $auto) {
               ...ImageFragment
+              labels {
+                _id
+                name
+              }
+              studio {
+                _id
+                name
+              }
               actors {
                 ...ActorFragment
+                avatar {
+                  _id
+                }
               }
               scene {
                 _id
