@@ -1799,7 +1799,7 @@ export default class ActorDetails extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.image-speed-dial > .v-speed-dial__list {
+.image-speed-dial::v-deep .v-speed-dial__list {
   padding: 0px;
 }
 .thumb-margin-top {
