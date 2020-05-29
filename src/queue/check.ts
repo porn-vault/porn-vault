@@ -38,7 +38,7 @@ export async function checkVideoFolders() {
         } else {
           logger.log(`Found matching file ${path}`);
           const existingScene = await Scene.getSceneByPath(path);
-          if (config.DELETE_UNVERIFIED && existingScene) Scene.flagExisting(existingScene, true)
+          if (config.DELETE_UNVERIFIED && existingScene) await Scene.flagExisting(existingScene, true)
           logger.log("Scene with that path exists already: " + !!existingScene);
           if (!existingScene) unknownVideos.push(path);
         }
