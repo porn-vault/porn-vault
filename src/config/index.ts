@@ -82,6 +82,7 @@ export interface IConfig {
   COMPRESS_IMAGE_SIZE: number;
 
   CACHE_TIME: number;
+  DELETE_UNVERIFIED: boolean;
 }
 
 export const defaultConfig: IConfig = {
@@ -137,6 +138,7 @@ export const defaultConfig: IConfig = {
   COMPRESS_IMAGE_SIZE: 720,
 
   CACHE_TIME: 0,
+  DELETE_UNVERIFIED: false
 };
 
 let loadedConfig;
