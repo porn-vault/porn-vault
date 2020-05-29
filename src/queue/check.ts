@@ -25,7 +25,7 @@ export async function checkVideoFolders() {
     logger.message(`Scanning ${folder} for videos...`);
     let numFiles = 0;
     const loader = ora(`Scanned ${numFiles} videos`).start();
-    await Scene.flagAllExisting(false)
+    if (config.DELETE_UNVERIFIED) await Scene.flagAllExisting(false)
 
     await walk({
       dir: folder,
@@ -38,13 +38,13 @@ export async function checkVideoFolders() {
         } else {
           logger.log(`Found matching file ${path}`);
           const existingScene = await Scene.getSceneByPath(path);
-          if(existingScene) Scene.flagExisting(existingScene, true)
+          if (config.DELETE_UNVERIFIED && existingScene) Scene.flagExisting(existingScene, true)
           logger.log("Scene with that path exists already: " + !!existingScene);
           if (!existingScene) unknownVideos.push(path);
         }
       },
     });
-    await Scene.deleteUnverifiedScenes(!config.DELETE_UNVERIFIED)
+    if(config.DELETE_UNVERIFIED) await Scene.deleteUnverifiedScenes(config.DELETE_UNVERIFIED_DEBUG)
     loader.succeed(`${folder} done (${numFiles} videos)`);
   }
 
