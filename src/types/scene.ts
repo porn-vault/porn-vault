@@ -92,6 +92,7 @@ export default class Scene {
   meta = new SceneMeta();
   studio: string | null = null;
   processed?: boolean = false;
+  verifiedExisting: boolean = false;
 
   static calculateScore(scene: Scene, numViews: number) {
     return numViews + +scene.favorite * 5 + scene.rating;
@@ -126,6 +127,7 @@ export default class Scene {
     let scene = new Scene(sceneName);
     scene.meta.dimensions = { width: -1, height: -1 };
     scene.path = videoPath;
+    scene.verifiedExisting = true;
 
     const streams = (await runFFprobe(videoPath)).streams;
 
@@ -286,6 +288,32 @@ export default class Scene {
         }
         delete scene.watches;
         await sceneCollection.upsert(scene._id, scene);
+      }
+    }
+  }
+  static async flagAllExisting(existing: boolean) {
+    const allScenes = await Scene.getAll();
+    for (const scene of allScenes) {
+      logger.log(`flagging all Scenes as ` + existing);
+      scene.verifiedExisting = existing;
+      await sceneCollection.upsert(scene._id, scene);
+    }
+  }
+  static async flagExisting(scene: Scene, existing: boolean) {
+    logger.log("Flagging Scene Existance" + scene._id + " as " + existing);
+    scene.verifiedExisting = existing
+    await sceneCollection.upsert(scene._id,scene)
+  }
+
+  static async deleteUnverifiedScenes(debug: boolean) {
+    const allScenes = await Scene.getAll();
+    for (const scene of allScenes) {
+      if (!scene.verifiedExisting) {
+        if(debug) {
+          logger.log("Would remove the scene " + scene.name + " at " + scene.path)
+        } else {
+          await sceneCollection.remove(scene._id)
+        }
       }
     }
   }
