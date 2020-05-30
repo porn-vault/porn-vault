@@ -20,6 +20,7 @@ import { convertCrossReferences } from "../compat";
 import SceneView from "../types/watch";
 import CustomField from "../types/custom_field";
 import { ISceneProcessingItem } from "../queue/processing";
+import { ISceneRecyclingItem } from "../queue/recycling";
 
 mkdirp.sync("backups/");
 mkdirp.sync("tmp/");
@@ -38,6 +39,7 @@ export let customFieldCollection!: Izzy.Collection<CustomField>;
 export let markerCollection!: Izzy.Collection<Marker>;
 export let studioCollection!: Izzy.Collection<Studio>;
 export let processingCollection!: Izzy.Collection<ISceneProcessingItem>;
+export let recyclingCollection!: Izzy.Collection<ISceneProcessingItem>;
 
 export async function loadStores() {
   const crossReferencePath = libraryPath("cross_references.db");
