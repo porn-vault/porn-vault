@@ -1,0 +1,30 @@
+name: Lint
+
+on: push
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+
+      # ESLint must be in `package.json`
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Run linters
+        uses: samuelmeuli/lint-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Enable linters
+          # Eslint will also run prettier
+          eslint: true
+            eslint_args: "\"src/**/*.ts\""
