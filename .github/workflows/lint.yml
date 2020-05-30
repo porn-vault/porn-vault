@@ -27,6 +27,8 @@ jobs:
           CI: TRUE
       - name: Test Code Linting
         run: npm run lint
+        # Continue to the next step even if this fails
+        continue-on-error: true
       - name: Save Code Linting Report JSON
         # npm script for ESLint
         # eslint --output-file eslint_report.json --format json src
