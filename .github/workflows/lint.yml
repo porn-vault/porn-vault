@@ -1,48 +1,13 @@
-name: Example NodeJS Workflow
-
+name: reviewdog
 on: [push, pull_request]
-
 jobs:
-  node_test:
+  eslint:
+    name: runner / eslint
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v1
-      - name: Node.JS 10.x
-        uses: actions/setup-node@v1
+      - name: eslint
+        uses: reviewdog/action-eslint@v1
         with:
-          node-version: "10.x"
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-${{ env.cache-name }}-
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
-      - name: Install Node Dependencies
-        run: npm install
-        env:
-          CI: TRUE
-      - name: Test Code Linting
-        run: npm run lint
-        # Continue to the next step even if this fails
-        continue-on-error: true
-      - name: Save Code Linting Report JSON
-        # npm script for ESLint
-        # eslint --output-file eslint_report.json --format json src
-        # See https://eslint.org/docs/user-guide/command-line-interface#options
-        run: npm run lint:report
-        # Continue to the next step even if this fails
-        continue-on-error: true
-      - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@1.0.4
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          report-json: "eslint_report.json"
-      - name: Upload ESLint report
-        uses: actions/upload-artifact@v1
-        with:
-          name: eslint_report.json
-          path: eslint_report.json
+          reporter: github-check # Change reporter.
+          eslint_flags: 'src/**/*.ts'
