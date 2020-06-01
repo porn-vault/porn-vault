@@ -18,7 +18,7 @@ import { index as sceneIndex } from "../search/scene";
 import * as logger from "../logger";
 export async function purgeMissingScenes() {
   const items = await missingSceneCollection.getAll();
-  for (const [key, item] of items.entries()) {
+  for (const missingScene of items) {
     logger.log(`Deleting missing scene ${item.path}`);
 
     await sceneCollection
@@ -48,7 +48,9 @@ export async function purgeMissingScenes() {
     logger.log("Deleting scene from queue (if needed)");
     try {
       await removeSceneFromQueue(item._id);
-    } catch (err) {}
+    } catch (err) {
+      // Do nothing, does not matter if this fails
+    }
 
     await missingSceneCollection.remove(item._id);
 
@@ -58,7 +60,7 @@ export async function purgeMissingScenes() {
 export async function resetMissingScenes() {
   const items = await missingSceneCollection.getAll();
   logger.log(`Clearing Recycle Bin`);
-  for (const [key, item] of items.entries()) {
+  for (const item of items) {
     await missingSceneCollection
       .remove(item._id)
       .catch(err =>
