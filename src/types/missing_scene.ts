@@ -19,42 +19,43 @@ import * as logger from "../logger";
 export async function purgeMissingScenes() {
   const items = await missingSceneCollection.getAll();
   for (const missingScene of items) {
-    logger.log(`Deleting missing scene ${item.path}`);
+    logger.log(`Deleting missing scene ${missingScene.path}`);
 
     await sceneCollection
-      .remove(item._id)
+      .remove(missingScene._id)
       .catch(err =>
         logger.error(
-          `Failed to remove ${item._id} at path ${item.path} from the sceneCollection. Error: ${err}`
+          `Failed to remove ${missingScene._id} at path ${missingScene.path} from the sceneCollection. Error: ${err}`
         )
       );
-    await sceneIndex.remove([item._id]);
-    await Image.filterScene(item._id);
+    await sceneIndex.remove([missingScene._id]);
+    await Image.filterScene(missingScene._id);
 
     // deletes associated images when user wishes.
     // No user option exists yet, enable this once user options are passed.
     if (false) {
-      for (const image of await Image.getByScene(item._id)) {
+      // code does NOT currently reach here ever
+      for (const image of await Image.getByScene(missingScene._id)) {
         await Image.remove(image);
         await LabelledItem.removeByItem(image._id);
       }
-      logger.success("Deleted images of scene " + item._id);
+      logger.success("Deleted images of scene " + missingScene._id);
     }
-    await Marker.removeByScene(item._id);
-    await LabelledItem.removeByItem(item._id);
-    await ActorReference.removeByItem(item._id);
-    await MovieScene.removeByScene(item._id);
+    await Marker.removeByScene(missingScene._id);
+    await LabelledItem.removeByItem(missingScene._id);
+    await ActorReference.removeByItem(missingScene._id);
+    await MovieScene.removeByScene(missingScene._id);
 
     logger.log("Deleting scene from queue (if needed)");
     try {
-      await removeSceneFromQueue(item._id);
+      await removeSceneFromQueue(missingScene._id);
     } catch (err) {
       // Do nothing, does not matter if this fails
     }
 
-    await missingSceneCollection.remove(item._id);
+    await missingSceneCollection.remove(missingScene._id);
 
-    logger.success("Deleted scene " + item._id);
+    logger.success("Deleted scene " + missingScene._id);
   }
 }
 export async function resetMissingScenes() {
