@@ -435,7 +435,7 @@ export default class Scene {
         return new Promise((resolve, reject) => {
           logger.log(`Creating thumbnail ${index}...`);
           ffmpeg(options.file)
-            .on("end", async () => {
+            .on("end", () => {
               logger.success(`Created thumbnail ${index}`);
               resolve();
             })
@@ -512,9 +512,9 @@ export default class Scene {
         const config = getConfig();
 
         await (() => {
-          return new Promise(async (resolve, reject) => {
+          return new Promise((resolve, reject) => {
             ffmpeg(file)
-              .on("end", async () => {
+              .on("end", () => {
                 logger.success("Created thumbnail");
                 resolve();
               })
@@ -643,7 +643,7 @@ export default class Scene {
           return new Promise((resolve, reject) => {
             logger.log(`Creating thumbnail ${index}...`);
             ffmpeg(options.file)
-              .on("end", async () => {
+              .on("end", () => {
                 logger.success(`Created thumbnail ${index}`);
                 resolve();
               })
