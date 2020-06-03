@@ -4,9 +4,9 @@ import { actorCollection, actorReferenceCollection, imageCollection } from "../d
 import { unlinkAsync } from "../fs/async";
 import { generateHash } from "../hash";
 import * as logger from "../logger";
+import Actor from "./actor";
 import ActorReference from "./actor_reference";
 import Label from "./label";
-import Actor from "./actor";
 
 export class ImageDimensions {
   width: number | null = null;
