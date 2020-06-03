@@ -196,7 +196,7 @@ async function checkActors(opts: ICreateOptions) {
   }
 }
 
-export async function verifyFileData(opts: ICreateOptions) {
+export async function verifyFileData(opts: ICreateOptions): Promise<void> {
   await checkDuplicates(opts);
 
   await checkActors(opts);

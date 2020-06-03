@@ -1,3 +1,5 @@
+import { ValidationError } from "validate";
+
 import { Dictionary } from "../types/utility";
 import { actorSchema } from "./schemas/actor";
 import { customFieldSchema } from "./schemas/custom_field";
@@ -8,7 +10,7 @@ import { sceneSchema } from "./schemas/scene";
 import { studioSchema } from "./schemas/studio";
 import { IImportedCustomField } from "./types";
 
-export function validateImportFile(parsedFile: Dictionary<any>) {
+export function validateImportFile(parsedFile: Dictionary<any>): Error[] | ValidationError[] {
   if (parsedFile.movies) {
     if (typeof parsedFile.movies !== "object" || parsedFile.movies === null)
       return [new Error(".movies needs to be a dictionary of movies (id => movie)")];

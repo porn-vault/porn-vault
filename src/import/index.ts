@@ -18,14 +18,14 @@ async function processFile(file: string) {
   let parsed = null as any;
   const fileContent = await readFileAsync(file, "utf-8");
 
-  if (extname(file) == ".json") {
+  if (extname(file) === ".json") {
     try {
       parsed = JSON.parse(fileContent);
     } catch (error) {
       logger.error(`Broken import file: ${file}`);
       process.exit(1);
     }
-  } else if (extname(file) == ".yaml" || extname(file) == ".yml") {
+  } else if (extname(file) === ".yaml" || extname(file) === ".yml") {
     try {
       parsed = YAML.parse(fileContent);
     } catch (error) {
@@ -53,7 +53,7 @@ async function processFile(file: string) {
   await createFromFileData(parsed);
 }
 
-export async function checkImportFolders() {
+export async function checkImportFolders(): Promise<void> {
   logger.log("Checking imports...");
 
   const config = getConfig();
