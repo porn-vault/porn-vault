@@ -506,7 +506,6 @@ import { sceneModule } from "../store/scene";
 import actorFragment from "../fragments/actor";
 import imageFragment from "../fragments/image";
 import movieFragment from "../fragments/movie";
-import ActorCard from "../components/ActorCard.vue";
 import MovieCard from "../components/MovieCard.vue";
 import moment from "moment";
 import LabelSelector from "../components/LabelSelector.vue";
@@ -543,7 +542,6 @@ interface ICropResult {
   components: {
     MovieCard,
     ActorGrid,
-    ActorCard,
     LabelSelector,
     Lightbox,
     ImageCard,

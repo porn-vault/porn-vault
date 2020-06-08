@@ -48,6 +48,9 @@ let serverReady = false;
 let setupMessage = "Setting up...";
 
 async function tryStartProcessing() {
+  const config = getConfig();
+  if (!config.DO_PROCESSING) return;
+
   const queueLen = await getLength();
   if (queueLen > 0 && !isProcessing()) {
     logger.message("Starting processing worker...");
@@ -319,12 +322,10 @@ export default async () => {
     );
   }
 
-  if (config.DO_PROCESSING) {
-    tryStartProcessing().catch((err) => {
-      logger.error("Couldn't start processing...");
-      logger.error(err.message);
-    });
-  }
+  tryStartProcessing().catch((err) => {
+    logger.error("Couldn't start processing...");
+    logger.error(err.message);
+  });
 
   if (config.SCAN_INTERVAL > 0) setInterval(scanFolders, config.SCAN_INTERVAL);
 };
