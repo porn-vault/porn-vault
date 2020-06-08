@@ -1,26 +1,22 @@
 import { runFFprobe } from "../types/scene";
 import ffmpeg from "fluent-ffmpeg";
-import { getConfig, IConfig } from "../config";
 import * as logger from "../logger";
 import path, { basename } from "path";
 import { existsSync, renameSync, statSync, utimesSync } from "fs";
 import { generateHash } from "../hash";
 
-let config: IConfig;
 let currentProgress = 0;
 
 //compatible codecs for html5 video element (mp4/webm)
 const vcodecs = ['h264','vp8','vp9','av1', 'theora'];
 const acodecs = ['aac','ogg','opus','vorbis'];
 
-export const transcode = async (scenePath:string, sceneName:string):Promise<string|null>=>{
+export const transcode = async (scenePath:string, sceneName:string, transcodeOptions:string[], preserveDates:boolean):Promise<string|null>=>{
     return new Promise(async (resolve, reject)=>{
         if (!scenePath) {
           logger.warn("No scene path, aborting transcoding.");
           return resolve(scenePath);
         }
-          
-        config = getConfig();
 
         if(!(await canPlayInputVideo(scenePath))){
           //transcode the file
@@ -33,7 +29,7 @@ export const transcode = async (scenePath:string, sceneName:string):Promise<stri
           }
           const outfile = path.join(folderPath, outputFilename);
 
-          resolve(await transcodeFile(scenePath, outfile, sceneName));             
+          resolve(await transcodeFile(scenePath, outfile, sceneName, transcodeOptions, preserveDates));             
         }else{
           logger.success(`Skipping transcoding of compatible file: ${scenePath}`);
           resolve(scenePath);
@@ -67,10 +63,10 @@ const outputFileExists = (path:string):boolean => {
     return false;
 };
 
-const onTranscodeStart = async (cmd:string, sceneName:string) => {
+const onTranscodeStart = async (cmd:string, sceneName:string, transcodeOptions:string[]) => {
     //logger.message(cmd);
     logger.message(`Starting transcoding of ${sceneName}`);
-    logger.message(`Using transcoding options: ${config.TRANSCODE_OPTIONS}`);
+    logger.message(`Using transcoding options: ${transcodeOptions}`);
 };
 
 const onTranscodeProgress = async (args:any, sceneName:string)=>{
@@ -84,14 +80,14 @@ const onTranscodeProgress = async (args:any, sceneName:string)=>{
     }
 };
 
-export const transcodeFile = (input:string, output:string, sceneName:string):Promise<string>=>{
+export const transcodeFile = (input:string, output:string, sceneName:string, transcodeOptions:string[], preserveDates:boolean):Promise<string>=>{
   return new Promise(async(resolve, reject)=>{
     ffmpeg(input)
     .on('end', async ()=>{
       process.stdout.write('\n');
       logger.success(`Transcoded file ${input} to ${output}`);            
       const oldPath = input;
-      if(config.TRANSCODE_PRESERVE_DATES){
+      if(preserveDates){
         //update the modified/accessed date of our new copy
         const fsStats =  statSync(oldPath);
         utimesSync(output, fsStats.atime, fsStats.mtime);
@@ -105,9 +101,9 @@ export const transcodeFile = (input:string, output:string, sceneName:string):Pro
       logger.error(err.message);
       resolve(input);
     })
-    .on('start', async  (cmd)=>onTranscodeStart(cmd, sceneName))
+    .on('start', async  (cmd)=>onTranscodeStart(cmd, sceneName, transcodeOptions))
     .on('progress', async (args)=>onTranscodeProgress(args, sceneName))
-    .addOptions(config.TRANSCODE_OPTIONS)
+    .addOptions(transcodeOptions)
     .save(output);
   });  
 };
