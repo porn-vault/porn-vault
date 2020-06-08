@@ -8,7 +8,7 @@ import * as readline from 'readline';
 
 let currentProgress = 0;
 
-//compatible codecs for html5 video element (mp4/webm)
+// compatible codecs for html5 video element (mp4/webm)
 const vcodecs = ['h264','vp8','vp9','av1', 'theora'];
 const acodecs = ['aac','ogg','opus','vorbis'];
 
