@@ -1,7 +1,7 @@
+import { movieCollection } from "../../../database";
 import * as logger from "../../../logger";
 import { searchMovies } from "../../../search/movie";
 import Movie from "../../../types/movie";
-import { movieCollection } from "../../../database";
 
 export async function getMovies(
   _: unknown,
