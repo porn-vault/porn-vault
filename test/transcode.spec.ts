@@ -17,9 +17,9 @@ const basePath = 'test/fixtures/files'
 describe("Transcode videos", ()=>{
     describe("Process 3GP video", ()=>{
         const baseName = 'small001';
-        const file = path.resolve(basePath, `${baseName}.3gp`);
-        const expected = path.resolve(basePath, `${baseName}.mp4`);
-        const renamedOriginal = path.resolve(basePath, `$_${baseName}.3gp`);
+        const file = path.join(basePath, `${baseName}.3gp`);
+        const expected = path.join(basePath, `${baseName}.mp4`);
+        const renamedOriginal = path.join(basePath, `$_${baseName}.3gp`);
 
         after(()=>{
             //remove our expected output
@@ -50,9 +50,9 @@ describe("Transcode videos", ()=>{
 
     describe("Process FLV video", ()=>{
         const baseName = 'small002';
-        const file = path.resolve(basePath, `${baseName}.flv`);
-        const expected = path.resolve(basePath, `${baseName}.mp4`);
-        const renamedOriginal = path.resolve(basePath, `$_${baseName}.flv`);
+        const file = path.join(basePath, `${baseName}.flv`);
+        const expected = path.join(basePath, `${baseName}.mp4`);
+        const renamedOriginal = path.join(basePath, `$_${baseName}.flv`);
 
         after(()=>{
             //remove our expected output
@@ -82,7 +82,7 @@ describe("Transcode videos", ()=>{
     });
 
     describe("Process MP4 video", ()=>{
-        const file = path.resolve(basePath, 'small003.mp4');
+        const file = path.join(basePath, 'small003.mp4');
 
         it("Should match codec white-list", async ()=>{            
             const output = await canPlayInputVideo(file);
@@ -95,7 +95,7 @@ describe("Transcode videos", ()=>{
     });
 
     describe("Process OGV video", ()=>{
-        const file = path.resolve(basePath, 'small004.ogv');
+        const file = path.join(basePath, 'small004.ogv');
 
         it("Should match codec white-list", async ()=>{            
             const output = await canPlayInputVideo(file);
@@ -108,7 +108,7 @@ describe("Transcode videos", ()=>{
     });
 
     describe("Process WebM video", ()=>{
-        const file = path.resolve(basePath, 'small005.webm');
+        const file = path.join(basePath, 'small005.webm');
 
         it("Should match codec white-list", async ()=>{            
             const output = await canPlayInputVideo(file);
