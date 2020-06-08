@@ -4,6 +4,7 @@ import { getConfig, IConfig } from "../config";
 import * as logger from "../logger";
 import path, { basename } from "path";
 import { existsSync, renameSync, statSync, utimesSync } from "fs";
+import { generateHash } from "../hash";
 
 let config: IConfig;
 let currentProgress = 0;
@@ -26,32 +27,13 @@ export const transcode = async (scene:Scene):Promise<string|null>=>{
           logger.message(`Transcoding file ${scene.path}`);
           const folderPath = path.dirname(scene.path);
           let outputFilename = `${scene.name}.mp4`;
-          if(outputFileExists(path.join(folderPath, outputFilename))) outputFilename = `${scene.name}_pv-transcoded.mp4`;
+          if(outputFileExists(path.join(folderPath, outputFilename))) {
+            //ensure we have a unique output filename
+            outputFilename = `${scene.name}_${generateHash()}.mp4`;
+          }
           const outfile = path.join(folderPath, outputFilename);
-             
-          ffmpeg(scene.path)
-          .on('end', async ()=>{
-            process.stdout.write('\n');
-            logger.success(`Transcoded file ${scene.path} to ${outfile}`);            
-            const oldPath = scene.path!;
-            if(config.TRANSCODE_PRESERVE_DATES){
-              //update the modified/accessed date of our new copy
-              const fsStats =  statSync(oldPath);
-              utimesSync(outfile, fsStats.atime, fsStats.mtime);
-            }
-            //rename the old file with a leading '$_' so we ignore it on the next scan
-            //also so we can easily search for and remove it later
-            renameSync(oldPath, path.join(path.dirname(oldPath), `$_${basename(oldPath)}`));         
-            resolve(outfile);
-          })
-          .on('error', (err)=>{
-            logger.error(err.message);
-            resolve(scene.path);
-          })
-          .on('start', async  (cmd)=>onTranscodeStart(cmd, scene))
-          .on('progress', async (args)=>onTranscodeProgress(args, scene))
-          .addOptions(config.TRANSCODE_OPTIONS)
-          .save(outfile);
+
+          resolve(await transcodeFile(scene.path, outfile, scene.name));             
         }else{
           logger.success(`Skipping transcoding of compatible file: ${scene.path}`);
           resolve(scene.path);
@@ -59,7 +41,7 @@ export const transcode = async (scene:Scene):Promise<string|null>=>{
       });
 };
 
-const canPlayInputVideo = async (path:string):Promise<boolean>=>{
+export const canPlayInputVideo = async (path:string):Promise<boolean>=>{
     const streams = (await runFFprobe(path)).streams;
     let isVCompat = false;
     let isACompat = false;
@@ -85,19 +67,47 @@ const outputFileExists = (path:string):boolean => {
     return false;
 };
 
-const onTranscodeStart = async (cmd:string, scene:Scene) => {
+const onTranscodeStart = async (cmd:string, sceneName:string) => {
     //logger.message(cmd);
-    logger.message(`Starting transcoding of ${scene.name}`);
+    logger.message(`Starting transcoding of ${sceneName}`);
     logger.message(`Using transcoding options: ${config.TRANSCODE_OPTIONS}`);
 };
 
-const onTranscodeProgress = async (args:any, scene:Scene)=>{
+const onTranscodeProgress = async (args:any, sceneName:string)=>{
     const progress = (args.percent * 1) / 5;
     if(currentProgress !== progress){
       process.stdout.cursorTo(0);            
       const progressBar = `${'='.repeat(progress)}${' '.repeat(20-progress)}`;
-      let outString = `Processing of ${scene.name}: [${progressBar}]`;            
+      let outString = `Processing of ${sceneName}: [${progressBar}]`;            
       process.stdout.write(outString);
       currentProgress = progress;
     }
+};
+
+export const transcodeFile = (input:string, output:string, sceneName:string):Promise<string>=>{
+  return new Promise(async(resolve, reject)=>{
+    ffmpeg(input)
+    .on('end', async ()=>{
+      process.stdout.write('\n');
+      logger.success(`Transcoded file ${input} to ${output}`);            
+      const oldPath = input;
+      if(config.TRANSCODE_PRESERVE_DATES){
+        //update the modified/accessed date of our new copy
+        const fsStats =  statSync(oldPath);
+        utimesSync(output, fsStats.atime, fsStats.mtime);
+      }
+      //rename the old file with a leading '$_' so we ignore it on the next scan
+      //also so we can easily search for and remove it later
+      renameSync(oldPath, path.join(path.dirname(oldPath), `$_${basename(oldPath)}`));         
+      resolve(output);
+    })
+    .on('error', (err)=>{
+      logger.error(err.message);
+      resolve(input);
+    })
+    .on('start', async  (cmd)=>onTranscodeStart(cmd, sceneName))
+    .on('progress', async (args)=>onTranscodeProgress(args, sceneName))
+    .addOptions(config.TRANSCODE_OPTIONS)
+    .save(output);
+  });  
 };
