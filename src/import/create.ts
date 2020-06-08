@@ -24,7 +24,6 @@ import CustomField, { CustomFieldTarget } from "../types/custom_field";
 import Image from "../types/image";
 import Label from "../types/label";
 import Marker from "../types/marker";
-import MarkerReference from "../types/marker_reference";
 import Movie from "../types/movie";
 import Scene from "../types/scene";
 import Studio from "../types/studio";
@@ -264,7 +263,7 @@ export async function createFromFileData(opts: ICreateOptions) {
     for (const movieId in opts.movies) {
       const movieToCreate = opts.movies[movieId];
 
-      let movie = new Movie(movieToCreate.name, Object.keys(createdScenes));
+      let movie = new Movie(movieToCreate.name);
 
       if (isNumber(movieToCreate.bookmark)) movie.bookmark = movieToCreate.bookmark;
 

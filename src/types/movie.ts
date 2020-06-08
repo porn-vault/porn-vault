@@ -119,9 +119,8 @@ export default class Movie {
     );
   }
 
-  constructor(name: string, scenes: string[] = []) {
+  constructor(name: string) {
     this._id = "mo_" + generateHash();
     this.name = name.trim();
-    this.scenes = scenes;
   }
 }

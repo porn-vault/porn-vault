@@ -21,11 +21,11 @@ export default class Actor {
   avatar?: string | null = null;
   favorite = false;
   bookmark: number | null = null;
-  rating = 0;
-  customFields: Record<string, boolean | string | number | string[] | null> = {};
-
-  labels?: string[]; // backwards compatibility
-  studio?: string | null; // backwards compatibility
+  rating: number = 0;
+  customFields: Record<
+    string,
+    boolean | string | number | string[] | null
+  > = {};
   description?: string | null = null;
   nationality?: string | null = null;
 

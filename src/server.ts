@@ -40,6 +40,9 @@ let serverReady = false;
 let setupMessage = "Setting up...";
 
 async function tryStartProcessing() {
+  const config = getConfig();
+  if (!config.DO_PROCESSING) return;
+
   const queueLen = await getLength();
   if (queueLen > 0 && !isProcessing()) {
     logger.message("Starting processing worker...");
@@ -300,12 +303,10 @@ export default async (): Promise<void> => {
     logger.warn("Scanning folders is currently disabled. Enable in config.json & restart.");
   }
 
-  if (config.DO_PROCESSING) {
-    tryStartProcessing().catch((err) => {
-      logger.error("Couldn't start processing...");
-      logger.error(err.message);
-    });
-  }
+  tryStartProcessing().catch((err) => {
+    logger.error("Couldn't start processing...");
+    logger.error(err.message);
+  });
 
   if (config.SCAN_INTERVAL > 0)
     setInterval(() => {

@@ -1,6 +1,7 @@
 import * as logger from "../../../logger";
 import { searchActors } from "../../../search/actor";
 import Actor from "../../../types/actor";
+import { actorCollection } from "../../../database";
 
 export async function getUnwatchedActors(
   _: unknown,
@@ -27,7 +28,8 @@ export async function getUnwatchedActors(
       `Search results: ${result.max_items} hits found in ${(Date.now() - timeNow) / 1000}s`
     );
 
-    const actors = await Promise.all(result.items.map(Actor.getById));
+    const actors = await actorCollection.getBulk(result.items);
+
     logger.log(`Search done in ${(Date.now() - timeNow) / 1000}s.`);
 
     return actors.filter(Boolean);
@@ -55,7 +57,8 @@ export async function getActors(
       `Search results: ${result.max_items} hits found in ${(Date.now() - timeNow) / 1000}s`
     );
 
-    const actors = await Promise.all(result.items.map(Actor.getById));
+    const actors = await actorCollection.getBulk(result.items);
+
     logger.log(`Search done in ${(Date.now() - timeNow) / 1000}s.`);
 
     return {

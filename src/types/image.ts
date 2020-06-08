@@ -5,6 +5,13 @@ import { unlinkAsync } from "../fs/async";
 import { generateHash } from "../hash";
 import * as logger from "../logger";
 import Actor from "./actor";
+import { unlinkAsync } from "../fs/async";
+import Vibrant from "node-vibrant";
+import {
+  imageCollection,
+  actorCollection,
+  actorReferenceCollection,
+} from "../database";
 import ActorReference from "./actor_reference";
 import Label from "./label";
 
@@ -29,7 +36,6 @@ export default class Image {
   rating = 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   customFields: Record<string, any> = {};
-  labels?: string[]; // backwards compatibility
   meta = new ImageMeta();
   actors?: string[];
   studio: string | null = null;

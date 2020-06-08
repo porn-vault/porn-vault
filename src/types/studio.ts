@@ -4,7 +4,8 @@ import Actor from "./actor";
 import Label from "./label";
 import Movie from "./movie";
 import Scene from "./scene";
-import { mapAsync } from "./utility";
+import { mapAsync, createObjectSet } from "./utility";
+import * as logger from "../logger";
 
 export default class Studio {
   _id: string;
@@ -15,7 +16,6 @@ export default class Studio {
   favorite = false;
   bookmark: number | null = null;
   parent: string | null = null;
-  labels?: string[]; // backwards compatibility
   aliases?: string[];
 
   static async checkIntegrity(): Promise<void> {}
@@ -91,7 +91,7 @@ export default class Studio {
 
   static async inferLabels(studio: Studio): Promise<Label[]> {
     const scenes = await Studio.getScenes(studio);
-    const labelIds = [...new Set(scenes.map((scene) => scene.labels).flat())];
-    return (await mapAsync(labelIds, Label.getById)).filter(Boolean) as Label[];
+    const labels = (await mapAsync(scenes, Scene.getLabels)).flat();
+    return createObjectSet(labels, "_id");
   }
 }
