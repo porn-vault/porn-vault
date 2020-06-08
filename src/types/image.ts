@@ -5,13 +5,6 @@ import { unlinkAsync } from "../fs/async";
 import { generateHash } from "../hash";
 import * as logger from "../logger";
 import Actor from "./actor";
-import { unlinkAsync } from "../fs/async";
-import Vibrant from "node-vibrant";
-import {
-  imageCollection,
-  actorCollection,
-  actorReferenceCollection,
-} from "../database";
 import ActorReference from "./actor_reference";
 import Label from "./label";
 

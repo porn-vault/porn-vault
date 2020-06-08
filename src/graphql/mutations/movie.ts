@@ -24,7 +24,6 @@ type IMovieUpdateOpts = Partial<{
 
 export default {
   async addMovie(_: unknown, args: Dictionary<any>): Promise<Movie> {
-  async addMovie(_, args: Dictionary<any>) {
     let movie = new Movie(args.name);
 
     if (args.scenes) {
