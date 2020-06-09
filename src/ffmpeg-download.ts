@@ -1,9 +1,8 @@
 import axios from "axios";
 import ProgressBar from "cli-progress";
-import { createWriteStream } from "fs";
+import { createWriteStream, existsSync } from "fs";
 import * as os from "os";
 
-import { existsAsync } from "./fs/async";
 import * as logger from "./logger";
 
 const FFMpegVersions: Record<string, Record<string, string>> = {
@@ -57,7 +56,7 @@ export function getFFProbeURL(): string {
 
 export async function downloadFile(url: string, file: string): Promise<void> {
   try {
-    if (await existsAsync(file)) return;
+    if (existsSync(file)) return;
 
     logger.message(`Downloading ${url}...`);
 

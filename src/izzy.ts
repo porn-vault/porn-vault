@@ -1,11 +1,11 @@
 import Axios from "axios";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { chmodSync } from "fs";
+import { chmodSync, existsSync } from "fs";
 import { arch, type } from "os";
 
 import { getConfig } from "./config/index";
 import { downloadFile } from "./ffmpeg-download";
-import { existsAsync, unlinkAsync } from "./fs/async";
+import { unlinkAsync } from "./fs/async";
 import * as logger from "./logger";
 
 export let izzyProcess!: ChildProcessWithoutNullStreams;
@@ -36,6 +36,7 @@ export async function izzyVersion(): Promise<string | null> {
 }
 
 interface IGithubAsset {
+  // eslint-disable-next-line camelcase
   browser_download_url: string;
   name: string;
 }
@@ -44,7 +45,11 @@ async function downloadIzzy() {
   logger.log("Fetching Izzy releases...");
   const releaseUrl = `https://api.github.com/repos/boi123212321/izzy/releases/latest`;
 
-  const releaseInfo = (await Axios.get(releaseUrl)).data;
+  const releaseInfo = (
+    await Axios.get<{
+      id: string;
+    }>(releaseUrl)
+  ).data;
   const releaseId = releaseInfo.id;
 
   const assetsUrl = `https://api.github.com/repos/boi123212321/izzy/releases/${releaseId}/assets`;
@@ -69,13 +74,14 @@ async function downloadIzzy() {
     process.exit(1);
   }
 
+  // eslint-disable-next-line camelcase
   await downloadFile(asset.browser_download_url, izzyPath);
   logger.log("CHMOD Izzy...");
   chmodSync(izzyPath, "111");
 }
 
 export async function ensureIzzyExists(): Promise<0 | 1> {
-  if (await existsAsync(izzyPath)) {
+  if (existsSync(izzyPath)) {
     logger.log("Izzy binary found");
     return 0;
   } else {
@@ -96,14 +102,14 @@ export function spawnIzzy(): Promise<void> {
     izzyProcess.on("error", (err) => {
       reject(err);
     });
-    izzyProcess.stdout.on("data", (data) => {
+    izzyProcess.stdout.on("data", () => {
       if (!responded) {
         logger.log(`Izzy ready on port ${port}`);
         responded = true;
         resolve();
       }
     });
-    izzyProcess.stderr.on("data", (data) => {
+    izzyProcess.stderr.on("data", (data: Buffer) => {
       logger.izzy(data.toString());
     });
   });

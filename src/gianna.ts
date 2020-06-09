@@ -1,11 +1,11 @@
 import Axios from "axios";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { chmodSync } from "fs";
+import { chmodSync, existsSync } from "fs";
 import { arch, type } from "os";
 
 import { getConfig } from "./config/index";
 import { downloadFile } from "./ffmpeg-download";
-import { existsAsync, unlinkAsync } from "./fs/async";
+import { unlinkAsync } from "./fs/async";
 import * as logger from "./logger";
 
 export let giannaProcess!: ChildProcessWithoutNullStreams;
@@ -17,6 +17,7 @@ export async function deleteGianna(): Promise<void> {
 }
 
 interface IGithubAsset {
+  // eslint-disable-next-line camelcase
   browser_download_url: string;
   name: string;
 }
@@ -44,7 +45,11 @@ async function downloadGianna() {
   logger.log("Fetching Gianna releases...");
   const releaseUrl = `https://api.github.com/repos/boi123212321/gianna/releases/latest`;
 
-  const releaseInfo = (await Axios.get(releaseUrl)).data;
+  const releaseInfo = (
+    await Axios.get<{
+      id: string;
+    }>(releaseUrl)
+  ).data;
   const releaseId = releaseInfo.id;
 
   const assetsUrl = `https://api.github.com/repos/boi123212321/gianna/releases/${releaseId}/assets`;
@@ -69,13 +74,14 @@ async function downloadGianna() {
     process.exit(1);
   }
 
+  // eslint-disable-next-line camelcase
   await downloadFile(asset.browser_download_url, giannaPath);
   logger.log("CHMOD Gianna...");
   chmodSync(giannaPath, "111");
 }
 
 export async function ensureGiannaExists(): Promise<0 | 1> {
-  if (await existsAsync(giannaPath)) {
+  if (existsSync(giannaPath)) {
     logger.log("Gianna binary found");
     return 0;
   } else {
@@ -96,14 +102,14 @@ export function spawnGianna(): Promise<void> {
     giannaProcess.on("error", (err) => {
       reject(err);
     });
-    giannaProcess.stdout.on("data", (data) => {
+    giannaProcess.stdout.on("data", () => {
       if (!responded) {
         logger.log(`Gianna ready on port ${port}`);
         responded = true;
         resolve();
       }
     });
-    giannaProcess.stderr.on("data", (data) => {
+    giannaProcess.stderr.on("data", (data: Buffer) => {
       logger.gianna(data.toString());
     });
   });

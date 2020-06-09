@@ -1,6 +1,5 @@
 import debug from "debug";
 import express from "express";
-import * as url from "url";
 
 import { getConfig } from "./config/index";
 import { writeFileAsync } from "./fs/async";
@@ -117,7 +116,7 @@ export const httpLog = (
   res: express.Response,
   next: express.NextFunction
 ): void => {
-  const baseUrl = url.parse(req.url).pathname;
+  const baseUrl = new URL(req.url).pathname;
   http(`${req.method} ${baseUrl}: ${new Date().toLocaleString()}`);
   next();
 };

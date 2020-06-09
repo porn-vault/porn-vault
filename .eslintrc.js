@@ -25,6 +25,7 @@ module.exports = {
   plugins: ["@typescript-eslint", "simple-import-sort"],
   root: true,
   rules: {
+    "@typescript-eslint/no-namespace": "off",
     // Turn off default import rules
     "sort-imports": "off",
     "import/order": "off",

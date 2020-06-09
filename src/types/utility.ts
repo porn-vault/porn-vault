@@ -14,7 +14,7 @@ export function extensionFromUrl(url: string): string {
   return path.extname(clean);
 }
 
-export function validRating(val: unknown): boolean {
+export function validRating(val: unknown): val is number {
   return typeof val === "number" && val >= 0 && val <= 10 && Number.isInteger(val);
 }
 

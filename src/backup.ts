@@ -1,7 +1,7 @@
-import { mkdirSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
-import { copyFileAsync, existsAsync, readdirAsync, rimrafAsync } from "./fs/async";
+import { copyFileAsync, readdirAsync, rimrafAsync } from "./fs/async";
 import * as log from "./logger";
 import { libraryPath, mapAsync } from "./types/utility";
 
@@ -45,7 +45,7 @@ export async function createBackup(amount = 10): Promise<void> {
     });
 
     for (const transfer of transfers) {
-      if (!(await existsAsync(transfer.from))) return;
+      if (!existsSync(transfer.from)) return;
 
       log.log(`Backup: ${transfer.from} -> ${transfer.to}...`);
 

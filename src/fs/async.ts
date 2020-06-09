@@ -1,11 +1,10 @@
-import { copyFile, exists, readdir, readFile, stat, unlink, writeFile } from "fs";
+import { copyFile, readdir, readFile, stat, unlink, writeFile } from "fs";
 import { extname, join, resolve } from "path";
 import rimraf from "rimraf";
 import { promisify } from "util";
 
 import * as logger from "../logger";
 
-export const existsAsync = promisify(exists);
 export const statAsync = promisify(stat);
 export const unlinkAsync = promisify(unlink);
 export const readdirAsync = promisify(readdir);

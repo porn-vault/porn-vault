@@ -1,10 +1,10 @@
-import { appendFileSync } from "fs";
+import { appendFileSync, existsSync } from "fs";
 import { basename, extname, resolve } from "path";
 import YAML from "yaml";
 
 import args from "../args";
 import { getConfig } from "../config";
-import { existsAsync, readFileAsync, walk } from "../fs/async";
+import { readFileAsync, walk } from "../fs/async";
 import * as logger from "../logger";
 import { libraryPath } from "../types/utility";
 import { createFromFileData } from "./create";
@@ -60,7 +60,7 @@ export async function checkImportFolders(): Promise<void> {
   const importedFile = libraryPath("imported.txt");
 
   try {
-    if (await existsAsync(importedFile))
+    if (existsSync(importedFile))
       imported = (await readFileAsync(importedFile, "utf-8")).split("\n");
   } catch (error) {
     logger.error(error);
@@ -76,7 +76,7 @@ export async function checkImportFolders(): Promise<void> {
   for (const folder of config.BULK_IMPORT_PATHS) {
     const _path = resolve(folder);
     logger.log("Scanning import folder: " + _path);
-    if (!(await existsAsync(_path))) {
+    if (!existsSync(_path)) {
       logger.warn("Could not find import folder: " + _path);
       continue;
     }

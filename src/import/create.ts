@@ -1,3 +1,4 @@
+import { existsSync } from "fs";
 import { inspect } from "util";
 
 import args from "../args";
@@ -13,7 +14,6 @@ import {
   studioCollection,
 } from "../database/index";
 import { stripStr } from "../extractor";
-import { existsAsync } from "../fs/async";
 import * as logger from "../logger";
 import { onActorCreate } from "../plugin_events/actor";
 import { onMovieCreate } from "../plugin_events/movie";
@@ -241,7 +241,7 @@ export async function createFromFileData(opts: ICreateOptions) {
         customFields = normalizeCustomFields(sceneToCreate.customFields, createdFields);
       }
 
-      if (await existsAsync(sceneToCreate.path)) {
+      if (existsSync(sceneToCreate.path)) {
         try {
           newScene = await onSceneCreate(newScene, labels, actors);
         } catch (error) {

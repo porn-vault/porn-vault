@@ -1,10 +1,9 @@
-import { chmodSync } from "fs";
+import { chmodSync, existsSync } from "fs";
 import inquirer from "inquirer";
 import * as path from "path";
 
 import { defaultConfig, IConfig } from "./config/index";
 import { downloadFile, getFFMpegURL, getFFProbeURL } from "./ffmpeg-download";
-import { existsAsync } from "./fs/async";
 import * as logger from "./logger";
 import { sha512 } from "./types/utility";
 
@@ -82,7 +81,7 @@ export default async (): Promise<IConfig> => {
       ).path;
 
       if (path !== "done") {
-        if (await existsAsync(path)) videoFolders.push(path);
+        if (existsSync(path)) videoFolders.push(path);
         else logger.error(`Could not find ${path}`);
       }
     } while (path !== "done");
@@ -115,7 +114,7 @@ export default async (): Promise<IConfig> => {
       ).path;
 
       if (path !== "done") {
-        if (await existsAsync(path)) imageFolders.push(path);
+        if (existsSync(path)) imageFolders.push(path);
         else logger.error(`Could not find ${path}`);
       }
     } while (path !== "done");

@@ -2,7 +2,7 @@ import { Dictionary } from "../../types/utility";
 
 export const isString = (i: unknown): i is string => typeof i === "string";
 
-export function validCustomFields(obj?: Dictionary<any> | null): boolean {
+export function validCustomFields<T extends Dictionary<unknown>>(obj?: T | null): boolean {
   if (!obj) return true;
   return Object.values(obj).every(isString);
 }
@@ -32,5 +32,5 @@ export const isValidDate = (i?: number | null): boolean => {
   if (!i) return true;
   if (i < 0) return false;
   const d = new Date(i);
-  return d instanceof Date && !isNaN(<any>d);
+  return d instanceof Date && !isNaN(<number>(<unknown>d));
 };

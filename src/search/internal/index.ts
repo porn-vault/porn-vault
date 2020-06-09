@@ -6,9 +6,12 @@ import { getConfig } from "../../config";
 export namespace Gianna {
   export interface ISearchResults {
     items: string[];
+    // eslint-disable-next-line camelcase
     max_items: number;
     message: string;
+    // eslint-disable-next-line camelcase
     num_items: number;
+    // eslint-disable-next-line camelcase
     num_pages: number;
     query: string | null;
     status: number;
@@ -56,6 +59,7 @@ export namespace Gianna {
     }
 
     async times(): Promise<[number, number][]> {
+      // eslint-disable-next-line camelcase
       const res = await Axios.get<{ query_times: [number, number][] }>(
         `http://localhost:${getConfig().GIANNA_PORT}/index/${this.name}/times`
       );

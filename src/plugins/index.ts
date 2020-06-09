@@ -4,6 +4,7 @@ import cheerio from "cheerio";
 import debug from "debug";
 import ffmpeg from "fluent-ffmpeg";
 import * as fs from "fs";
+import { existsSync } from "fs";
 import inquirer from "inquirer";
 import jimp from "jimp";
 import moment from "moment";
@@ -14,7 +15,6 @@ import readline from "readline";
 import YAML from "yaml";
 
 import { IConfig } from "../config/index";
-import { existsAsync } from "../fs/async";
 import * as logger from "../logger";
 import { Dictionary, libraryPath } from "../types/utility";
 
@@ -80,8 +80,7 @@ export async function runPlugin(
   const path = nodepath.resolve(plugin.path);
 
   if (path) {
-    if (!(await existsAsync(path)))
-      throw new Error(`${pluginName}: definition not found (missing file).`);
+    if (!existsSync(path)) throw new Error(`${pluginName}: definition not found (missing file).`);
 
     const func = requireUncached(path);
 

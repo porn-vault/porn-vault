@@ -1,5 +1,5 @@
 import chokidar from "chokidar";
-import { exists, readFile, writeFile } from "fs";
+import { existsSync, readFile, writeFile } from "fs";
 import inquirer from "inquirer";
 import { promisify } from "util";
 import YAML from "yaml";
@@ -9,7 +9,6 @@ import * as logger from "../logger";
 import setupFunction from "../setup";
 import { Dictionary } from "../types/utility";
 
-const existsAsync = promisify(exists);
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
 
@@ -184,7 +183,7 @@ export async function checkConfig(): Promise<undefined> {
 }
 
 export async function loadConfig(): Promise<boolean> {
-  if (await existsAsync("config.json")) {
+  if (existsSync("config.json")) {
     logger.message("Loading config.json...");
     try {
       loadedConfig = JSON.parse(await readFileAsync("config.json", "utf-8"));
@@ -194,7 +193,7 @@ export async function loadConfig(): Promise<boolean> {
     }
     configFile = "config.json";
     return true;
-  } else if (await existsAsync("config.yaml")) {
+  } else if (existsSync("config.yaml")) {
     logger.message("Loading config.yaml...");
     try {
       loadedConfig = YAML.parse(await readFileAsync("config.yaml", "utf-8"));

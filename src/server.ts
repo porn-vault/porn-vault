@@ -1,7 +1,7 @@
 import boxen from "boxen";
 import { spawn } from "child_process";
 import express from "express";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import https from "https";
 import LRU from "lru-cache";
 import * as path from "path";
@@ -12,7 +12,6 @@ import BROKEN_IMAGE from "./broken_image";
 import { getConfig, watchConfig } from "./config/index";
 import { actorCollection, imageCollection, loadStores, sceneCollection } from "./database/index";
 import { dvdRenderer } from "./dvd_renderer";
-import { existsAsync } from "./fs/async";
 import { giannaVersion, resetGianna, spawnGianna } from "./gianna";
 import { checkImportFolders } from "./import/index";
 import { izzyVersion, resetIzzy, spawnIzzy } from "./izzy";
@@ -196,7 +195,7 @@ export default async (): Promise<void> => {
   app.get("/", async (req, res) => {
     const file = path.join(process.cwd(), "app/dist/index.html");
 
-    if (await existsAsync(file)) res.sendFile(file);
+    if (existsSync(file)) res.sendFile(file);
     else {
       return res.status(404).send(
         await renderHandlebars("./views/error.html", {
@@ -221,7 +220,7 @@ export default async (): Promise<void> => {
 
     if (image && image.path) {
       const resolved = path.resolve(image.path);
-      if (!(await existsAsync(resolved))) res.redirect("/broken");
+      if (!existsSync(resolved)) res.redirect("/broken");
       else res.sendFile(resolved);
     } else res.redirect("/broken");
   });

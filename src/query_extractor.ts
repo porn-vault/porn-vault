@@ -19,16 +19,14 @@ export interface IQueryOptions {
   take: number | null;
 }
 
-const parseWords = (str = "") =>
-  // @ts-ignore
-  str
-    .match(/\\?.|^$/g)
+const parseWords = (str = "") => {
+  const match = str.match(/\\?.|^$/g);
+  if (!match) return [];
+  return match
     .reduce(
       (p, c) => {
         if (c === "'") {
-          // @ts-ignore
           p.quote ^= 1;
-          // @ts-ignore
         } else if (!p.quote && c === " ") {
           p.a.push("");
         } else {
@@ -36,9 +34,10 @@ const parseWords = (str = "") =>
         }
         return p;
       },
-      { a: [""] }
+      { quote: 0, a: [""] }
     )
     .a.filter(Boolean);
+};
 
 export default (query?: string): IQueryOptions => {
   const options: IQueryOptions = {

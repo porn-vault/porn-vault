@@ -1,9 +1,10 @@
+import { existsSync } from "fs";
 import mkdirp from "mkdirp";
 import ora from "ora";
 
 import args from "../args";
 import { convertCrossReferences } from "../compat";
-import { existsAsync, unlinkAsync } from "../fs/async";
+import { unlinkAsync } from "../fs/async";
 import { absolutifyPaths, bookmarksToTimestamp } from "../integrity";
 import * as logger from "../logger";
 import { ISceneProcessingItem } from "../queue/processing";
@@ -42,7 +43,7 @@ export let processingCollection!: Izzy.Collection<ISceneProcessingItem>;
 
 export async function loadStores(): Promise<void> {
   const crossReferencePath = libraryPath("cross_references.db");
-  if (await existsAsync(crossReferencePath)) {
+  if (existsSync(crossReferencePath)) {
     logger.message("Making DB compatible...");
     await convertCrossReferences();
     await unlinkAsync(crossReferencePath);

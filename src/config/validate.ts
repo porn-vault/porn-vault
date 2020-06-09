@@ -1,10 +1,11 @@
+import { existsSync } from "fs";
+
 import { IConfig } from "../config/index";
-import { existsAsync } from "../fs/async";
 import * as logger from "../logger";
 
 export async function validateFFMPEGPaths(config: IConfig): Promise<void> {
   if (config.FFMPEG_PATH) {
-    const found = await existsAsync(config.FFMPEG_PATH);
+    const found = existsSync(config.FFMPEG_PATH);
     if (!found) {
       logger.error(`FFMPEG binary not found at ${config.FFMPEG_PATH}`);
       process.exit(1);
@@ -15,7 +16,7 @@ export async function validateFFMPEGPaths(config: IConfig): Promise<void> {
   }
 
   if (config.FFPROBE_PATH) {
-    const found = await existsAsync(config.FFPROBE_PATH);
+    const found = existsSync(config.FFPROBE_PATH);
     if (!found) {
       logger.error(`FFPROBE binary not found at ${config.FFPROBE_PATH}`);
       process.exit(1);

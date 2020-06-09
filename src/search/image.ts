@@ -59,7 +59,7 @@ export function isBlacklisted(name: string): boolean {
 
 export const sliceArray = (size: number) => <T>(
   arr: T[],
-  cb: (value: T[], index: number, arr: T[]) => any
+  cb: (value: T[], index: number, arr: T[]) => unknown
 ): void => {
   let index = 0;
   let slice = arr.slice(index, index + size);
