@@ -34,6 +34,10 @@ export default class SceneMixin extends Vue {
     return contextModule.sceneAspectRatio;
   }
 
+  get scenesPerPage() {
+    return contextModule.scenesPerPage;
+  }
+
   get videoDuration() {
     if (this.value)
       return moment()
