@@ -242,6 +242,10 @@ export default class MovieList extends mixins(DrawerMixin) {
     return contextModule.showSidenav;
   }
 
+  get moviesPerPage() {
+    return  contextModule.moviesPerPage;
+  }
+
   rerollSeed() {
     const seed = Math.random().toString(36);
     localStorage.setItem("pm_seed", seed);
@@ -533,7 +537,7 @@ export default class MovieList extends mixins(DrawerMixin) {
       });
   }
 
-  async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
+  async fetchPage(page: number, take = this.moviesPerPage, random?: boolean, seed?: string) {
     try {
       let include = "";
       let exclude = "";

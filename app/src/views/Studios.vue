@@ -196,6 +196,10 @@ export default class StudioList extends mixins(DrawerMixin) {
     return contextModule.showSidenav;
   }
 
+  get studiosPerPage() {
+    return  contextModule.studiosPerPage;
+  }
+  
   rerollSeed() {
     const seed = Math.random().toString(36);
     localStorage.setItem("pm_seed", seed);
@@ -431,7 +435,7 @@ export default class StudioList extends mixins(DrawerMixin) {
       });
   }
 
-  async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
+  async fetchPage(page: number, take = this.studiosPerPage, random?: boolean, seed?: string) {
     try {
       let include = "";
       let exclude = "";

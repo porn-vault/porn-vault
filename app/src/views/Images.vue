@@ -228,6 +228,10 @@ export default class ImageList extends mixins(DrawerMixin) {
     return contextModule.showSidenav;
   }
 
+  get imagesPerPage() {
+    return  contextModule.imagesPerPage;
+  }
+
   rerollSeed() {
     const seed = Math.random().toString(36);
     localStorage.setItem("pm_seed", seed);
@@ -461,7 +465,7 @@ export default class ImageList extends mixins(DrawerMixin) {
     }, 500);
   }
 
-  async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
+  async fetchPage(page: number, take = this.imagesPerPage, random?: boolean, seed?: string) {
     try {
       let include = "";
       let exclude = "";
