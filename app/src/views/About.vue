@@ -58,6 +58,57 @@
               </div>
             </v-col>
           </v-row>
+
+          <v-subheader>Results Per Page</v-subheader>
+          <v-row>             
+            <v-col :cols="12" :sm="6">
+              <v-form>
+                <div>
+                  <v-text-field
+                    :rules="perPageInputRules"
+                    color="primary"
+                    v-model="scenesPerPage"
+                    placeholder="24"
+                    label="Scenes Per Page"
+                  />
+                  <v-text-field
+                    :rules="perPageInputRules"
+                    color="primary"
+                    v-model="actorsPerPage"
+                    placeholder="24"
+                    label="Actors Per Page"
+                  />
+                  <v-text-field
+                    :rules="perPageInputRules"
+                    color="primary"
+                    v-model="moviesPerPage"
+                    placeholder="24"
+                    label="Movies Per Page"
+                  />
+                </div>
+              </v-form>
+            </v-col>
+            <v-col :cols="12" :sm="6">
+              <v-form>
+                <div>
+                  <v-text-field
+                    :rules="perPageInputRules"
+                    color="primary"
+                    v-model="studiosPerPage"
+                    placeholder="24"
+                    label="Studios Per Page"
+                  />
+                  <v-text-field
+                    :rules="perPageInputRules"
+                    color="primary"
+                    v-model="imagesPerPage"
+                    placeholder="24"
+                    label="Images Per Page"
+                  />
+                </div>
+              </v-form>
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
 
@@ -113,6 +164,11 @@
 import { Component, Vue } from "vue-property-decorator";
 import CustomFieldCreator from "@/components/CustomFieldCreator.vue";
 import { contextModule } from "@/store/context";
+import { sceneModule } from "@/store/scene";
+import { movieModule } from "@/store/movie";
+import { imageModule } from "@/store/image";
+import { actorModule } from "@/store/actor";
+import { studioModule } from "@/store/studio";
 
 @Component({
   components: {
@@ -121,6 +177,11 @@ import { contextModule } from "@/store/context";
 })
 export default class About extends Vue {
   version = "0.22";
+
+  perPageInputRules = [
+    v => (v !> 0) || "Value must be a positive integer",
+    v => (!!v.match(/^[0-9]+$/)) || "Value must be a positive integer"    
+  ];
 
   set fillActorCards(val: boolean) {
     localStorage.setItem("pm_fillActorCards", val.toString());
@@ -157,6 +218,57 @@ export default class About extends Vue {
   get sceneRatio() {
     return contextModule.sceneAspectRatio;
   }
+
+  set scenesPerPage(val: number) {
+    localStorage.setItem("pm_scenesPerPage", val.toString());
+    contextModule.setScenesPerPage(val);
+    sceneModule.resetPagination();
+  }
+
+  get scenesPerPage() {
+    return contextModule.scenesPerPage;
+  }
+
+  set actorsPerPage(val: number) {
+    localStorage.setItem("pm_actorsPerPage", val.toString());
+    contextModule.setActorsPerPage(val);
+    actorModule.resetPagination();
+  }
+
+  get actorsPerPage() {
+    return contextModule.actorsPerPage;
+  }
+
+  set moviesPerPage(val: number) {
+    localStorage.setItem("pm_moviesPerPage", val.toString());
+    contextModule.setMoviesPerPage(val);
+    movieModule.resetPagination();
+  }
+
+  get moviesPerPage() {
+    return contextModule.moviesPerPage;
+  }
+
+  set studiosPerPage(val: number) {
+    localStorage.setItem("pm_studiosPerPage", val.toString());
+    contextModule.setStudiosPerPage(val);
+    studioModule.resetPagination();
+  }
+
+  get studiosPerPage() {
+    return contextModule.studiosPerPage;
+  }
+
+  set imagesPerPage(val: number) {
+    localStorage.setItem("pm_imagesPerPage", val.toString());
+    contextModule.setImagesPerPage(val);
+    imageModule.resetPagination();
+  }
+
+  get imagesPerPage() {
+    return contextModule.imagesPerPage;
+  }
+
 
   set scenePauseOnUnfocus(val: boolean) {
     localStorage.setItem("pm_scenePauseOnUnfocus", val.toString());
