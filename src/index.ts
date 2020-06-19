@@ -31,7 +31,7 @@ export async function onConfigLoad(config: IConfig): Promise<void> {
     }
   }
 
-  await validateFFMPEGPaths(config);
+  validateFFMPEGPaths(config);
 
   ffmpeg.setFfmpegPath(config.FFMPEG_PATH);
   ffmpeg.setFfprobePath(config.FFPROBE_PATH);

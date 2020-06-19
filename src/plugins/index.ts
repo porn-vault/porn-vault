@@ -20,7 +20,7 @@ import { Dictionary, libraryPath } from "../types/utility";
 
 function requireUncached(module: string): unknown {
   delete require.cache[require.resolve(module)];
-  return require(module);
+  return <unknown>require(module);
 }
 
 export async function runPluginsSerial(
@@ -37,8 +37,8 @@ export async function runPluginsSerial(
   let numErrors = 0;
 
   for (const pluginItem of config.PLUGIN_EVENTS[event]) {
-    let pluginName;
-    let pluginArgs;
+    let pluginName: string;
+    let pluginArgs: Record<string, unknown> | undefined;
 
     if (typeof pluginItem === "string") pluginName = pluginItem;
     else {
@@ -49,15 +49,16 @@ export async function runPluginsSerial(
     logger.message(`Running plugin ${pluginName}:`);
     try {
       const pluginResult = await runPlugin(config, pluginName, {
-        data: JSON.parse(JSON.stringify(result)),
+        data: <typeof result>JSON.parse(JSON.stringify(result)),
         event,
         ...inject,
         pluginArgs,
       });
       Object.assign(result, pluginResult);
     } catch (error) {
-      logger.log(error);
-      logger.error(error.message);
+      const _err = <Error>error;
+      logger.log(_err);
+      logger.error(_err.message);
       numErrors++;
     }
   }
@@ -89,7 +90,7 @@ export async function runPlugin(
     logger.log(plugin);
 
     try {
-      const result = await func({
+      const result = (await func({
         $pluginPath: path,
         $cwd: process.cwd(),
         $library: libraryPath(""),
@@ -125,7 +126,7 @@ export async function runPlugin(
         },
         args: args || plugin.args || {},
         ...inject,
-      });
+      })) as unknown;
 
       if (typeof result !== "object") throw new Error(`${pluginName}: malformed output.`);
 

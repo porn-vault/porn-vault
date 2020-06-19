@@ -5,7 +5,6 @@ import { updateScenes } from "../../search/scene";
 import Label from "../../types/label";
 import LabelledItem from "../../types/labelled_item";
 import Scene from "../../types/scene";
-import { Dictionary } from "../../types/utility";
 
 type ILabelUpdateOpts = Partial<{
   name: string;

@@ -63,9 +63,11 @@ async function scanFolders() {
   logger.message("Scanning folders...");
   await checkVideoFolders();
   logger.success("Scan done.");
-  checkImageFolders();
+  checkImageFolders().catch((err: Error) => {
+    logger.error(err.message);
+  });
 
-  tryStartProcessing().catch((err) => {
+  tryStartProcessing().catch((err: Error) => {
     logger.error("Couldn't start processing...");
     logger.error(err.message);
   });
@@ -239,7 +241,9 @@ export default async (): Promise<void> => {
   app.use("/queue", queueRouter);
 
   app.get("/force-scan", (req, res) => {
-    scanFolders();
+    scanFolders().catch((err: Error) => {
+      logger.error(err.message);
+    });
     res.json("Started scan.");
   });
 
@@ -259,8 +263,9 @@ export default async (): Promise<void> => {
   try {
     await loadStores();
   } catch (error) {
-    logger.error(error);
-    logger.error(`Error while loading database: ${error.message}`);
+    const _err = <Error>error;
+    logger.error(_err);
+    logger.error(`Error while loading database: ${_err.message}`);
     logger.warn("Try restarting, if the error persists, your database may be corrupted");
     process.exit(1);
   }
@@ -305,14 +310,19 @@ export default async (): Promise<void> => {
     logger.error(err.message);
   });
 
+  function printNextScanDate() {
+    const nextScanDate = new Date(Date.now() + config.SCAN_INTERVAL);
+    logger.message(`Next scan at ${nextScanDate.toLocaleString()}`);
+  }
+
   if (config.SCAN_INTERVAL > 0) {
-    function printNextScanDate() {
-      const nextScanDate = new Date(Date.now() + config.SCAN_INTERVAL);
-      logger.message(`Next scan at ${nextScanDate.toLocaleString()}`);
-    }
     printNextScanDate();
     setInterval(() => {
-      scanFolders().then(printNextScanDate);
+      scanFolders()
+        .then(printNextScanDate)
+        .catch((err: Error) => {
+          logger.error(err.message);
+        });
     }, config.SCAN_INTERVAL);
   }
 };

@@ -67,7 +67,10 @@ function normalizeCustomFields(
   return newFields;
 }
 
-function normalizeCreatedObjects(ids: string[], newlyCreated: Dictionary<{ _id: string }>) {
+function normalizeCreatedObjects(
+  ids: string[],
+  newlyCreated: Dictionary<{ _id: string }>
+): string[] {
   return ids.map((str) => {
     // Newly created object, get database ID instead
     if (newlyCreated[str] !== undefined) return newlyCreated[str]._id;
@@ -76,7 +79,7 @@ function normalizeCreatedObjects(ids: string[], newlyCreated: Dictionary<{ _id: 
   });
 }
 
-export async function createFromFileData(opts: ICreateOptions) {
+export async function createFromFileData(opts: ICreateOptions): Promise<void> {
   const createdLabels = {} as Dictionary<Label>;
   const createdFields = {} as Dictionary<CustomField>;
   const createdActors = {} as Dictionary<Actor>;

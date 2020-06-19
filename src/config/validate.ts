@@ -3,7 +3,7 @@ import { existsSync } from "fs";
 import { IConfig } from "../config/index";
 import * as logger from "../logger";
 
-export async function validateFFMPEGPaths(config: IConfig): Promise<void> {
+export function validateFFMPEGPaths(config: IConfig): void {
   if (config.FFMPEG_PATH) {
     const found = existsSync(config.FFMPEG_PATH);
     if (!found) {

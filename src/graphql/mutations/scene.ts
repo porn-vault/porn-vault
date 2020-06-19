@@ -98,7 +98,10 @@ export default {
     return null;
   },
 
-  async addScene(_: unknown, args: Dictionary<any>): Promise<Scene> {
+  async addScene(
+    _: unknown,
+    args: { actors: string[]; labels: string[]; name: string }
+  ): Promise<Scene> {
     for (const actor of args.actors || []) {
       const actorInDb = await Actor.getById(actor);
       if (!actorInDb) throw new Error(`Actor ${actor} not found`);

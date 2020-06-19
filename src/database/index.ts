@@ -53,7 +53,10 @@ export async function loadStores(): Promise<void> {
     mkdirp.sync(libraryPath("images/"));
     mkdirp.sync(libraryPath("thumbnails/")); // generated screenshots
     mkdirp.sync(libraryPath("previews/"));
-  } catch (err) {}
+  } catch (err) {
+    const _err = <Error>err;
+    logger.error(_err.message);
+  }
 
   if (!args["ignore-integrity"]) {
     const compatLoader = ora("Making .db files compatible (if needed)").start();

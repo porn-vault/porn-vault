@@ -19,7 +19,7 @@ export default {
     if (image.studio) return Studio.getById(image.studio);
     return null;
   },
-  async color(image: Image): Promise<string | null> {
+  color(image: Image): string | null {
     return Image.color(image) || null;
   },
 };

@@ -7,19 +7,27 @@ import * as logger from "./logger";
 
 const SIGN_IN_HTML = readFileSync("./views/signin.html", "utf-8");
 
+function validatePassword(input: string | undefined, real: string | null): boolean {
+  if (!real) return true;
+
+  if (!input) return false;
+
+  if (sha512(input) === real) return true;
+
+  return real === input;
+}
+
 export function checkPassword(
   req: express.Request,
   res: express.Response
 ): express.Response<unknown> | undefined {
-  if (!req.query.password) return res.sendStatus(400);
+  const password = (<Record<string, unknown>>req.query).password as string | undefined;
+
+  if (!password) return res.sendStatus(400);
 
   const config = getConfig();
 
-  if (
-    !config.PASSWORD ||
-    sha512(req.query.password) === config.PASSWORD ||
-    req.query.password === config.PASSWORD
-  ) {
+  if (validatePassword(password, config.PASSWORD)) {
     return res.json(config.PASSWORD);
   }
 
@@ -34,19 +42,14 @@ export function passwordHandler(
   const config = getConfig();
   if (!config.PASSWORD) return next();
 
-  if (
-    req.headers["x-pass"] &&
-    (req.headers["x-pass"] === config.PASSWORD ||
-      sha512(<string>req.headers["x-pass"]) === config.PASSWORD)
-  ) {
+  if (validatePassword(<string>req.headers["x-pass"], config.PASSWORD)) {
     logger.log("Auth OK");
     return next();
   }
 
-  if (
-    req.query.password &&
-    (req.query.password === config.PASSWORD || sha512(req.query.password) === config.PASSWORD)
-  ) {
+  const password = (<Record<string, unknown>>req.query).password as string | undefined;
+
+  if (validatePassword(password, config.PASSWORD)) {
     logger.log("Auth OK");
     return next();
   }
