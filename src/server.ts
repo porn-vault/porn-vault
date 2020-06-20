@@ -30,6 +30,7 @@ import boxen from "boxen";
 import { index as sceneIndex } from "./search/scene";
 import { index as imageIndex } from "./search/image";
 import Actor from "./types/actor";
+import { purgeMissingItems } from "./types/missing_item";
 import LRU from "lru-cache";
 import { scanFolders, startScanInterval, nextScanTimestamp } from "./scanner";
 import { tryStartProcessing } from "./queue/processing";
@@ -224,7 +225,7 @@ export default async (): Promise<void> => {
   });
   app.get("/empty-recycle-bin", async (req, res) => {
     try {
-      await emptyRecycle();
+      await purgeMissingItems();
       res.json("Emptying recycle bin.");
     } catch {
       res.status(500).json("Error occured emptying the recycle bin.");
