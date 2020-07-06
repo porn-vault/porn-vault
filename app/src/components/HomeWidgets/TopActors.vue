@@ -1,5 +1,5 @@
 <template>
-  <WidgetCard v-if="actors && actors.length" class="mb-3" title="Your favorites" icon="mdi-heart">
+  <WidgetCard v-if="actors && actors.length" title="Your favorites" icon="mdi-heart">
     <ActorGrid :value="actors" />
 
     <template v-slot:actions>

@@ -1,7 +1,6 @@
 <template>
   <WidgetCard
     v-if="actors && actors.length"
-    class="mb-3"
     title="Actors you haven't watched yet"
     icon="mdi-shuffle"
   >

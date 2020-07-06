@@ -1,5 +1,5 @@
 <template>
-  <WidgetCard class="mb-3" title="Actor label usage" icon="mdi-label">
+  <WidgetCard title="Actor label usage" icon="mdi-label">
     <canvas id="actor-labels"></canvas>
   </WidgetCard>
 </template>

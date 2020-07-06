@@ -1,5 +1,5 @@
 <template>
-  <WidgetCard v-if="info" class="mb-3" title="Video processing queue" icon="mdi-progress-wrench">
+  <WidgetCard v-if="info" title="Video processing queue" icon="mdi-progress-wrench">
     <div class="my-2">
       <span class="mr-2 d-inline-block headline">{{ info.length }}</span>
       <span class="subtitle-1">videos</span>

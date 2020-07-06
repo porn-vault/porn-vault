@@ -1,5 +1,5 @@
 <template>
-  <WidgetCard class="mb-3" title="Stats" icon="mdi-counter">
+  <WidgetCard title="Stats" icon="mdi-counter">
     <div class="my-4">
       <span class="mr-2 d-inline-block display-1">{{ numScenes }}</span>
       <span class="subtitle-1">scenes</span>
