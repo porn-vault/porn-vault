@@ -342,7 +342,7 @@ export async function createFromFileData(opts: ICreateOptions) {
       let scenes = [] as string[];
 
       if (movieToCreate.scenes) {
-        scenes = normalizeCreatedObjects(movieToCreate.scenes, createdLabels);
+        scenes = normalizeCreatedObjects(movieToCreate.scenes, createdScenes);
       }
 
       if (args["commit-import"]) {
