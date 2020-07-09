@@ -1,10 +1,11 @@
 import chokidar from "chokidar";
+import { existsSync } from "fs";
 import inquirer from "inquirer";
 import path from "path";
 import YAML from "yaml";
 
 import { onConfigLoad } from "..";
-import { existsAsync, readFileAsync, writeFileAsync } from "../fs/async";
+import { readFileAsync, writeFileAsync } from "../fs/async";
 import * as logger from "../logger";
 import setupFunction from "../setup";
 import { Dictionary } from "../types/utility";
@@ -216,13 +217,13 @@ export async function checkConfig(): Promise<undefined> {
 
 export async function loadConfig(): Promise<boolean> {
   try {
-    if (await existsAsync(configJSONFilename)) {
+    if (existsSync(configJSONFilename)) {
       logger.message(`Loading ${configJSONFilename}...`);
       loadedConfig = JSON.parse(await readFileAsync(configJSONFilename, "utf-8"));
       configFile = configJSONFilename;
       loadedConfigFormat = ConfigFileFormat.JSON;
       return true;
-    } else if (await existsAsync(configYAMLFilename)) {
+    } else if (existsSync(configYAMLFilename)) {
       logger.message(`Loading ${configYAMLFilename}...`);
       loadedConfig = YAML.parse(await readFileAsync(configYAMLFilename, "utf-8"));
       configFile = configYAMLFilename;
