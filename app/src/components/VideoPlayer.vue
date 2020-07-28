@@ -108,6 +108,9 @@
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import moment from "moment";
 
+const IS_MUTED = "player_is_muted";
+const VOLUME = "player_volume";
+
 @Component
 export default class VideoPlayer extends Vue {
   @Prop(String) src!: string;
@@ -121,10 +124,19 @@ export default class VideoPlayer extends Vue {
   progress = 0;
   isPlaying = false;
   showPoster = true;
-  isMuted = false;
-  volume = 1;
+  
+  isMuted = localStorage.getItem(IS_MUTED) === "true";
+  volume = parseFloat(localStorage.getItem(VOLUME) ?? "1");
 
   paniced = false;
+
+  mounted() {
+    const vid = <HTMLVideoElement>document.getElementById("video");
+    if (vid) {
+      vid.volume = this.volume;
+      vid.muted = this.isMuted;
+    }
+  }
 
   panic() {
     this.paniced = true;
@@ -182,6 +194,7 @@ export default class VideoPlayer extends Vue {
       } else {
         this.unmute();
         this.volume = volume;
+        localStorage.setItem(VOLUME, volume.toString());
         vid.volume = volume;
       }
     }
@@ -293,6 +306,7 @@ export default class VideoPlayer extends Vue {
     if (vid) {
       vid.muted = true;
       this.isMuted = true;
+      localStorage.setItem(IS_MUTED, "true");
     }
   }
 
@@ -301,6 +315,7 @@ export default class VideoPlayer extends Vue {
     if (vid) {
       vid.muted = false;
       this.isMuted = false;
+      localStorage.setItem(IS_MUTED, "false");
     }
   }
 
