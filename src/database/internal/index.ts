@@ -9,7 +9,7 @@ export namespace Izzy {
     key: string;
   }
 
-  export class Collection<T = any> {
+  export class Collection<T> {
     name: string;
 
     constructor(name: string) {
@@ -23,7 +23,7 @@ export namespace Izzy {
       return res.data.count as number;
     }
 
-    async compact(): Promise<AxiosResponse<any>> {
+    async compact(): Promise<AxiosResponse<unknown>> {
       return Axios.post(
         `http://localhost:${getConfig().IZZY_PORT}/collection/compact/${this.name}`
       );

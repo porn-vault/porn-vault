@@ -15,7 +15,7 @@ export function singleScreenshot(
       .on("end", () => {
         resolve(output);
       })
-      .on("error", (err) => {
+      .on("error", (err: Error) => {
         reject(err);
       })
       .run();

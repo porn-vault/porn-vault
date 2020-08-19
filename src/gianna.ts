@@ -100,7 +100,7 @@ export function spawnGianna(): Promise<void> {
 
     giannaProcess = spawn("./" + giannaPath, ["--port", port.toString()]);
     let responded = false;
-    giannaProcess.on("error", (err) => {
+    giannaProcess.on("error", (err: Error) => {
       reject(err);
     });
     giannaProcess.stdout.on("data", () => {

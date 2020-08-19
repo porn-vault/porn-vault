@@ -84,7 +84,7 @@ export async function downloadFile(url: string, file: string): Promise<void> {
 
     await new Promise((resolve, reject) => {
       writer.on("finish", resolve);
-      writer.on("error", (err) => {
+      writer.on("error", (err: Error) => {
         logger.error(`Error while downloading ${url}`);
         reject(err);
       });

@@ -15,7 +15,7 @@ import { verifyFileData } from "./verify";
 let imported: string[] = [];
 
 async function processFile(file: string) {
-  let parsed = null as any;
+  let parsed = null as unknown;
   const fileContent = await readFileAsync(file, "utf-8");
 
   if (extname(file) === ".json") {

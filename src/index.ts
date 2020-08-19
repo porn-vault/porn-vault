@@ -92,8 +92,8 @@ async function startup() {
         process.exit(0);
       }
       applyExitHooks();
-      startServer().catch((err) => {
-        const _err = err as Error;
+      startServer().catch((err: Error) => {
+        const _err = err;
         logger.error(_err.message);
       });
     } catch (err) {
@@ -106,8 +106,7 @@ async function startup() {
 }
 
 if (!process.env.PREVENT_STARTUP) {
-  startup().catch((err) => {
-    const _err = err as Error;
-    logger.error(_err.message);
+  startup().catch((err: Error) => {
+    logger.error(err.message);
   });
 }

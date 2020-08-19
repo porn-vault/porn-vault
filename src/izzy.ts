@@ -100,7 +100,7 @@ export function spawnIzzy(): Promise<void> {
 
     izzyProcess = spawn("./" + izzyPath, ["--port", port.toString()]);
     let responded = false;
-    izzyProcess.on("error", (err) => {
+    izzyProcess.on("error", (err: Error) => {
       reject(err);
     });
     izzyProcess.stdout.on("data", () => {

@@ -15,7 +15,7 @@ enum ConfigFileFormat {
   YAML = "YAML",
 }
 
-function stringifyFormatted(obj: any, format: ConfigFileFormat) {
+function stringifyFormatted<T>(obj: T, format: ConfigFileFormat): string {
   switch (format) {
     case ConfigFileFormat.JSON:
       return JSON.stringify(obj, null, 2);
@@ -28,10 +28,10 @@ function stringifyFormatted(obj: any, format: ConfigFileFormat) {
 
 interface IPlugin {
   path: string;
-  args?: Dictionary<any>;
+  args?: Dictionary<unknown>;
 }
 
-type PluginCallWithArgument = [string, Dictionary<any>];
+type PluginCallWithArgument = [string, Dictionary<unknown>];
 
 export interface IConfig {
   VIDEO_PATHS: string[];
@@ -151,7 +151,7 @@ export const defaultConfig: IConfig = {
 
 let loadedConfig;
 let loadedConfigFormat: ConfigFileFormat | null = null;
-export let configFile;
+export let configFile: string;
 
 const configFilename = process.env.NODE_ENV === "test" ? "config.test" : "config";
 
@@ -268,15 +268,15 @@ export function watchConfig(): () => Promise<void> {
 
     if (newConfig) {
       loadedConfig = newConfig;
-      await onConfigLoad(loadedConfig);
+      onConfigLoad(loadedConfig);
     } else {
       logger.warn("Couldn't load config, try again");
     }
   });
 
-  return async () => watcher.close();
+  return async (): Promise<void> => watcher.close();
 }
 
-export function resetLoadedConfig() {
+export function resetLoadedConfig(): void {
   loadedConfig = null;
 }

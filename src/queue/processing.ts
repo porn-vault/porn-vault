@@ -36,7 +36,7 @@ export function enqueueScene(_id: string): Promise<ISceneProcessingItem> {
   return processingCollection.upsert(_id, { _id });
 }
 
-export async function tryStartProcessing() {
+export async function tryStartProcessing(): Promise<void> {
   const config = getConfig();
   if (!config.DO_PROCESSING) return;
 
