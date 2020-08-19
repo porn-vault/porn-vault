@@ -32,7 +32,7 @@
                 <v-hover v-slot:default="{ hover }" close-delay=100> <!-- close-delay to allow the user to jump the gap and hover over volume wrapper -->
                   <div>
                     <div v-if="hover" class="volume-bar-background">
-                      <div id="volume-bar" class="volume-bar-wrapper" @click="onVolumeClick">
+                      <div id="volume-bar" class="volume-bar-wrapper" @click="onVolumeClick" @mousedown="onVolumeMouseDown" @mousemove="onVolumeDrag">
                         <div class="volume-bar"></div>
                         <div v-if="!isMuted" class="current-volume-bar" :style="`height: ${volume * 100}%;`"></div>
                       </div>
@@ -125,6 +125,7 @@ export default class VideoPlayer extends Vue {
   isPlaying = false;
   showPoster = true;
   
+  isVolumeDragging = false;
   isMuted = localStorage.getItem(IS_MUTED) === "true";
   volume = parseFloat(localStorage.getItem(VOLUME) ?? "1");
 
@@ -136,6 +137,7 @@ export default class VideoPlayer extends Vue {
       vid.volume = this.volume;
       vid.muted = this.isMuted;
     }
+    window.addEventListener('mouseup', this.onVolumeMouseUp);
   }
 
   panic() {
@@ -207,6 +209,20 @@ export default class VideoPlayer extends Vue {
       const y = (ev.clientY - rect.bottom) * -1;
       const yPercentage = y / rect.height;
       this.setVolume(yPercentage);
+    }
+  }
+
+  onVolumeMouseDown() {
+    this.isVolumeDragging = true;
+  }
+
+  onVolumeMouseUp() {
+    this.isVolumeDragging = false;
+  }
+
+  onVolumeDrag(ev) {
+    if (this.isVolumeDragging) {
+      this.onVolumeClick(ev);
     }
   }
 
@@ -353,7 +369,8 @@ export default class VideoPlayer extends Vue {
     background-color: #121420ee;
     width: 30px;
     top: -110px;
-    padding: 5px;
+    padding-bottom: 5px;
+    padding-top: 5px;
 
     .volume-bar-wrapper {
       position: relative;
