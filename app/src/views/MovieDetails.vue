@@ -270,6 +270,7 @@ import IScene from "../types/scene";
 import { movieModule } from "../store/movie";
 import movieFragment from "../fragments/movie";
 import DVDRenderer from "@/components/DVDRenderer.vue";
+import ActorCard from "@/components/Cards/Actor.vue";
 
 @Component({
   components: {
@@ -277,12 +278,13 @@ import DVDRenderer from "@/components/DVDRenderer.vue";
     ImageCard,
     InfiniteLoading,
     MovieItem,
-    DVDRenderer
+    DVDRenderer,
+    ActorCard,
   },
   beforeRouteLeave(_to, _from, next) {
     movieModule.setCurrent(null);
     next();
-  }
+  },
 })
 export default class MovieDetails extends Vue {
   actors = [] as IActor[];
@@ -331,10 +333,10 @@ export default class MovieDetails extends Vue {
       `,
       variables: {
         file: this.frontCoverFile,
-        name: this.currentMovie.name + " (front cover)"
-      }
+        name: this.currentMovie.name + " (front cover)",
+      },
     })
-      .then(res => {
+      .then((res) => {
         const image = res.data.uploadImage;
         this.images.unshift(image);
         this.setAsFrontCover(image._id);
@@ -358,10 +360,10 @@ export default class MovieDetails extends Vue {
       `,
       variables: {
         file: this.backCoverFile,
-        name: this.currentMovie.name + " (back cover)"
-      }
+        name: this.currentMovie.name + " (back cover)",
+      },
     })
-      .then(res => {
+      .then((res) => {
         const image = res.data.uploadImage;
         this.images.unshift(image);
         this.setAsBackCover(image._id);
@@ -385,10 +387,10 @@ export default class MovieDetails extends Vue {
       `,
       variables: {
         file: this.spineCoverFile,
-        name: this.currentMovie.name + " (spine cover)"
-      }
+        name: this.currentMovie.name + " (spine cover)",
+      },
     })
-      .then(res => {
+      .then((res) => {
         const image = res.data.uploadImage;
         this.setAsSpineCover(image._id);
         this.spineCoverDialog = false;
@@ -413,14 +415,14 @@ export default class MovieDetails extends Vue {
       variables: {
         ids: [this.currentMovie._id],
         opts: {
-          frontCover: id
-        }
-      }
+          frontCover: id,
+        },
+      },
     })
-      .then(res => {
+      .then((res) => {
         movieModule.setFrontCover(id);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
       });
   }
@@ -441,14 +443,14 @@ export default class MovieDetails extends Vue {
       variables: {
         ids: [this.currentMovie._id],
         opts: {
-          backCover: id
-        }
-      }
+          backCover: id,
+        },
+      },
     })
-      .then(res => {
+      .then((res) => {
         movieModule.setBackCover(id);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
       });
   }
@@ -469,14 +471,14 @@ export default class MovieDetails extends Vue {
       variables: {
         ids: [this.currentMovie._id],
         opts: {
-          spineCover: id
-        }
-      }
+          spineCover: id,
+        },
+      },
     })
-      .then(res => {
+      .then((res) => {
         movieModule.setSpineCover(id);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
       });
   }
@@ -531,14 +533,14 @@ export default class MovieDetails extends Vue {
         }
       `,
       variables: {
-        ids: [this.images[index]._id]
-      }
+        ids: [this.images[index]._id],
+      },
     })
-      .then(res => {
+      .then((res) => {
         this.images.splice(index, 1);
         this.lightboxIndex = null;
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
       })
       .finally(() => {});
@@ -547,7 +549,7 @@ export default class MovieDetails extends Vue {
   updateImage({
     index,
     key,
-    value
+    value,
   }: {
     index: number;
     key: string;
@@ -578,7 +580,7 @@ export default class MovieDetails extends Vue {
       const query = `page:${
         this.page
       } sortDir:asc sortBy:addedOn scenes:${this.scenes
-        .map(s => s._id)
+        .map((s) => s._id)
         .join(",")}`;
 
       const result = await ApolloClient.query({
@@ -589,6 +591,14 @@ export default class MovieDetails extends Vue {
                 ...ImageFragment
                 actors {
                   ...ActorFragment
+                  avatar {
+                    _id
+                    color
+                  }
+                }
+                labels {
+                  _id
+                  name
                 }
                 scene {
                   _id
@@ -601,8 +611,8 @@ export default class MovieDetails extends Vue {
           ${actorFragment}
         `,
         variables: {
-          query
-        }
+          query,
+        },
       });
 
       return result.data.getImages.items;
@@ -612,7 +622,7 @@ export default class MovieDetails extends Vue {
   }
 
   infiniteHandler($state) {
-    this.fetchPage().then(items => {
+    this.fetchPage().then((items) => {
       if (items.length) {
         this.page++;
         this.images.push(...items);
@@ -644,9 +654,9 @@ export default class MovieDetails extends Vue {
         }
       `,
       variables: {
-        id: this.currentMovie._id
-      }
-    }).then(res => {
+        id: this.currentMovie._id,
+      },
+    }).then((res) => {
       movieModule.setLabels(res.data.getMovieById.labels);
     });
   }
@@ -663,16 +673,16 @@ export default class MovieDetails extends Vue {
         }
       `,
       variables: {
-        id: this.currentMovie._id
-      }
-    }).then(res => {
+        id: this.currentMovie._id,
+      },
+    }).then((res) => {
       movieModule.setRating(res.data.getMovieById.rating);
     });
   }
 
   get labelNames() {
     if (!this.currentMovie) return [];
-    return this.currentMovie.labels.map(l => l.name).sort();
+    return this.currentMovie.labels.map((l) => l.name).sort();
   }
 
   get studioLogo() {
@@ -728,9 +738,9 @@ export default class MovieDetails extends Vue {
         ${studioFragment}
       `,
       variables: {
-        id: (<any>this).$route.params.id
-      }
-    }).then(res => {
+        id: (<any>this).$route.params.id,
+      },
+    }).then((res) => {
       movieModule.setCurrent(res.data.getMovieById);
       this.scenes = res.data.getMovieById.scenes;
       this.actors = res.data.getMovieById.actors;
