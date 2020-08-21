@@ -27,8 +27,7 @@ export default class Image {
   favorite = false;
   bookmark: number | null = null;
   rating = 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customFields: Record<string, any> = {};
+  customFields: Record<string, boolean | string | number | string[] | null> = {};
   meta = new ImageMeta();
   actors?: string[];
   studio: string | null = null;

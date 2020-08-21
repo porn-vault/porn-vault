@@ -33,8 +33,7 @@ export default {
     try {
       movie = await onMovieCreate(movie);
     } catch (error) {
-      logger.log(error);
-      logger.error(error.message);
+      logger.error(error);
     }
 
     await movieCollection.upsert(movie._id, movie);

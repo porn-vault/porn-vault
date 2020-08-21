@@ -183,6 +183,7 @@ export async function searchImages(
         sort_type: shuffleSeed,
       };
     } else {
+      // eslint-disable-next-line
       const sortType: string = {
         name: "string",
         addedOn: "number",

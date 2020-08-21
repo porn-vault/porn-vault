@@ -64,8 +64,9 @@ export async function walk(options: IWalkOptions): Promise<void> {
           await options.cb(resolve(path));
         }
       } catch (err) {
+        const _err = err as Error & { code: string };
         // Check if error was an fs permission error
-        if (err.code && (err.code === "EACCES" || err.code === "EPERM")) {
+        if (_err.code && (_err.code === "EACCES" || _err.code === "EPERM")) {
           logger.error(`"${path}" requires elevated permissions, skipping`);
         } else {
           logger.error(`Error walking or in callback for "${path}", skipping`);

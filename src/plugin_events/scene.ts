@@ -42,7 +42,7 @@ export async function onSceneCreate(
   const config = getConfig();
 
   const pluginResult = await runPluginsSerial(config, event, {
-    scene: JSON.parse(JSON.stringify(scene)),
+    scene: JSON.parse(JSON.stringify(scene)) as Scene,
     sceneName: scene.name,
     scenePath: scene.path,
     $createLocalImage: async (path: string, name: string, thumbnail?: boolean) => {
@@ -108,6 +108,7 @@ export async function onSceneCreate(
   if (pluginResult.custom && typeof pluginResult.custom === "object") {
     for (const key in pluginResult.custom) {
       const fields = await extractFields(key);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       if (fields.length) scene.customFields[fields[0]] = pluginResult.custom[key];
     }
   }
@@ -147,7 +148,7 @@ export async function onSceneCreate(
       const extractedIds = await extractLabels(labelName);
       if (extractedIds.length) {
         labelIds.push(...extractedIds);
-        logger.log(`Found ${extractedIds.length} labels for ${labelName}:`);
+        logger.log(`Found ${extractedIds.length} labels for ${<string>labelName}:`);
         logger.log(extractedIds);
       } else if (config.CREATE_MISSING_LABELS) {
         const label = new Label(labelName);

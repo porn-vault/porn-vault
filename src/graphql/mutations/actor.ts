@@ -78,7 +78,7 @@ export default {
     try {
       actor = await onActorCreate(actor, actorLabels);
     } catch (error) {
-      logger.error(error.message);
+      logger.error(error);
     }
 
     await Actor.setLabels(actor, actorLabels);
@@ -101,7 +101,7 @@ export default {
           try {
             await updateScenes([scene]);
           } catch (error) {
-            logger.error(error.message);
+            logger.error(error);
           }
           logger.log(`Updated actors of ${scene._id}`);
         }

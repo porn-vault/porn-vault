@@ -16,8 +16,7 @@ export default class Marker {
   favorite = false;
   bookmark: number | null = null;
   rating = 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customFields: any = {};
+  customFields: Record<string, boolean | string | number | string[] | null> = {};
   scene: string;
   time: number; // Time in scene in seconds
   thumbnail?: string | null = null;

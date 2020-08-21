@@ -123,7 +123,7 @@ export default (query?: string): IQueryOptions => {
     }
   }
 
-  if (!options.query && options.sortBy == "relevance") {
+  if (!options.query && options.sortBy === "relevance") {
     logger.log("No search query, defaulting to sortBy addedOn");
     options.sortBy = "addedOn";
     options.sortDir = "desc";

@@ -24,8 +24,10 @@ interface IGithubAsset {
 
 export async function giannaVersion(): Promise<string | null> {
   try {
-    const res = await Axios.get(`http://localhost:${getConfig().GIANNA_PORT}/`);
-    return res.data.version as string;
+    const res = await Axios.get<{ version: string }>(
+      `http://localhost:${getConfig().GIANNA_PORT}/`
+    );
+    return res.data.version;
   } catch {
     return null;
   }

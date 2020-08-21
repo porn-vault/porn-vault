@@ -69,9 +69,10 @@ export async function queueLoop(config: IConfig): Promise<void> {
           { scene: data, thumbs, images }
         );
       } catch (error) {
+        const _err = error as Error;
         logger.error("PROCESSING ERROR");
-        logger.log(error);
-        logger.error(error.message);
+        logger.log(_err);
+        logger.error(_err.message);
         await Axios.delete(
           `http://localhost:${config.PORT}/queue/${queueHead._id}?password=${config.PASSWORD}`
         );

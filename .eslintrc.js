@@ -25,6 +25,9 @@ module.exports = {
   plugins: ["@typescript-eslint", "simple-import-sort"],
   root: true,
   rules: {
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/no-misused-promises": "off",
+    "no-async-promise-executor": "off",
     "@typescript-eslint/no-namespace": "off",
     // Turn off default import rules
     "sort-imports": "off",

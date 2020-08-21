@@ -149,7 +149,7 @@ export const defaultConfig: IConfig = {
   CACHE_TIME: 0,
 };
 
-let loadedConfig;
+let loadedConfig: IConfig | null;
 let loadedConfigFormat: ConfigFileFormat | null = null;
 export let configFile: string;
 
@@ -161,10 +161,13 @@ const configYAMLFilename = path.resolve(process.cwd(), `${configFilename}.yaml`)
 export async function checkConfig(): Promise<undefined> {
   const hasReadFile = await loadConfig();
 
+  if (!loadedConfig) throw new Error("Config not loaded");
+
   if (hasReadFile && loadedConfigFormat) {
     let defaultOverride = false;
     for (const key in defaultConfig) {
       if (loadedConfig[key] === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         loadedConfig[key] = defaultConfig[key];
         defaultOverride = true;
       }
@@ -219,13 +222,13 @@ export async function loadConfig(): Promise<boolean> {
   try {
     if (existsSync(configJSONFilename)) {
       logger.message(`Loading ${configJSONFilename}...`);
-      loadedConfig = JSON.parse(await readFileAsync(configJSONFilename, "utf-8"));
+      loadedConfig = JSON.parse(await readFileAsync(configJSONFilename, "utf-8")) as IConfig;
       configFile = configJSONFilename;
       loadedConfigFormat = ConfigFileFormat.JSON;
       return true;
     } else if (existsSync(configYAMLFilename)) {
       logger.message(`Loading ${configYAMLFilename}...`);
-      loadedConfig = YAML.parse(await readFileAsync(configYAMLFilename, "utf-8"));
+      loadedConfig = YAML.parse(await readFileAsync(configYAMLFilename, "utf-8")) as IConfig;
       configFile = configYAMLFilename;
       loadedConfigFormat = ConfigFileFormat.YAML;
       return true;
@@ -233,7 +236,7 @@ export async function loadConfig(): Promise<boolean> {
       logger.warn("Did not find any config file");
     }
   } catch (error) {
-    logger.error(error.message);
+    logger.error(error);
     process.exit(1);
   }
 
@@ -255,14 +258,14 @@ export function watchConfig(): () => Promise<void> {
 
     try {
       if (configFile.endsWith(".json")) {
-        newConfig = JSON.parse(await readFileAsync(configJSONFilename, "utf-8"));
+        newConfig = JSON.parse(await readFileAsync(configJSONFilename, "utf-8")) as IConfig;
         loadedConfigFormat = ConfigFileFormat.JSON;
       } else if (configFile.endsWith(".yaml")) {
-        newConfig = YAML.parse(await readFileAsync(configYAMLFilename, "utf-8"));
+        newConfig = YAML.parse(await readFileAsync(configYAMLFilename, "utf-8")) as IConfig;
         loadedConfigFormat = ConfigFileFormat.YAML;
       }
     } catch (error) {
-      logger.error(error.message);
+      logger.error(error);
       logger.error("ERROR when loading new config, please fix it.");
     }
 

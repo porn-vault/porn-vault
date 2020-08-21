@@ -146,6 +146,7 @@ export async function searchMovies(
         sort_type: shuffleSeed,
       };
     } else {
+      // eslint-disable-next-line
       const sortType: string = {
         addedOn: "number",
         name: "string",

@@ -200,8 +200,7 @@ async function downloadFFLibs() {
     await downloadFile(ffmpegURL, ffmpegPath);
     await downloadFile(ffprobeURL, ffprobePath);
   } catch (error) {
-    logger.log(error);
-    logger.error(error.message);
+    logger.error(error);
     process.exit(1);
   }
 

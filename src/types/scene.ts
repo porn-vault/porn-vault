@@ -79,8 +79,7 @@ export default class Scene {
   favorite = false;
   bookmark: number | null = null;
   rating = 0;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customFields: any = {};
+  customFields: Record<string, boolean | string | number | string[] | null> = {};
   path: string | null = null;
   streamLinks: string[] = [];
   watches?: number[]; // backwards compatibility, array of timestamps of watches
@@ -226,15 +225,15 @@ export default class Scene {
     try {
       scene = await onSceneCreate(scene, sceneLabels, sceneActors);
     } catch (error) {
-      logger.error(error.message);
+      logger.error(error);
     }
 
     if (!scene.thumbnail) {
       const thumbnail = await Scene.generateSingleThumbnail(
         scene._id,
         videoPath,
-        // @ts-ignore
-        scene.meta.dimensions
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        scene.meta.dimensions!
       );
       const image = new Image(`${sceneName} (thumbnail)`);
       image.path = thumbnail.path;
@@ -663,8 +662,7 @@ export default class Scene {
                 filename: options.pattern.replace("{{index}}", index.toString().padStart(3, "0")),
                 folder: options.thumbnailPath,
                 size: `${Math.min(
-                  // @ts-ignore
-                  scene.meta.dimensions.width || config.COMPRESS_IMAGE_SIZE,
+                  scene.meta.dimensions?.width || config.COMPRESS_IMAGE_SIZE,
                   config.COMPRESS_IMAGE_SIZE
                 )}x?`,
               });

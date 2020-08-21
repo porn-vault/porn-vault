@@ -16,7 +16,7 @@ export async function onMovieCreate(movie: Movie, event = "movieCreated"): Promi
   const config = getConfig();
 
   const pluginResult = await runPluginsSerial(config, event, {
-    movie: JSON.parse(JSON.stringify(movie)),
+    movie: JSON.parse(JSON.stringify(movie)) as Movie,
     movieName: movie.name,
     $createLocalImage: async (path: string, name: string, thumbnail?: boolean) => {
       logger.log("Creating image from " + path);
@@ -87,6 +87,7 @@ export async function onMovieCreate(movie: Movie, event = "movieCreated"): Promi
   if (pluginResult.custom && typeof pluginResult.custom === "object") {
     for (const key in pluginResult.custom) {
       const fields = await extractFields(key);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       if (fields.length) movie.customFields[fields[0]] = pluginResult.custom[key];
     }
   }

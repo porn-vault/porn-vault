@@ -165,6 +165,7 @@ export async function searchActors(
         sort_type: shuffleSeed,
       };
     } else {
+      // eslint-disable-next-line
       const sortType: string = {
         bornOn: "number",
         addedOn: "number",

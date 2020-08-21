@@ -25,8 +25,7 @@ export default class Movie {
   bookmark: number | null = null;
   rating = 0;
   scenes?: string[]; // backwards compatibility
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customFields: any = {};
+  customFields: Record<string, boolean | string | number | string[] | null> = {};
   studio: string | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function

@@ -119,6 +119,7 @@ export async function searchStudios(
         sort_type: shuffleSeed,
       };
     } else {
+      // eslint-disable-next-line
       const sortType: string = {
         addedOn: "number",
         name: "string",

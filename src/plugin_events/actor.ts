@@ -1,5 +1,5 @@
 import { getConfig } from "../config";
-import countries from "../data/countries";
+import countries, { ICountry } from "../data/countries";
 import { imageCollection, labelCollection } from "../database";
 import { extractFields, extractLabels } from "../extractor";
 import { downloadFile } from "../ffmpeg-download";
@@ -21,9 +21,9 @@ export async function onActorCreate(
   const config = getConfig();
 
   const pluginResult = await runPluginsSerial(config, event, {
-    actor: JSON.parse(JSON.stringify(actor)),
+    actor: JSON.parse(JSON.stringify(actor)) as Actor,
     actorName: actor.name,
-    countries: JSON.parse(JSON.stringify(countries)),
+    countries: JSON.parse(JSON.stringify(countries)) as ICountry[],
     $createLocalImage: async (path: string, name: string, thumbnail?: boolean) => {
       logger.log("Creating image from " + path);
       const img = new Image(name);
@@ -101,6 +101,7 @@ export async function onActorCreate(
   if (pluginResult.custom && typeof pluginResult.custom === "object") {
     for (const key in pluginResult.custom) {
       const fields = await extractFields(key);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       if (fields.length) actor.customFields[fields[0]] = pluginResult.custom[key];
     }
   }
@@ -128,7 +129,7 @@ export async function onActorCreate(
       const extractedIds = await extractLabels(labelName);
       if (extractedIds.length) {
         labelIds.push(...extractedIds);
-        logger.log(`Found ${extractedIds.length} labels for ${labelName}:`);
+        logger.log(`Found ${extractedIds.length} labels for ${<string>labelName}:`);
         logger.log(extractedIds);
       } else if (config.CREATE_MISSING_LABELS) {
         const label = new Label(labelName);
