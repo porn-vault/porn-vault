@@ -161,14 +161,13 @@ const configYAMLFilename = path.resolve(process.cwd(), `${configFilename}.yaml`)
 export async function checkConfig(): Promise<undefined> {
   const hasReadFile = await loadConfig();
 
-  if (!loadedConfig) throw new Error("Config not loaded");
-
   if (hasReadFile && loadedConfigFormat) {
     let defaultOverride = false;
     for (const key in defaultConfig) {
-      if (loadedConfig[key] === undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        loadedConfig[key] = defaultConfig[key];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (loadedConfig![key] === undefined) {
+        // eslint-disable-next-line
+        loadedConfig![key] = defaultConfig[key];
         defaultOverride = true;
       }
     }
