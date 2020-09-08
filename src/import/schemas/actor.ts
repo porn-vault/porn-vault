@@ -44,6 +44,6 @@ export const actorSchema = new Schema({
   nationality: {
     required: false,
     type: String,
-    use: { isValidCountryCode },
+    use: { isValidCountryCode: (code) => code === null || code === undefined || isValidCountryCode(code) },
   },
 });
