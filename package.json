@@ -104,7 +104,7 @@
     "mocha": "^7.2.0",
     "nodemon": "^2.0.4",
     "pkg": "^4.4.7",
-    "prettier": "^2.0.5",
+    "prettier": "^2.1.1",
     "sinon": "^9.0.3",
     "ts-node": "^8.10.2",
     "typescript": "^3.8.3"
