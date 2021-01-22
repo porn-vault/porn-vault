@@ -19,7 +19,7 @@ import { generateHash } from "../utils/hash";
 import { formatMessage, handleError, logger } from "../utils/logger";
 import { generateTimestampsAtIntervals } from "../utils/misc";
 import { libraryPath } from "../utils/path";
-import { removeExtension, dateToTimestamp } from "../utils/string";
+import { dateToTimestamp, removeExtension } from "../utils/string";
 import { ApplyActorLabelsEnum, ApplyStudioLabelsEnum } from "./../config/schema";
 import Actor from "./actor";
 import ActorReference from "./actor_reference";
