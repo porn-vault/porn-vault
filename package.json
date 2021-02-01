@@ -50,7 +50,7 @@
     "chalk": "^4.1.0",
     "cheerio": "^1.0.0-rc.3",
     "chokidar": "^3.5.0",
-    "cli-progress": "^3.8.2",
+    "cli-progress": "^3.9.0",
     "dotenv": "^8.2.0",
     "elasticsearch": "^16.7.1",
     "express": "^4.17.1",
