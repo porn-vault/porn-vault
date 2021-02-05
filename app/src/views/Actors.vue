@@ -111,7 +111,7 @@
         </div>
       </v-container>
     </v-navigation-drawer>
-    <v-alert class="mb-3" v-if="skippedActorsWarning" dense dismissible type="warning"
+    <v-alert class="mb-3" v-if="skippedActorsWarning" dense text dismissible type="warning"
       >These Actors already existed and were skipped: {{ skippedActorsWarning }}</v-alert
     >
 
@@ -415,7 +415,7 @@ export default class ActorList extends mixins(DrawerMixin) {
     if (this.skippedActors.length > 0) {
       this.skippedActorsWarning = this.skippedActors.join(", ");
     }
-  } 
+  }
 
   get actorsBulkImport() {
     if (this.actorsBulkText) return this.actorsBulkText.split("\n").filter(Boolean);
@@ -644,7 +644,7 @@ export default class ActorList extends mixins(DrawerMixin) {
       variables: {
         query: {
           query: name,
-          sortBy: "relevance"
+          sortBy: "relevance",
         },
         seed: localStorage.getItem("pm_seed") || "default",
       },
