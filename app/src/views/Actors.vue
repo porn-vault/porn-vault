@@ -651,7 +651,7 @@ export default class ActorList extends mixins(DrawerMixin) {
     });
 
     // Verify that the highest relevance ES result is an exact name match
-    if (result.data.getActors.items.length > 0 && result.data.getActors.items[0].name == name) {
+    if (result.data.getActors.items.length > 0 && result.data.getActors.items[0].name === name) {
       return true;
     } else {
       return false;
