@@ -111,6 +111,9 @@
         </div>
       </v-container>
     </v-navigation-drawer>
+    <v-alert class="mb-3" v-if="skippedActorsWarning" dense text dismissible type="warning"
+      >These actors already exist and were skipped: <b>{{ skippedActorsWarning }}</b></v-alert
+    >
 
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
@@ -222,6 +225,7 @@
           <v-form v-model="validCreation">
             <v-text-field
               :rules="actorNameRules"
+              :error-messages="actorNameErrors"
               color="primary"
               v-model="createActorName"
               placeholder="Name"
@@ -347,6 +351,7 @@ import { mixins } from "vue-class-component";
 import { actorModule } from "@/store/actor";
 import CustomFieldFilter from "@/components/CustomFieldFilter.vue";
 import countries from "@/util/countries";
+import { checkActorExist } from "../api/search";
 
 @Component({
   components: {
@@ -383,6 +388,7 @@ export default class ActorList extends mixins(DrawerMixin) {
   fetchingRandom = false;
 
   actorsBulkText = "" as string | null;
+  skippedActorsWarning = null as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
 
@@ -408,9 +414,16 @@ export default class ActorList extends mixins(DrawerMixin) {
   async runBulkImport() {
     this.bulkLoader = true;
 
+    let skippedActors: string[] = [];
+    this.skippedActorsWarning = null;
+
     try {
       for (const name of this.actorsBulkImport) {
-        await this.createActorWithName(name);
+        if (await checkActorExist(name)) {
+          skippedActors.push(name);
+        } else {
+          await this.createActorWithName(name);
+        }
       }
       this.refreshPage();
       this.bulkImportDialog = false;
@@ -420,6 +433,11 @@ export default class ActorList extends mixins(DrawerMixin) {
 
     this.actorsBulkText = "";
     this.bulkLoader = false;
+
+    // triggers warning alert if any actors were skipped because they already existed
+    if (skippedActors.length > 0) {
+      this.skippedActorsWarning = skippedActors.join(", ");
+    }
   }
 
   get actorsBulkImport() {
@@ -452,6 +470,7 @@ export default class ActorList extends mixins(DrawerMixin) {
   addActorLoader = false;
 
   actorNameRules = [(v) => (!!v && !!v.length) || "Invalid actor name"];
+  actorNameErrors = [] as string[];
 
   query = localStorage.getItem("pm_actorQuery") || "";
 
@@ -587,7 +606,17 @@ export default class ActorList extends mixins(DrawerMixin) {
     });
   }
 
-  addActor() {
+  @Watch("createActorName", {})
+  onCreateActorNameChange(newVal: number) {
+    this.actorNameErrors = [];
+  }
+
+  async addActor() {
+    if (await checkActorExist(this.createActorName)) {
+      this.actorNameErrors = ["This actor already exists."];
+      return;
+    }
+
     this.addActorLoader = true;
     ApolloClient.mutate({
       mutation: gql`

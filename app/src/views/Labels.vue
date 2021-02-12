@@ -65,6 +65,7 @@
                 v-model="editLabelName"
                 placeholder="Label name"
                 :rules="labelNameRules"
+                :error-messages="editLabelNameErrors"
                 @keydown.enter="editLabel"
               ></v-text-field>
 
@@ -121,6 +122,7 @@
                 v-model="createLabelName"
                 placeholder="Label name"
                 :rules="labelNameRules"
+                :error-messages="createLabelNameErrors"
                 @keydown.enter="addLabel"
               ></v-text-field>
 
@@ -158,7 +160,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import ApolloClient from "@/apollo";
 import gql from "graphql-tag";
 import LabelSelector from "@/components/LabelSelector.vue";
@@ -190,6 +192,8 @@ export default class Home extends Vue {
   validCreation = false;
 
   labelNameRules = [(v) => (!!v && !!v.length) || "Invalid label name"];
+  editLabelNameErrors = [] as string[];
+  createLabelNameErrors = [] as string[];
   labelColorRules = [
     (v) => {
       if (!v) {
@@ -217,9 +221,27 @@ export default class Home extends Vue {
     return new Promise((r) => setTimeout(r, ms));
   }
 
+  checkLabelExist(name: string) {
+    if (this.labels.findIndex((l) => l.name === name) > -1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @Watch("editLabelName", {})
+  onEditLabelNameChange(newVal: number) {
+    this.editLabelNameErrors = [];
+  }
+
   async editLabel() {
     if (!this.editingLabel) return;
     if (!this.validEditing) return;
+
+    if (this.checkLabelExist(this.editLabelName)) {
+      this.editLabelNameErrors = ["This label already exists."];
+      return;
+    }
 
     await this.sleep(50);
     this.editLabelLoader = true;
@@ -291,8 +313,18 @@ export default class Home extends Vue {
       });
   }
 
+  @Watch("createLabelName", {})
+  onCreateLabelNameChange(newVal: number) {
+    this.createLabelNameErrors = [];
+  }
+
   addLabel() {
     if (!this.validCreation) return;
+
+    if (this.checkLabelExist(this.createLabelName)) {
+      this.createLabelNameErrors = ["This label already exists."];
+      return;
+    }
 
     this.createLabelLoader = true;
     ApolloClient.mutate({

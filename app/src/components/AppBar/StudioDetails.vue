@@ -34,6 +34,7 @@
           <v-form v-model="validEdit">
             <v-text-field
               :rules="studioNameRules"
+              :error-messages="studioNameErrors"
               color="primary"
               v-model="editName"
               placeholder="Name"
@@ -87,12 +88,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import ApolloClient from "../../apollo";
 import gql from "graphql-tag";
 import { studioModule } from "../../store/studio";
 import StudioSelector from "../../components/StudioSelector.vue";
 import studioFragment from "../../fragments/studio";
+import { checkStudioExist } from "../api/search";
 
 @Component({
   components: {
@@ -108,6 +110,7 @@ export default class StudioToolbar extends Vue {
   editAliases = [] as string[];
 
   studioNameRules = [(v) => (!!v && !!v.length) || "Invalid studio name"];
+  studioNameErrors = [] as string[];
 
   removeDialog = false;
   removeLoader = false;
@@ -150,8 +153,18 @@ export default class StudioToolbar extends Vue {
     return new Promise((r) => setTimeout(r, ms));
   }
 
+  @Watch("editName", {})
+  onEditNameChange(newVal: number) {
+    this.studioNameErrors = [];
+  }
+
   async editStudio() {
     if (!this.currentStudio) return;
+
+    if (await checkStudioExist(this.editName)) {
+      this.studioNameErrors = ["This actor already exists."];
+      return;
+    }
 
     await this.sleep(50);
 

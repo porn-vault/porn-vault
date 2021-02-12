@@ -87,6 +87,9 @@
         ></v-select>
       </v-container>
     </v-navigation-drawer>
+    <v-alert class="mb-3" v-if="skippedStudiosWarning" dense text dismissible type="warning"
+      >These studios already exist and were skipped: <b>{{ skippedStudiosWarning }}</b></v-alert
+    >
 
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
@@ -228,6 +231,7 @@ import StudioCard from "@/components/Cards/Studio.vue";
 import { mixins } from "vue-class-component";
 import DrawerMixin from "@/mixins/drawer";
 import { studioModule } from "@/store/studio";
+import { checkStudioExist } from "../api/search";
 
 @Component({
   components: {
@@ -253,6 +257,7 @@ export default class StudioList extends mixins(DrawerMixin) {
   fetchingRandom = false;
 
   studiosBulkText = "" as string | null;
+  skippedStudiosWarning = null as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
 
@@ -263,9 +268,16 @@ export default class StudioList extends mixins(DrawerMixin) {
   async runBulkImport() {
     this.bulkLoader = true;
 
+    let skippedStudios: string[] = [];
+    this.skippedStudiosWarning = null;
+
     try {
       for (const name of this.studiosBulkImport) {
-        await this.createStudioWithName(name);
+        if (await checkStudioExist(name)) {
+          skippedStudios.push(name);
+        } else {
+          await this.createStudioWithName(name);
+        }
       }
       this.refreshPage();
       this.bulkImportDialog = false;
@@ -275,6 +287,11 @@ export default class StudioList extends mixins(DrawerMixin) {
 
     this.studiosBulkText = "";
     this.bulkLoader = false;
+
+    // triggers warning alert if any studios were skipped because they already existed
+    if (skippedStudios.length > 0) {
+      this.skippedStudiosWarning = skippedStudios.join(", ");
+    }
   }
 
   get studiosBulkImport() {

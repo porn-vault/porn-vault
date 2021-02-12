@@ -33,6 +33,7 @@
             <v-text-field
               color="primary"
               :rules="movieNameRules"
+              :error-messages="movieNameErrors"
               v-model="editName"
               placeholder="Movie name"
             />
@@ -90,6 +91,7 @@ import actorFragment from "../../fragments/actor";
 import sceneFragment from "../../fragments/scene";
 import movieFragment from "../../fragments/movie";
 import StudioSelector from "../../components/StudioSelector.vue";
+import { checkMovieExist } from "../api/search";
 
 @Component({
   components: {
@@ -107,12 +109,23 @@ export default class MovieToolbar extends Vue {
   editReleaseDate = null as number | null;
 
   movieNameRules = [v => (!!v && !!v.length) || "Invalid movie name"];
+  movieNameErrors = [] as string[];
 
   removeDialog = false;
   removeLoader = false;
 
-  editMovie() {
+  @Watch("editName", {})
+  onEditMovieNameChange(newVal: number) {
+    this.movieNameErrors = [];
+  }
+
+  async editMovie() {
     if (!this.currentMovie) return;
+
+    if (await checkMovieExist(this.editName)) {
+      this.movieNameErrors = ["This movie already exists."];
+      return;
+    }
 
     ApolloClient.mutate({
       mutation: gql`

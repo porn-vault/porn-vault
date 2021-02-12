@@ -40,6 +40,7 @@
           <v-form v-model="validEdit">
             <v-text-field
               :rules="actorNameRules"
+              :error-messages="actorNameErrors"
               color="primary"
               v-model="editName"
               placeholder="Name"
@@ -102,7 +103,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { actorModule } from "../../store/actor";
 import ApolloClient, { serverBase } from "../../apollo";
 import gql from "graphql-tag";
@@ -110,6 +111,7 @@ import IActor from "../../types/actor";
 import moment from "moment";
 import CustomFieldSelector from "../CustomFieldSelector.vue";
 import countries from "../../util/countries";
+import { checkActorExist } from "../api/search";
 
 @Component({
   components: {
@@ -126,6 +128,7 @@ export default class ActorToolbar extends Vue {
   editNationality = null as string | null;
 
   actorNameRules = [v => (!!v && !!v.length) || "Invalid actor name"];
+  actorNameErrors = [] as string[];
 
   removeDialog = false;
   removeLoader = false;
@@ -168,8 +171,18 @@ export default class ActorToolbar extends Vue {
     return new Promise(r => setTimeout(r, ms));
   }
 
+  @Watch("editName", {})
+  onEditNameChange(newVal: number) {
+    this.actorNameErrors = [];
+  }
+
   async editActor() {
     if (!this.currentActor) return;
+
+    if (await checkActorExist(this.editName)) {
+      this.actorNameErrors = ["This actor already exists."];
+      return;
+    }
 
     await this.sleep(50);
 

@@ -96,6 +96,9 @@
         ></v-select>
       </v-container>
     </v-navigation-drawer>
+    <v-alert class="mb-3" v-if="skippedMoviesWarning" dense text dismissible type="warning"
+      >These movies already exist and were skipped: <b>{{ skippedMoviesWarning }}</b></v-alert
+    >
 
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
@@ -212,6 +215,7 @@
           <v-form v-model="validCreation">
             <v-text-field
               :rules="movieNameRules"
+              :error-messages="movieNameErrors"
               color="primary"
               v-model="createMovieName"
               placeholder="Name"
@@ -280,6 +284,7 @@ import { mixins } from "vue-class-component";
 import { movieModule } from "@/store/movie";
 import StudioSelector from "@/components/StudioSelector.vue";
 import ActorSelector from "@/components/ActorSelector.vue";
+import { checkMovieExist } from "../api/search";
 
 @Component({
   components: {
@@ -308,6 +313,7 @@ export default class MovieList extends mixins(DrawerMixin) {
   fetchingRandom = false;
 
   moviesBulkText = "" as string | null;
+  skippedMoviesWarning = null as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
 
@@ -318,9 +324,16 @@ export default class MovieList extends mixins(DrawerMixin) {
   async runBulkImport() {
     this.bulkLoader = true;
 
+    let skippedMovies: string[] = [];
+    this.skippedMoviesWarning = null;
+
     try {
       for (const name of this.moviesBulkImport) {
-        await this.createMovieWithName(name);
+        if (await checkMovieExist(name)) {
+          skippedMovies.push(name);
+        } else {
+          await this.createMovieWithName(name);
+        }
       }
       this.refreshPage();
       this.bulkImportDialog = false;
@@ -330,6 +343,11 @@ export default class MovieList extends mixins(DrawerMixin) {
 
     this.moviesBulkText = "";
     this.bulkLoader = false;
+
+    // triggers warning alert if any movies were skipped because they already existed
+    if (skippedMovies.length > 0) {
+      this.skippedMoviesWarning = skippedMovies.join(", ");
+    }
   }
 
   get moviesBulkImport() {
@@ -383,6 +401,7 @@ export default class MovieList extends mixins(DrawerMixin) {
   addMovieLoader = false;
 
   movieNameRules = [(v) => (!!v && !!v.length) || "Invalid movie name"];
+  movieNameErrors = [] as string[];
 
   query = localStorage.getItem("pm_movieQuery") || "";
 
@@ -490,7 +509,17 @@ export default class MovieList extends mixins(DrawerMixin) {
     });
   }
 
-  addMovie() {
+  @Watch("createMovieName", {})
+  onCreateMovieNameChange(newVal: number) {
+    this.movieNameErrors = [];
+  }
+
+  async addMovie() {
+    if (await checkMovieExist(this.createMovieName)) {
+      this.movieNameErrors = ["This movie already exists."];
+      return;
+    }
+
     this.addMovieLoader = true;
     ApolloClient.mutate({
       mutation: gql`
