@@ -22,12 +22,8 @@ export async function checkActorExist(name: string) {
     },
   });
 
-  // Verify that the highest relevance ES result is an exact name match
-  if (result.data.getActors.items.length > 0 && result.data.getActors.items[0].name === name) {
-    return true;
-  } else {
-    return false;
-  }
+  // Existence if the highest relevance ES result is an exact name match
+  return result.data.getActors.items.length > 0 && result.data.getActors.items[0].name === name;
 }
 
 export async function checkMovieExist(name: string) {
@@ -51,12 +47,8 @@ export async function checkMovieExist(name: string) {
     },
   });
 
-  // Verify that the highest relevance ES result is an exact name match
-  if (result.data.getMovies.items.length > 0 && result.data.getMovies.items[0].name === name) {
-    return true;
-  } else {
-    return false;
-  }
+  // Existence if the highest relevance ES result is an exact name match
+  return result.data.getMovies.items.length > 0 && result.data.getMovies.items[0].name === name;
 }
 
 export async function checkStudioExist(name: string) {
@@ -80,10 +72,6 @@ export async function checkStudioExist(name: string) {
     },
   });
 
-  // Verify that the highest relevance ES result is an exact name match
-  if (result.data.getStudios.items.length > 0 && result.data.getStudios.items[0].name === name) {
-    return true;
-  } else {
-    return false;
-  }
+  // Existence if the highest relevance ES result is an exact name match
+  return result.data.getStudios.items.length > 0 && result.data.getStudios.items[0].name === name;
 }
