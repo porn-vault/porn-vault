@@ -222,11 +222,7 @@ export default class Home extends Vue {
   }
 
   checkLabelExist(name: string) {
-    if (this.labels.findIndex((l) => l.name === name) > -1) {
-      return true;
-    } else {
-      return false;
-    }
+    return this.labels.find(l => l.name === name);
   }
 
   @Watch("editLabelName", {})
