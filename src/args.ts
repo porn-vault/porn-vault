@@ -1,6 +1,9 @@
 import yargs from "yargs";
 
+import VERSION from "./version";
+
 const argv = yargs
+  .version(VERSION)
   .option("process-queue", {
     type: "boolean",
     description: "(Used internally, don't use manually)",

@@ -7,28 +7,6 @@ import IMovie from "@/types/movie";
 class MovieModule extends VuexModule {
   current = null as IMovie | null;
 
-  page = 1;
-  numResults = 0;
-  numPages = 0;
-
-  @Mutation
-  resetPagination() {
-    this.numPages = 0;
-    this.numResults = 0;
-    this.page = 1;
-  }
-
-  @Mutation
-  setPage(num: number) {
-    this.page = num;
-  }
-
-  @Mutation
-  setPagination({ numResults, numPages }: { numResults: number; numPages: number }) {
-    this.numResults = numResults;
-    this.numPages = numPages;
-  }
-
   @Mutation
   setName(name: string) {
     if (this.current) this.current.name = name;

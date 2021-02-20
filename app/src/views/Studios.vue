@@ -6,7 +6,7 @@
     <v-navigation-drawer v-if="showSidenav" style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
         <v-btn
-          :disabled="refreshed"
+          :disabled="searchStateManager.refreshed"
           class="text-none mb-2"
           block
           color="primary"
@@ -23,26 +23,29 @@
           hide-details
           clearable
           color="primary"
-          v-model="query"
+          :value="searchState.query"
+          @input="searchStateManager.onValueChanged('query', $event)"
           label="Search query"
           class="mb-2"
         ></v-text-field>
 
         <div class="d-flex align-center">
           <v-btn
-            :color="favoritesOnly ? 'red' : undefined"
+            :color="searchState.favoritesOnly ? 'red' : undefined"
             icon
-            @click="favoritesOnly = !favoritesOnly"
+            @click="searchStateManager.onValueChanged('favoritesOnly', !searchState.favoritesOnly)"
           >
-            <v-icon>{{ favoritesOnly ? "mdi-heart" : "mdi-heart-outline" }}</v-icon>
+            <v-icon>{{ searchState.favoritesOnly ? "mdi-heart" : "mdi-heart-outline" }}</v-icon>
           </v-btn>
 
           <v-btn
-            :color="bookmarksOnly ? 'primary' : undefined"
+            :color="searchState.bookmarksOnly ? 'primary' : undefined"
             icon
-            @click="bookmarksOnly = !bookmarksOnly"
+            @click="searchStateManager.onValueChanged('bookmarksOnly', !searchState.bookmarksOnly)"
           >
-            <v-icon>{{ bookmarksOnly ? "mdi-bookmark" : "mdi-bookmark-outline" }}</v-icon>
+            <v-icon>{{
+              searchState.bookmarksOnly ? "mdi-bookmark" : "mdi-bookmark-outline"
+            }}</v-icon>
           </v-btn>
 
           <v-spacer></v-spacer>
@@ -51,9 +54,9 @@
         <Divider icon="mdi-label">Labels</Divider>
 
         <LabelFilter
-          @change="onSelectedLabelsChange"
+          @input="searchStateManager.onValueChanged('selectedLabels', $event)"
           class="mt-0"
-          v-model="selectedLabels"
+          :value="searchState.selectedLabels"
           :items="allLabels"
         />
 
@@ -67,7 +70,8 @@
           color="primary"
           item-text="text"
           item-value="value"
-          v-model="sortBy"
+          :value="searchState.sortBy"
+          @change="searchStateManager.onValueChanged('sortBy', $event)"
           placeholder="Sort by..."
           :items="sortByItems"
           class="mt-0 pt-0 mb-2"
@@ -76,12 +80,13 @@
           solo
           flat
           single-line
-          :disabled="sortBy == 'relevance' || sortBy == '$shuffle'"
+          :disabled="searchState.sortBy == 'relevance' || searchState.sortBy == '$shuffle'"
           hide-details
           color="primary"
           item-text="text"
           item-value="value"
-          v-model="sortDir"
+          :value="searchState.sortDir"
+          @change="searchStateManager.onValueChanged('sortDir', $event)"
           placeholder="Sort direction"
           :items="sortDirItems"
         ></v-select>
@@ -93,7 +98,7 @@
 
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
-      <v-btn class="mt-2" @click="loadPage(page)">Try again</v-btn>
+      <v-btn class="mt-2" @click="loadPage">Try again</v-btn>
     </div>
     <div v-else>
       <div class="mb-2 d-flex align-center">
@@ -120,7 +125,7 @@
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" :disabled="sortBy != '$shuffle'" @click="rerollSeed" icon>
+            <v-btn v-on="on" :disabled="searchState.sortBy != '$shuffle'" @click="rerollSeed" icon>
               <v-icon>mdi-dice-3-outline</v-icon>
             </v-btn>
           </template>
@@ -130,8 +135,8 @@
         <div>
           <v-pagination
             v-if="!fetchLoader && $vuetify.breakpoint.mdAndUp"
-            @input="loadPage"
-            v-model="page"
+            :value="searchState.page"
+            @input="onPageChange"
             :total-visible="9"
             :disabled="fetchLoader"
             :length="numPages"
@@ -157,19 +162,20 @@
     </div>
     <div class="mt-3" v-if="numResults && numPages > 1">
       <v-pagination
-        @input="loadPage"
-        v-model="page"
+        :value="searchState.page"
+        @input="onPageChange"
         :total-visible="9"
         :disabled="fetchLoader"
         :length="numPages"
       ></v-pagination>
       <div class="text-center mt-3">
         <v-text-field
+          @keydown.enter="onPageChange(jumpPage)"
           :disabled="fetchLoader"
           solo
           flat
           color="primary"
-          v-model.number="page"
+          v-model.number="jumpPage"
           placeholder="Page #"
           class="d-inline-block mr-2"
           style="width: 60px"
@@ -181,7 +187,7 @@
           color="primary"
           class="text-none"
           text
-          @click="loadPage(page)"
+          @click="onPageChange(jumpPage)"
           >Load</v-btn
         >
       </div>
@@ -232,6 +238,8 @@ import { mixins } from "vue-class-component";
 import DrawerMixin from "@/mixins/drawer";
 import { studioModule } from "@/store/studio";
 import { checkStudioExist } from "../api/search";
+import { isQueryDifferent, SearchStateManager } from "../util/searchState";
+import { Dictionary, Route } from "vue-router/types/router";
 
 @Component({
   components: {
@@ -246,7 +254,7 @@ export default class StudioList extends mixins(DrawerMixin) {
   rerollSeed() {
     const seed = Math.random().toString(36);
     localStorage.setItem("pm_seed", seed);
-    if (this.sortBy === "$shuffle") this.loadPage(this.page);
+    if (this.searchState.sortBy === "$shuffle") this.loadPage();
     return seed;
   }
 
@@ -255,6 +263,39 @@ export default class StudioList extends mixins(DrawerMixin) {
   fetchLoader = false;
   fetchError = false;
   fetchingRandom = false;
+  numResults = 0;
+  numPages = 0;
+
+  searchStateManager = new SearchStateManager<{
+    page: number;
+    query: string;
+    favoritesOnly: boolean;
+    bookmarksOnly: boolean;
+    selectedLabels: { include: string[]; exclude: string[] };
+    sortBy: string;
+    sortDir: string;
+  }>({
+    localStorageNamer: (key: string) => `pm_studio${key[0].toUpperCase()}${key.substr(1)}`,
+    props: {
+      page: {
+        default: () => 1,
+      },
+      query: true,
+      favoritesOnly: true,
+      bookmarksOnly: true,
+      selectedLabels: { default: () => ({ include: [], exclude: [] }) },
+      sortBy: { default: () => "relevance" },
+      sortDir: {
+        default: () => "desc",
+      },
+    },
+  });
+
+  jumpPage: string | null = null;
+
+  get searchState() {
+    return this.searchStateManager.state;
+  }
 
   studiosBulkText = "" as string | null;
   skippedStudiosWarning = null as string | null;
@@ -279,7 +320,7 @@ export default class StudioList extends mixins(DrawerMixin) {
           await this.createStudioWithName(name);
         }
       }
-      this.refreshPage();
+      this.loadPage();
       this.bulkImportDialog = false;
     } catch (error) {
       console.error(error);
@@ -304,41 +345,47 @@ export default class StudioList extends mixins(DrawerMixin) {
   }
 
   allLabels = [] as ILabel[];
-  selectedLabels = {
-    include: this.tryReadLabelsFromLocalStorage("pm_studioInclude"),
-    exclude: this.tryReadLabelsFromLocalStorage("pm_studioExclude"),
-  };
 
-  onSelectedLabelsChange(val: any) {
-    localStorage.setItem("pm_studioInclude", val.include.join(","));
-    localStorage.setItem("pm_studioExclude", val.exclude.join(","));
-    this.refreshed = false;
-  }
-
-  query = localStorage.getItem("pm_studioQuery") || "";
-
-  set page(page: number) {
-    const x = Number(page);
-    if (isNaN(x) || x <= 0 || x > this.numPages) {
-      studioModule.setPage(1);
-    } else {
-      studioModule.setPage(x || 1);
+  @Watch("$route")
+  onRouteChange(to: Route, from: Route) {
+    if (isQueryDifferent(to.query as Dictionary<string>, from.query as Dictionary<string>)) {
+      // Only update the state and reload, if the query changed => filters changed
+      this.searchStateManager.parseFromQuery(to.query as Dictionary<string>);
+      this.loadPage();
+      return;
     }
   }
 
-  get page() {
-    return studioModule.page;
+  onPageChange(val: number) {
+    let page = Number(val);
+    if (isNaN(page) || page <= 0 || page > this.numPages) {
+      page = 1;
+    }
+    this.jumpPage = null;
+    this.searchStateManager.onValueChanged("page", page);
+    this.updateRoute({ page: page.toString() });
   }
 
-  get numResults() {
-    return studioModule.numResults;
+  updateRoute(query: { [x: string]: string }, replace = false, noChangeCb: Function | null = null) {
+    if (isQueryDifferent(query, this.$route.query as Dictionary<string>)) {
+      // Only change the current url if the new url will be different to avoid redundant navigation
+      const update = {
+        name: "studios",
+        query: {
+          ...this.$route.query,
+          ...query,
+        },
+      };
+      if (replace) {
+        this.$router.replace(update);
+      } else {
+        this.$router.push(update);
+      }
+    } else {
+      noChangeCb?.();
+    }
   }
 
-  get numPages() {
-    return studioModule.numPages;
-  }
-
-  sortDir = localStorage.getItem("pm_studioSortDir") || "desc";
   sortDirItems = [
     {
       text: "Ascending",
@@ -350,7 +397,6 @@ export default class StudioList extends mixins(DrawerMixin) {
     },
   ];
 
-  sortBy = localStorage.getItem("pm_studioSortBy") || "relevance";
   sortByItems = [
     {
       text: "Relevance",
@@ -377,9 +423,6 @@ export default class StudioList extends mixins(DrawerMixin) {
       value: "rating"
     } */
   ];
-
-  favoritesOnly = localStorage.getItem("pm_studioFavorite") == "true";
-  bookmarksOnly = localStorage.getItem("pm_studioBookmark") == "true";
 
   labelIDs(indices: number[]) {
     return indices.map((i) => this.allLabels[i]).map((l) => l._id);
@@ -426,56 +469,9 @@ export default class StudioList extends mixins(DrawerMixin) {
     return studio.labels.map((l) => l.name).sort();
   }
 
-  refreshed = true;
-
   resetPagination() {
-    studioModule.resetPagination();
-    this.refreshed = true;
-    this.loadPage(this.page).catch(() => {
-      this.refreshed = false;
-    });
-  }
-
-  @Watch("ratingFilter", {})
-  onRatingChange(newVal: number) {
-    localStorage.setItem("pm_studioRating", newVal.toString());
-    this.refreshed = false;
-  }
-
-  @Watch("favoritesOnly")
-  onFavoriteChange(newVal: boolean) {
-    localStorage.setItem("pm_studioFavorite", "" + newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("bookmarksOnly")
-  onBookmarkChange(newVal: boolean) {
-    localStorage.setItem("pm_studioBookmark", "" + newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("sortDir")
-  onSortDirChange(newVal: string) {
-    localStorage.setItem("pm_studioSortDir", newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("sortBy")
-  onSortChange(newVal: string) {
-    localStorage.setItem("pm_studioSortBy", newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("query")
-  onQueryChange(newVal: string | null) {
-    localStorage.setItem("pm_studioQuery", newVal || "");
-    this.refreshed = false;
-  }
-
-  @Watch("selectedLabels")
-  onLabelChange() {
-    studioModule.resetPagination();
-    this.loadPage(this.page);
+    this.searchState.page = 1;
+    this.updateRoute(this.searchStateManager.toQuery());
   }
 
   getRandom() {
@@ -519,15 +515,15 @@ export default class StudioList extends mixins(DrawerMixin) {
       `,
       variables: {
         query: {
-          query: this.query || "",
-          include: this.selectedLabels.include,
-          exclude: this.selectedLabels.exclude,
+          query: this.searchState.query || "",
+          include: this.searchState.selectedLabels.include,
+          exclude: this.searchState.selectedLabels.exclude,
           take,
           page: page - 1,
-          sortDir: this.sortDir,
-          sortBy: random ? "$shuffle" : this.sortBy,
-          favorite: this.favoritesOnly,
-          bookmark: this.bookmarksOnly,
+          sortDir: this.searchState.sortDir,
+          sortBy: random ? "$shuffle" : this.searchState.sortBy,
+          favorite: this.searchState.favoritesOnly,
+          bookmark: this.searchState.bookmarksOnly,
         },
         seed: seed || localStorage.getItem("pm_seed") || "default",
       },
@@ -536,16 +532,16 @@ export default class StudioList extends mixins(DrawerMixin) {
     return result.data.getStudios;
   }
 
-  loadPage(page: number) {
+  loadPage() {
     this.fetchLoader = true;
 
-    return this.fetchPage(page)
+    return this.fetchPage(this.searchState.page)
       .then((result) => {
+        this.searchStateManager.refreshed = true;
         this.fetchError = false;
-        studioModule.setPagination({
-          numResults: result.numItems,
-          numPages: result.numPages,
-        });
+        this.fetchError = false;
+        this.numResults = result.numItems;
+        this.numPages = result.numPages;
         this.studios = result.items;
       })
       .catch((err) => {
@@ -557,15 +553,10 @@ export default class StudioList extends mixins(DrawerMixin) {
       });
   }
 
-  refreshPage() {
-    this.loadPage(studioModule.page);
-  }
-
-  mounted() {
-    if (!this.studios.length) this.refreshPage();
-  }
-
   beforeMount() {
+    this.searchStateManager.initState(this.$route.query as Dictionary<string>);
+    this.updateRoute(this.searchStateManager.toQuery(), true, this.loadPage);
+
     ApolloClient.query({
       query: gql`
         {
@@ -581,8 +572,8 @@ export default class StudioList extends mixins(DrawerMixin) {
       .then((res) => {
         this.allLabels = res.data.getLabels;
         if (!this.allLabels.length) {
-          this.selectedLabels.include = [];
-          this.selectedLabels.exclude = [];
+          this.searchState.selectedLabels.include = [];
+          this.searchState.selectedLabels.exclude = [];
         }
       })
       .catch((err) => {

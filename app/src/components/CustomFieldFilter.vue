@@ -241,6 +241,7 @@ export default class CustomFieldSelector extends Vue {
     this.innerValue.push(<any>{
       id: this.selectedFieldId,
     });
+    this.emitValue();
   }
 
   splice(index: number) {

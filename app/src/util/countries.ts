@@ -4,9 +4,11 @@ export interface ICountry {
   alpha2: string;
   alpha3: string;
   nationality: string;
+  alias?: string;
+  priority?: number;
 }
 
-const countries = [
+const countries: ICountry[] = [
   {
     name: "Afghanistan",
     code: 4,
@@ -1785,21 +1787,22 @@ const countries = [
     alpha3: "ZWE",
     nationality: "Zimbabwean",
   },
-] as ICountry[];
+];
 
 const countryMap = (() => {
   const map = {} as Record<string, ICountry>;
   countries.forEach((c) => {
     map[c.alpha2] = c;
+    map[c.alpha3] = c;
   });
   return map;
 })();
 
-export function getNationality(str: string) {
+export function getNationality(str: string): ICountry {
   return countryMap[str.toUpperCase()];
 }
 
-export function isValidCountryCode(str: string) {
+export function isValidCountryCode(str: string): boolean {
   return !!getNationality(str);
 }
 

@@ -47,7 +47,7 @@
               v-model="createFieldTarget"
               persistent-hint
               hint="Objects the field is applicable to"
-              :rules="v => !!v.length || 'Required'"
+              :rules="(v) => !!v.length || 'Required'"
             />
             <v-text-field
               color="primary"
@@ -71,13 +71,9 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            :disabled="!validated"
-            class="text-none"
-            text
-            color="primary"
-            @click="createField"
-          >Create</v-btn>
+          <v-btn :disabled="!validated" class="text-none" text color="primary" @click="createField"
+            >Create</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -85,15 +81,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import ApolloClient, { serverBase } from "../apollo";
+import { Component, Vue } from "vue-property-decorator";
+import ApolloClient from "../apollo";
 import gql from "graphql-tag";
 import CreatedCustomField from "./CreatedCustomField.vue";
 
 @Component({
   components: {
-    CreatedCustomField
-  }
+    CreatedCustomField,
+  },
 })
 export default class CustomFieldCreator extends Vue {
   fields = [] as any[];
@@ -107,35 +103,35 @@ export default class CustomFieldCreator extends Vue {
   createFieldTypes = [
     {
       id: "NUMBER",
-      text: "Number"
+      text: "Number",
     },
     {
       id: "STRING",
-      text: "String"
+      text: "String",
     },
     {
       id: "BOOLEAN",
-      text: "Boolean"
+      text: "Boolean",
     },
     {
       id: "SINGLE_SELECT",
-      text: "Single choice"
+      text: "Single choice",
     },
     {
       id: "MULTI_SELECT",
-      text: "Multiple choice"
-    }
+      text: "Multiple choice",
+    },
   ];
   createFieldTarget = ["ACTORS"] as string[];
   createFieldTargets = [
     {
       id: "SCENES",
-      text: "Scenes"
+      text: "Scenes",
     },
     {
       id: "ACTORS",
-      text: "Actors"
-    }
+      text: "Actors",
+    },
     /* {
       id: "MOVIES",
       text: "Movies"
@@ -156,7 +152,7 @@ export default class CustomFieldCreator extends Vue {
   createFieldValues = [] as string[];
   createFieldUnit = null as string | null;
 
-  fieldNameRules = [v => (!!v && !!v.length) || "Invalid field name"];
+  fieldNameRules = [(v) => (!!v && !!v.length) || "Invalid field name"];
 
   updateField(index: number, field: any) {
     Vue.set(this.fields, index, field);
@@ -197,10 +193,10 @@ export default class CustomFieldCreator extends Vue {
           type: this.createFieldType,
           values: this.createFieldValues,
           unit: this.createFieldUnit,
-          target: this.createFieldTarget
-        }
+          target: this.createFieldTarget,
+        },
       })
-        .then(res => {
+        .then((res) => {
           this.fields.push(res.data.createCustomField);
           this.createFieldName = "";
           this.createFieldValues = [];
@@ -225,7 +221,7 @@ export default class CustomFieldCreator extends Vue {
         return "Checkbox (e.g. retired yes/no)";
         break;
       case "SINGLE_SELECT":
-        return "Set of values with one possible selected value (e.g. nationality)";
+        return "Set of values with one possible selected value (e.g. ethnicity)";
         break;
       case "MULTI_SELECT":
         return "Set of values with more than one possible value (e.g. hair color)";
@@ -253,12 +249,12 @@ export default class CustomFieldCreator extends Vue {
             target
           }
         }
-      `
+      `,
     })
-      .then(res => {
+      .then((res) => {
         this.fields = res.data.getCustomFields;
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(error);
       });
   }

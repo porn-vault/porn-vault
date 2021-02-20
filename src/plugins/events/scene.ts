@@ -7,7 +7,6 @@ import {
   markerCollection,
   movieCollection,
   studioCollection,
-  viewCollection,
 } from "../../database";
 import {
   buildActorExtractor,
@@ -29,7 +28,6 @@ import Marker from "../../types/marker";
 import Movie from "../../types/movie";
 import Scene from "../../types/scene";
 import Studio from "../../types/studio";
-import SceneView from "../../types/watch";
 import { mapAsync } from "../../utils/async";
 import { handleError, logger } from "../../utils/logger";
 import { validRating } from "../../utils/misc";
@@ -38,6 +36,19 @@ import { createImage, createLocalImage } from "../context";
 import { onActorCreate } from "./actor";
 import { onMovieCreate } from "./movie";
 import { onStudioCreate } from "./studio";
+
+export async function createMarker(sceneId: string, name: string, seconds: number) {
+  const existingMarker = await Marker.getAtTime(sceneId, seconds);
+  if (existingMarker) {
+    // Prevent duplicate markers
+    return null;
+  }
+  const marker = new Marker(name, sceneId, seconds);
+  await markerCollection.upsert(marker._id, marker);
+  await Marker.createMarkerThumbnail(marker);
+  await indexMarkers([marker]);
+  return marker._id;
+}
 
 // This function has side effects
 export async function onSceneCreate(
@@ -54,13 +65,7 @@ export async function onSceneCreate(
     scene: JSON.parse(JSON.stringify(scene)) as Scene,
     sceneName: scene.name,
     scenePath: scene.path,
-    $createMarker: async (name: string, seconds: number) => {
-      const marker = new Marker(name, scene._id, seconds);
-      await markerCollection.upsert(marker._id, marker);
-      await Marker.createMarkerThumbnail(marker);
-      await indexMarkers([marker]);
-      return marker._id;
-    },
+    $createMarker: (name: string, seconds: number) => createMarker(scene._id, name, seconds),
     $createLocalImage: async (path: string, name: string, thumbnail?: boolean) => {
       const img = await createLocalImage(path, name, thumbnail);
       img.scene = scene._id;
@@ -82,18 +87,6 @@ export async function onSceneCreate(
       return img._id;
     },
   });
-
-  if (
-    event === "sceneCreated" &&
-    pluginResult.watches &&
-    Array.isArray(pluginResult.watches) &&
-    pluginResult.watches.every((v) => typeof v === "number")
-  ) {
-    for (const stamp of pluginResult.watches) {
-      const watchItem = new SceneView(scene._id, stamp);
-      await viewCollection.upsert(watchItem._id, watchItem);
-    }
-  }
 
   if (
     typeof pluginResult.thumbnail === "string" &&
@@ -123,8 +116,9 @@ export async function onSceneCreate(
     scene.addedOn = new Date(pluginResult.addedOn).valueOf();
   }
 
-  if (Array.isArray(pluginResult.views) && pluginResult.views.every(isNumber)) {
-    for (const viewTime of pluginResult.views) {
+  const viewArray: unknown = pluginResult.views || pluginResult.watches;
+  if (Array.isArray(viewArray) && viewArray.every(isNumber)) {
+    for (const viewTime of viewArray) {
       await Scene.watch(scene, viewTime);
     }
   }

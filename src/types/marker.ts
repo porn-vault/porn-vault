@@ -38,7 +38,9 @@ export default class Marker {
 
   static async createMarkerThumbnail(marker: Marker): Promise<void> {
     const scene = await Scene.getById(marker.scene);
-    if (!scene || !scene.path) return;
+    if (!scene || !scene.path) {
+      return;
+    }
 
     logger.verbose(`Creating thumbnail for marker ${marker._id}`);
     const image = new Image(`${marker.name} (thumbnail)`);
@@ -71,6 +73,11 @@ export default class Marker {
     this.name = name;
     this.scene = scene;
     this.time = Math.round(time);
+  }
+
+  static async getAtTime(sceneId: string, time: number, threshold = 5) {
+    const markers = await Marker.getByScene(sceneId);
+    return markers.find((m) => Math.abs(m.time - time) < threshold);
   }
 
   static async getByScene(sceneId: string): Promise<Marker[]> {

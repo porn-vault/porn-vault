@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { existsSync, unlinkSync } from "fs";
 import { before } from "mocha";
+import { resolve } from "path";
 import { ApplyActorLabelsEnum, ApplyStudioLabelsEnum } from "../../src/config/schema";
 
 import { indexActors } from "../../src/search/actor";
@@ -17,11 +18,43 @@ import {
   actorCollection,
   labelCollection,
   movieCollection,
+  sceneCollection,
   studioCollection,
 } from "./../../src/database";
 
 describe("types", () => {
   describe("scene", () => {
+    describe("changePath", () => {
+      const videoPath = "./test/fixtures/files/dynamic/dynamic_video.mp4";
+
+      before(async () => {
+        await downloadTestVideo(videoPath);
+      });
+
+      after(() => {
+        if (existsSync(videoPath)) {
+          unlinkSync(videoPath);
+        }
+        stopTestServer();
+      });
+
+      it("changes path and updates metadata", async function () {
+        await startTestServer.call(this, {});
+
+        const scene = new Scene("Test scene");
+        expect(scene.path).to.be.null;
+        const metaBefore = JSON.parse(JSON.stringify(scene.meta));
+        await sceneCollection.upsert(scene._id, scene);
+
+        await Scene.changePath(scene, videoPath);
+        await sceneCollection.upsert(scene._id, scene);
+
+        const sceneAfter = (await Scene.getById(scene._id))!;
+        expect(metaBefore).to.not.deep.equal(sceneAfter.meta);
+        expect(sceneAfter.path).to.equal(resolve(videoPath));
+      });
+    });
+
     describe("onImport", () => {
       afterEach(() => {
         stopTestServer();

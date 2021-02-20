@@ -5,7 +5,7 @@
     <v-navigation-drawer v-if="showSidenav" style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
         <v-btn
-          :disabled="refreshed"
+          :disabled="searchStateManager.refreshed"
           class="text-none mb-2"
           block
           color="primary"
@@ -21,7 +21,8 @@
           single-line
           clearable
           color="primary"
-          v-model="query"
+          :value="searchState.query"
+          @input="searchStateManager.onValueChanged('query', $event)"
           label="Search query"
           class="mb-2"
           hide-details
@@ -29,32 +30,37 @@
 
         <div class="d-flex align-center">
           <v-btn
-            :color="favoritesOnly ? 'red' : undefined"
+            :color="searchState.favoritesOnly ? 'red' : undefined"
             icon
-            @click="favoritesOnly = !favoritesOnly"
+            @click="searchStateManager.onValueChanged('favoritesOnly', !searchState.favoritesOnly)"
           >
-            <v-icon>{{ favoritesOnly ? "mdi-heart" : "mdi-heart-outline" }}</v-icon>
+            <v-icon>{{ searchState.favoritesOnly ? "mdi-heart" : "mdi-heart-outline" }}</v-icon>
           </v-btn>
 
           <v-btn
-            :color="bookmarksOnly ? 'primary' : undefined"
+            :color="searchState.bookmarksOnly ? 'primary' : undefined"
             icon
-            @click="bookmarksOnly = !bookmarksOnly"
+            @click="searchStateManager.onValueChanged('bookmarksOnly', !searchState.bookmarksOnly)"
           >
-            <v-icon>{{ bookmarksOnly ? "mdi-bookmark" : "mdi-bookmark-outline" }}</v-icon>
+            <v-icon>{{
+              searchState.bookmarksOnly ? "mdi-bookmark" : "mdi-bookmark-outline"
+            }}</v-icon>
           </v-btn>
 
           <v-spacer></v-spacer>
 
-          <Rating @input="ratingFilter = $event" :value="ratingFilter" />
+          <Rating
+            @input="searchStateManager.onValueChanged('ratingFilter', $event)"
+            :value="searchState.ratingFilter"
+          />
         </div>
 
         <Divider icon="mdi-label">Labels</Divider>
 
         <LabelFilter
-          @change="onSelectedLabelsChange"
+          @input="searchStateManager.onValueChanged('selectedLabels', $event)"
           class="mt-0"
-          v-model="selectedLabels"
+          :value="searchState.selectedLabels"
           :items="allLabels"
         />
 
@@ -67,7 +73,8 @@
           color="primary"
           item-text="text"
           item-value="value"
-          v-model="sortBy"
+          :value="searchState.sortBy"
+          @change="searchStateManager.onValueChanged('sortBy', $event)"
           placeholder="Sort by..."
           :items="sortByItems"
           class="mt-0 pt-0 mb-2"
@@ -78,12 +85,13 @@
           solo
           flat
           single-line
-          :disabled="sortBy == 'relevance' || sortBy == '$shuffle'"
+          :disabled="searchState.sortBy == 'relevance' || searchState.sortBy == '$shuffle'"
           hide-details
           color="primary"
           item-text="text"
           item-value="value"
-          v-model="sortDir"
+          :value="searchState.sortDir"
+          @change="searchStateManager.onValueChanged('sortDir', $event)"
           placeholder="Sort direction"
           :items="sortDirItems"
         ></v-select>
@@ -97,7 +105,8 @@
           solo
           flat
           single-line
-          v-model="countryFilter"
+          :value="searchState.countryFilter"
+          @change="searchStateManager.onValueChanged('countryFilter', $event)"
           :items="countries"
           item-text="name"
           item-value="alpha2"
@@ -105,9 +114,17 @@
         ></v-autocomplete>
 
         <div class="mt-3 text-center">
-          <v-btn @click="customDialog = true" text class="text-center text-none" color="primary">{{
-            customFilter.length ? `${customFilter.length} custom filters` : "Filter custom fields"
-          }}</v-btn>
+          <v-btn
+            @click="openCustomFilterDialog"
+            text
+            class="text-center text-none"
+            color="primary"
+            >{{
+              searchState.customFilter.length
+                ? `${searchState.customFilter.length} custom filters`
+                : "Filter custom fields"
+            }}</v-btn
+          >
         </div>
       </v-container>
     </v-navigation-drawer>
@@ -117,7 +134,7 @@
 
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
-      <v-btn class="mt-2" @click="loadPage(page)">Try again</v-btn>
+      <v-btn class="mt-2" @click="loadPage">Try again</v-btn>
     </div>
     <div v-else>
       <div class="mb-2 d-flex align-center">
@@ -151,7 +168,7 @@
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" :disabled="sortBy != '$shuffle'" @click="rerollSeed" icon>
+            <v-btn v-on="on" :disabled="searchState.sortBy != '$shuffle'" @click="rerollSeed" icon>
               <v-icon>mdi-dice-3-outline</v-icon>
             </v-btn>
           </template>
@@ -161,8 +178,8 @@
         <div>
           <v-pagination
             v-if="!fetchLoader && $vuetify.breakpoint.mdAndUp"
-            @input="loadPage"
-            v-model="page"
+            :value="searchState.page"
+            @input="onPageChange"
             :total-visible="9"
             :disabled="fetchLoader"
             :length="numPages"
@@ -188,19 +205,20 @@
     </div>
     <div class="mt-3" v-if="numResults && numPages > 1">
       <v-pagination
-        @input="loadPage"
-        v-model="page"
+        :value="searchState.page"
+        @input="onPageChange"
         :total-visible="9"
         :disabled="fetchLoader"
         :length="numPages"
       ></v-pagination>
       <div class="text-center mt-3">
         <v-text-field
+          @keydown.enter="onPageChange(jumpPage)"
           :disabled="fetchLoader"
           solo
           flat
           color="primary"
-          v-model.number="page"
+          v-model.number="jumpPage"
           placeholder="Page #"
           class="d-inline-block mr-2"
           style="width: 60px"
@@ -325,11 +343,18 @@
       <v-card v-if="customDialog">
         <v-card-title>Filter custom fields</v-card-title>
         <v-card-text style="max-height: 500px">
-          <CustomFieldFilter v-model="customFilter" :fields="fields" />
+          <CustomFieldFilter v-model="customFilterTemp" :fields="fields" />
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn @click="onCustomChange" text color="primary" class="text-none">Apply</v-btn>
+          <v-btn
+            :disabled="customFilterTempInvalid"
+            @click="onCustomChange"
+            text
+            color="primary"
+            class="text-none"
+            >Apply</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -348,10 +373,11 @@ import IActor from "@/types/actor";
 import ILabel from "@/types/label";
 import DrawerMixin from "@/mixins/drawer";
 import { mixins } from "vue-class-component";
-import { actorModule } from "@/store/actor";
 import CustomFieldFilter from "@/components/CustomFieldFilter.vue";
 import countries from "@/util/countries";
 import { checkActorExist } from "../api/search";
+import { SearchStateManager, isQueryDifferent } from "../util/searchState";
+import { Dictionary, Route } from "vue-router/types/router";
 
 @Component({
   components: {
@@ -361,8 +387,6 @@ import { checkActorExist } from "../api/search";
   },
 })
 export default class ActorList extends mixins(DrawerMixin) {
-  countryFilter = localStorage.getItem("pm_actorNationality") || null;
-
   get countries() {
     return countries;
   }
@@ -374,8 +398,8 @@ export default class ActorList extends mixins(DrawerMixin) {
   rerollSeed() {
     const seed = Math.random().toString(36);
     localStorage.setItem("pm_seed", seed);
-    if (this.sortBy === "$shuffle") {
-      this.loadPage(this.page);
+    if (this.searchState.sortBy === "$shuffle") {
+      this.loadPage();
     }
     return seed;
   }
@@ -386,25 +410,67 @@ export default class ActorList extends mixins(DrawerMixin) {
   fetchLoader = false;
   fetchError = false;
   fetchingRandom = false;
+  numResults = 0;
+  numPages = 0;
+
+  searchStateManager = new SearchStateManager<{
+    page: number;
+    query: string;
+    favoritesOnly: boolean;
+    bookmarksOnly: boolean;
+    ratingFilter: number;
+    selectedLabels: { include: string[]; exclude: string[] };
+    sortBy: string;
+    sortDir: string;
+    countryFilter: string;
+    customFilter: { id: string; op: string; value: string }[];
+  }>({
+    localStorageNamer: (key: string) => `pm_actor${key[0].toUpperCase()}${key.substr(1)}`,
+    props: {
+      page: {
+        default: () => 1,
+      },
+      query: true,
+      favoritesOnly: true,
+      bookmarksOnly: true,
+      ratingFilter: { default: () => 0 },
+      selectedLabels: { default: () => ({ include: [], exclude: [] }) },
+      sortBy: { default: () => "relevance" },
+      sortDir: {
+        default: () => "desc",
+      },
+      countryFilter: true,
+      customFilter: { default: () => [] },
+    },
+  });
+
+  jumpPage: string | null = null;
+
+  get searchState() {
+    return this.searchStateManager.state;
+  }
 
   actorsBulkText = "" as string | null;
   skippedActorsWarning = null as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
 
-  customFilter = (() => {
-    const itemStr = localStorage.getItem("pm_actorCustomFilter");
-    if (itemStr) {
-      return JSON.parse(itemStr);
-    }
-    return [];
-  })() as any[];
+  customFilterTemp: { id: string; op: string; value: string }[] = [];
   customDialog = false;
 
+  get customFilterTempInvalid() {
+    return this.customFilterTemp.some((el) => !el.op || !el.value);
+  }
+
+  openCustomFilterDialog() {
+    this.customFilterTemp = [...this.searchState.customFilter];
+    this.customDialog = true;
+  }
+
   onCustomChange() {
-    localStorage.setItem("pm_actorCustomFilter", JSON.stringify(this.customFilter));
+    this.searchStateManager.onValueChanged("customFilter", [...this.customFilterTemp]);
+    this.customDialog = false;
     this.resetPagination();
-    this.refreshPage();
   }
 
   get showCardLabels() {
@@ -425,7 +491,7 @@ export default class ActorList extends mixins(DrawerMixin) {
           await this.createActorWithName(name);
         }
       }
-      this.refreshPage();
+      this.loadPage();
       this.bulkImportDialog = false;
     } catch (error) {
       console.error(error);
@@ -445,21 +511,7 @@ export default class ActorList extends mixins(DrawerMixin) {
     return [];
   }
 
-  tryReadLabelsFromLocalStorage(key: string) {
-    return (localStorage.getItem(key) || "").split(",").filter(Boolean) as string[];
-  }
-
   allLabels = [] as ILabel[];
-  selectedLabels = {
-    include: this.tryReadLabelsFromLocalStorage("pm_actorInclude"),
-    exclude: this.tryReadLabelsFromLocalStorage("pm_actorExclude"),
-  };
-
-  onSelectedLabelsChange(val: any) {
-    localStorage.setItem("pm_actorInclude", val.include.join(","));
-    localStorage.setItem("pm_actorExclude", val.exclude.join(","));
-    this.refreshed = false;
-  }
 
   validCreation = false;
   createActorDialog = false;
@@ -472,30 +524,46 @@ export default class ActorList extends mixins(DrawerMixin) {
   actorNameRules = [(v) => (!!v && !!v.length) || "Invalid actor name"];
   actorNameErrors = [] as string[];
 
-  query = localStorage.getItem("pm_actorQuery") || "";
-
-  set page(page: number) {
-    const x = Number(page);
-    if (isNaN(x) || x <= 0 || x > this.numPages) {
-      actorModule.setPage(1);
-    } else {
-      actorModule.setPage(x || 1);
+  @Watch("$route")
+  onRouteChange(to: Route, from: Route) {
+    if (isQueryDifferent(to.query as Dictionary<string>, from.query as Dictionary<string>)) {
+      // Only update the state and reload, if the query changed => filters changed
+      this.searchStateManager.parseFromQuery(to.query as Dictionary<string>);
+      this.loadPage();
+      return;
     }
   }
 
-  get page() {
-    return actorModule.page;
+  onPageChange(val: number) {
+    let page = Number(val);
+    if (isNaN(page) || page <= 0 || page > this.numPages) {
+      page = 1;
+    }
+    this.jumpPage = null;
+    this.searchStateManager.onValueChanged("page", page);
+    this.updateRoute({ page: page.toString() });
   }
 
-  get numResults() {
-    return actorModule.numResults;
+  updateRoute(query: { [x: string]: string }, replace = false, noChangeCb: Function | null = null) {
+    if (isQueryDifferent(query, this.$route.query as Dictionary<string>)) {
+      // Only change the current url if the new url will be different to avoid redundant navigation
+      const update = {
+        name: "actors",
+        query: {
+          ...this.$route.query,
+          ...query,
+        },
+      };
+      if (replace) {
+        this.$router.replace(update);
+      } else {
+        this.$router.push(update);
+      }
+    } else {
+      noChangeCb?.();
+    }
   }
 
-  get numPages() {
-    return actorModule.numPages;
-  }
-
-  sortDir = localStorage.getItem("pm_actorSortDir") || "desc";
   sortDirItems = [
     {
       text: "Ascending",
@@ -520,11 +588,10 @@ export default class ActorList extends mixins(DrawerMixin) {
         age: "Sorts by actor age",
         bookmark: "Sorts by bookmark date",
         $shuffle: "Shuffles actors",
-      }[this.sortBy] || "Missing description"
+      }[this.searchState.sortBy] || "Missing description"
     );
   }
 
-  sortBy = localStorage.getItem("pm_actorSortBy") || "relevance";
   sortByItems = [
     {
       text: "Relevance",
@@ -567,10 +634,6 @@ export default class ActorList extends mixins(DrawerMixin) {
       value: "$shuffle",
     },
   ];
-
-  favoritesOnly = localStorage.getItem("pm_actorFavorite") == "true";
-  bookmarksOnly = localStorage.getItem("pm_actorBookmark") == "true";
-  ratingFilter = parseInt(localStorage.getItem("pm_actorRating") || "0");
 
   createActorWithName(name: string) {
     return new Promise<void>((resolve, reject) => {
@@ -644,7 +707,7 @@ export default class ActorList extends mixins(DrawerMixin) {
       },
     })
       .then((res) => {
-        this.refreshPage();
+        this.loadPage();
         this.createActorDialog = false;
         this.createActorName = "";
         this.createActorAliases = [];
@@ -710,65 +773,9 @@ export default class ActorList extends mixins(DrawerMixin) {
     return "";
   }
 
-  refreshed = true;
-
   resetPagination() {
-    actorModule.resetPagination();
-    this.refreshed = true;
-    this.loadPage(this.page).catch(() => {
-      this.refreshed = false;
-    });
-  }
-
-  @Watch("ratingFilter", {})
-  onRatingChange(newVal: number) {
-    localStorage.setItem("pm_actorRating", newVal.toString());
-    this.refreshed = false;
-  }
-
-  @Watch("favoritesOnly")
-  onFavoriteChange(newVal: boolean) {
-    localStorage.setItem("pm_actorFavorite", "" + newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("bookmarksOnly")
-  onBookmarkChange(newVal: boolean) {
-    localStorage.setItem("pm_actorBookmark", "" + newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("sortDir")
-  onSortDirChange(newVal: string) {
-    localStorage.setItem("pm_actorSortDir", newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("sortBy")
-  onSortChange(newVal: string) {
-    localStorage.setItem("pm_actorSortBy", newVal);
-    this.refreshed = false;
-  }
-
-  @Watch("countryFilter")
-  onNationalityChange() {
-    if (this.countryFilter) {
-      localStorage.setItem("pm_actorNationality", this.countryFilter);
-    } else {
-      localStorage.removeItem("pm_actorNationality");
-    }
-    this.refreshed = false;
-  }
-
-  @Watch("selectedLabels")
-  onLabelChange() {
-    this.refreshed = false;
-  }
-
-  @Watch("query")
-  onQueryChange(newVal: string | null) {
-    localStorage.setItem("pm_actorQuery", newVal || "");
-    this.refreshed = false;
+    this.searchState.page = 1;
+    this.updateRoute(this.searchStateManager.toQuery());
   }
 
   getRandom() {
@@ -784,10 +791,10 @@ export default class ActorList extends mixins(DrawerMixin) {
   }
 
   async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
-    let sortDir = this.sortDir;
+    let sortDir = this.searchState.sortDir;
 
     // Flip sort direction
-    if (this.sortBy === "bornOn") {
+    if (this.searchState.sortBy === "bornOn") {
       sortDir = sortDir === "desc" ? "asc" : "desc";
     }
 
@@ -819,18 +826,18 @@ export default class ActorList extends mixins(DrawerMixin) {
       `,
       variables: {
         query: {
-          query: this.query || "",
-          include: this.selectedLabels.include,
-          exclude: this.selectedLabels.exclude,
-          nationality: this.countryFilter || null,
+          query: this.searchState.query || "",
+          include: this.searchState.selectedLabels.include,
+          exclude: this.searchState.selectedLabels.exclude,
+          nationality: this.searchState.countryFilter || null,
           take,
           page: page - 1,
           sortDir,
-          sortBy: random ? "$shuffle" : this.sortBy,
-          favorite: this.favoritesOnly,
-          bookmark: this.bookmarksOnly,
-          rating: this.ratingFilter,
-          custom: this.customFilter,
+          sortBy: random ? "$shuffle" : this.searchState.sortBy,
+          favorite: this.searchState.favoritesOnly,
+          bookmark: this.searchState.bookmarksOnly,
+          rating: this.searchState.ratingFilter,
+          custom: this.searchState.customFilter,
         },
         seed: seed || localStorage.getItem("pm_seed") || "default",
       },
@@ -839,20 +846,15 @@ export default class ActorList extends mixins(DrawerMixin) {
     return result.data.getActors;
   }
 
-  refreshPage() {
-    this.loadPage(actorModule.page);
-  }
-
-  loadPage(page: number) {
+  loadPage() {
     this.fetchLoader = true;
 
-    return this.fetchPage(page)
+    return this.fetchPage(this.searchState.page)
       .then((result) => {
+        this.searchStateManager.refreshed = true;
         this.fetchError = false;
-        actorModule.setPagination({
-          numResults: result.numItems,
-          numPages: result.numPages,
-        });
+        this.numResults = result.numItems;
+        this.numPages = result.numPages;
         this.actors = result.items;
       })
       .catch((err) => {
@@ -864,11 +866,10 @@ export default class ActorList extends mixins(DrawerMixin) {
       });
   }
 
-  mounted() {
-    if (!this.actors.length) this.refreshPage();
-  }
-
   beforeMount() {
+    this.searchStateManager.initState(this.$route.query as Dictionary<string>);
+    this.updateRoute(this.searchStateManager.toQuery(), true, this.loadPage);
+
     ApolloClient.query({
       query: gql`
         {
@@ -893,8 +894,8 @@ export default class ActorList extends mixins(DrawerMixin) {
         this.fields = res.data.getCustomFields;
         this.allLabels = res.data.getLabels;
         if (!this.allLabels.length) {
-          this.selectedLabels.include = [];
-          this.selectedLabels.exclude = [];
+          this.searchState.selectedLabels.include = [];
+          this.searchState.selectedLabels.exclude = [];
         }
       })
       .catch((err) => {

@@ -1,8 +1,8 @@
 import ffmpeg, { FfprobeData } from "fluent-ffmpeg";
-import { existsSync } from "fs";
+import { existsSync, statSync } from "fs";
 import Jimp from "jimp";
 import mergeImg from "merge-img";
-import path, { basename } from "path";
+import path, { basename, resolve } from "path";
 import asyncPool from "tiny-async-pool";
 
 import { getConfig } from "../config";
@@ -97,6 +97,36 @@ export default class Scene {
   album?: string | null = null;
   studio: string | null = null;
   processed?: boolean = false;
+
+  static async changePath(scene: Scene, path: string): Promise<void> {
+    if (scene.path !== path) {
+      logger.debug(`Setting new path for scene "${scene._id}": "${scene.path}" -> "${path}"`);
+
+      const cleanPath = path.trim();
+
+      if (!cleanPath.length) {
+        // Clear scene path
+        logger.debug(
+          `Empty path, setting to null & clearing scene metadata for scene "${scene._id}"`
+        );
+        scene.path = null;
+        scene.meta = new SceneMeta();
+        scene.processed = false;
+      } else {
+        // Update scene path & metadata, if path is different
+        const newPath = resolve(cleanPath.trim());
+        if (!existsSync(newPath)) {
+          throw new Error(`File at "${newPath}" not found`);
+        }
+        if (statSync(newPath).isDirectory()) {
+          throw new Error(`"${newPath}" is a directory`);
+        }
+        logger.debug(`Setting path of scene "${scene._id}" to "${newPath}"`);
+        scene.path = newPath;
+        await Scene.runFFProbe(scene);
+      }
+    }
+  }
 
   static async iterate(
     func: (scene: Scene) => void | unknown | Promise<void | unknown>,
