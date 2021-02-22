@@ -17,7 +17,8 @@ export function rimrafAsync(path: string): Promise<void> {
   return rmdirAsync(path, { recursive: true });
 }
 export function mkdirpSync(path: string): string {
-  return mkdirSync(path, { recursive: true });
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return mkdirSync(path, { recursive: true })!;
 }
 
 const pathIsExcluded = (exclude: string[], path: string) =>

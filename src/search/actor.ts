@@ -12,18 +12,15 @@ import {
   CustomFieldFilter,
   excludeFilter,
   favorite,
-  getCount,
-  getPage,
-  getPageSize,
   includeFilter,
   ISearchResults,
   normalizeAliases,
   normalizeQuery,
+  performSearch,
   ratingFilter,
   searchQuery,
   shuffle,
   shuffleSwitch,
-  sort,
 } from "./common";
 import { addSearchDocs, buildIndex, indexItems, ProgressCallback } from "./internal/buildIndex";
 
@@ -145,57 +142,32 @@ export async function searchActors(
   shuffleSeed = "default",
   extraFilter: unknown[] = []
 ): Promise<ISearchResults> {
-  logger.verbose(`Searching actors for '${options.query?.trim() || "<no query>"}'...`);
-
-  const count = await getCount(indexMap.actors);
-  if (count === 0) {
-    logger.debug(`No items in ES, returning 0`);
-    return {
-      items: [],
-      numPages: 0,
-      total: 0,
-    };
-  }
-
   const query = searchQuery(options.query, ["name^1.5", "labelNames", "nationalityName^0.75"]);
   const _shuffle = shuffle(shuffleSeed, query, options.sortBy);
 
-  const result = await getClient().search<IActorSearchDoc>({
+  return performSearch<IActorSearchDoc, typeof options>({
     index: indexMap.actors,
-    ...getPage(options.page, options.skip, options.take),
-    body: {
-      ...sort(options.sortBy, options.sortDir, options.query),
-      track_total_hits: true,
-      query: {
-        bool: {
-          ...shuffleSwitch(query, _shuffle),
-          filter: [
-            ...ratingFilter(options.rating),
-            ...bookmark(options.bookmark),
-            ...favorite(options.favorite),
+    options,
+    query: {
+      bool: {
+        ...shuffleSwitch(query, _shuffle),
+        filter: [
+          ...ratingFilter(options.rating),
+          ...bookmark(options.bookmark),
+          ...favorite(options.favorite),
 
-            ...includeFilter(options.include),
-            ...excludeFilter(options.exclude),
+          ...includeFilter(options.include),
+          ...excludeFilter(options.exclude),
 
-            ...arrayFilter(options.studios, "studios", "OR"),
+          ...arrayFilter(options.studios, "studios", "OR"),
 
-            ...nationalityFilter(options.nationality),
+          ...nationalityFilter(options.nationality),
 
-            ...buildCustomFilter(options.custom),
+          ...buildCustomFilter(options.custom),
 
-            ...extraFilter,
-          ],
-        },
+          ...extraFilter,
+        ],
       },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const total: number = result.hits.total.value;
-
-  return {
-    items: result.hits.hits.map((doc) => doc._source.id),
-    total,
-    numPages: Math.ceil(total / getPageSize(options.take)),
-  };
 }

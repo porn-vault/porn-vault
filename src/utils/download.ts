@@ -16,7 +16,7 @@ export async function downloadFile(url: string, file: string): Promise<void> {
     return;
   }
 
-  logger.warn(`Downloading ${url} to ${file}...`);
+  logger.info(`Downloading ${url} to ${file}...`);
 
   const downloadBar = new SingleBar(
     {

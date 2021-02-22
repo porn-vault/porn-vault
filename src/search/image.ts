@@ -4,24 +4,20 @@ import Image from "../types/image";
 import Scene from "../types/scene";
 import Studio from "../types/studio";
 import { mapAsync } from "../utils/async";
-import { logger } from "../utils/logger";
 import {
   arrayFilter,
   bookmark,
   excludeFilter,
   favorite,
   getActorNames,
-  getCount,
-  getPage,
-  getPageSize,
   includeFilter,
   ISearchResults,
   normalizeQuery,
+  performSearch,
   ratingFilter,
   searchQuery,
   shuffle,
   shuffleSwitch,
-  sort,
 } from "./common";
 import { getClient, indexMap } from "./index";
 import { addSearchDocs, buildIndex, ProgressCallback } from "./internal/buildIndex";
@@ -180,18 +176,6 @@ export async function searchImages(
   shuffleSeed = "default",
   extraFilter: unknown[] = []
 ): Promise<ISearchResults> {
-  logger.verbose(`Searching images for '${options.query?.trim() || "<no query>"}'...`);
-
-  const count = await getCount(indexMap.images);
-  if (count === 0) {
-    logger.debug(`No items in ES, returning 0`);
-    return {
-      items: [],
-      numPages: 0,
-      total: 0,
-    };
-  }
-
   const query = searchQuery(options.query, [
     "name",
     "actorNames^1.5",
@@ -201,40 +185,27 @@ export async function searchImages(
   ]);
   const _shuffle = shuffle(shuffleSeed, query, options.sortBy);
 
-  const result = await getClient().search<IImageSearchDoc>({
+  return performSearch<IImageSearchDoc, typeof options>({
     index: indexMap.images,
-    ...getPage(options.page, options.skip, options.take),
-    body: {
-      ...sort(options.sortBy, options.sortDir, options.query),
-      track_total_hits: true,
-      query: {
-        bool: {
-          ...shuffleSwitch(query, _shuffle),
-          filter: [
-            ...ratingFilter(options.rating),
-            ...bookmark(options.bookmark),
-            ...favorite(options.favorite),
+    options,
+    query: {
+      bool: {
+        ...shuffleSwitch(query, _shuffle),
+        filter: [
+          ...ratingFilter(options.rating),
+          ...bookmark(options.bookmark),
+          ...favorite(options.favorite),
 
-            ...includeFilter(options.include),
-            ...excludeFilter(options.exclude),
+          ...includeFilter(options.include),
+          ...excludeFilter(options.exclude),
 
-            ...arrayFilter(options.actors, "actors", "AND"),
-            ...arrayFilter(options.studios, "studios", "OR"),
-            ...arrayFilter(options.scenes, "scene", "OR"),
+          ...arrayFilter(options.actors, "actors", "AND"),
+          ...arrayFilter(options.studios, "studios", "OR"),
+          ...arrayFilter(options.scenes, "scene", "OR"),
 
-            ...extraFilter,
-          ],
-        },
+          ...extraFilter,
+        ],
       },
     },
   });
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const total: number = result.hits.total.value;
-
-  return {
-    items: result.hits.hits.map((doc) => doc._source.id),
-    total,
-    numPages: Math.ceil(total / getPageSize(options.take)),
-  };
 }
