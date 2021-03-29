@@ -27,16 +27,19 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { serverBase } from "../apollo";
 
+const LS_THEME = "pm_dvd_renderer_theme";
+
 @Component
 export default class DVDRenderer extends Vue {
   @Prop({ default: false }) value!: boolean;
   @Prop() movie!: string;
 
-  light = "false";
+  light = localStorage.getItem(LS_THEME) === "true";
 
   toggleMode() {
-    if (this.light == "false") this.light = "true";
-    else this.light = "false";
+    this.light = !this.light;
+
+    localStorage.setItem(LS_THEME, this.light.toString());
   }
 
   get url() {
