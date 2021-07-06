@@ -18,6 +18,7 @@ export interface IStudioSearchDoc {
   id: string;
   addedOn: number;
   name: string;
+  aliases: string[];
   rawName: string;
   labels: string[];
   labelNames: string[];
@@ -39,6 +40,7 @@ export async function createStudioSearchDoc(studio: Studio): Promise<IStudioSear
     addedOn: studio.addedOn,
     name: studio.name,
     rawName: studio.name,
+    aliases: studio.aliases || [],
     labels: labels.map((l) => l._id),
     labelNames: labels.map((l) => l.name),
     rating: 0,
@@ -99,7 +101,7 @@ export async function searchStudios(
   shuffleSeed = "default",
   extraFilter: unknown[] = []
 ): Promise<ISearchResults> {
-  const query = searchQuery(options.query, ["name^2", "labelNames"]);
+  const query = searchQuery(options.query, ["name^2", "aliases^1.5", "labelNames"]);
   const _shuffle = shuffle(shuffleSeed, query, options.sortBy);
 
   return performSearch<IStudioSearchDoc, typeof options>({

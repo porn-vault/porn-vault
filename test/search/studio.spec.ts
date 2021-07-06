@@ -8,6 +8,7 @@ import { collections } from "../../src/database";
 describe("Search", () => {
   describe("Studio", () => {
     const studio = new Studio("Porn Fidelity");
+    studio.aliases = ["Kelly Madison"];
 
     before(async function () {
       await startTestServer.call(this);
@@ -58,6 +59,17 @@ describe("Search", () => {
     it("Should find studio (typeahead)", async function () {
       const searchResult = await searchStudios({
         query: "p",
+      });
+      expect(searchResult).to.deep.equal({
+        items: [studio._id],
+        total: 1,
+        numPages: 1,
+      });
+    });
+
+    it("Should find studio from alias", async function () {
+      const searchResult = await searchStudios({
+        query: "Madison",
       });
       expect(searchResult).to.deep.equal({
         items: [studio._id],

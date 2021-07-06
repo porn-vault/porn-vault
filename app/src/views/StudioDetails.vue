@@ -43,6 +43,10 @@
           <div v-if="currentStudio.description" class="med--text pa-2">
             {{ currentStudio.description }}
           </div>
+          <div v-if="currentStudio.aliases.length" class="py-1 med--text body-2">
+            a.k.a.
+            {{ currentStudio.aliases.filter((s) => !s.startsWith("regex:")).join(", ") }}
+          </div>
           <div class="py-1">
             <b>{{ currentStudio.numScenes }}</b> scenes
           </div>

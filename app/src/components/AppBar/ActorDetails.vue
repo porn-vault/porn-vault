@@ -36,9 +36,18 @@
           <v-form v-model="validEdit">
             <v-text-field
               :rules="actorNameRules"
+              :error-messages="ignoreDuplicateErrors ? [] : actorNameErrors"
+              :hint="actorAliasWarning"
               color="primary"
               v-model="editName"
               placeholder="Name"
+            />
+            <v-checkbox
+              color="primary"
+              hide-details
+              v-model="ignoreDuplicateErrors"
+              v-if="actorNameErrors.length"
+              label="Ignore the duplicate name error"
             />
 
             <v-textarea
@@ -96,12 +105,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { actorModule } from "../../store/actor";
 import ApolloClient from "../../apollo";
 import gql from "graphql-tag";
 import CustomFieldSelector from "../CustomFieldSelector.vue";
 import countries from "../../util/countries";
+import { checkActorExist, IDupCheckResults } from "@/api/search";
 import { contextModule } from "@/store/context";
 
 @Component({
@@ -119,9 +129,34 @@ export default class ActorToolbar extends Vue {
   editNationality = null as string | null;
 
   actorNameRules = [(v) => (!!v && !!v.length) || "Invalid actor name"];
+  actorNameErrors = [] as string[];
+  actorAliasWarning = "" as string;
+  ignoreDuplicateErrors = false as boolean;
 
   removeDialog = false;
   removeLoader = false;
+
+  @Watch("editName", {})
+  async onEditNameChange(newVal: string) {
+    if (this.currentActor?.name === this.editName) return;
+
+    const existResult: IDupCheckResults = await checkActorExist(this.editName);
+    // Blocking error for name conflicts
+    if (existResult?.nameDup) {
+      this.actorNameErrors = [`This ${this.actorSingular?.toLowerCase() ?? ""} already exists.`];
+      this.ignoreDuplicateErrors = false;
+    } else {
+      this.actorNameErrors = [];
+    }
+    // Non blocking hint warning for alias conflicts
+    if (existResult?.aliasesDup?.length) {
+      this.actorAliasWarning = `Warning: an alias with this name already exists for ${existResult.aliasesDup
+        .map((actor) => actor.name)
+        .join(", ")}.`;
+    } else {
+      this.actorAliasWarning = "";
+    }
+  }
 
   get actorSingular() {
     return contextModule.actorSingular;
@@ -213,6 +248,8 @@ export default class ActorToolbar extends Vue {
 
   openEditDialog() {
     if (!this.currentActor) return;
+    this.actorNameErrors = [];
+    this.actorAliasWarning = "";
     this.editName = this.currentActor.name;
     this.editAliases = this.currentActor.aliases;
     this.editDialog = true;

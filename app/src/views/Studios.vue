@@ -92,6 +92,9 @@
         ></v-select>
       </v-container>
     </v-navigation-drawer>
+    <v-alert class="mb-3" v-if="nameConflictsWarning" dense text dismissible type="warning">{{
+      nameConflictsWarning
+    }}</v-alert>
 
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
@@ -233,6 +236,8 @@ import studioFragment from "@/fragments/studio";
 import StudioCard from "@/components/Cards/Studio.vue";
 import { mixins } from "vue-class-component";
 import DrawerMixin from "@/mixins/drawer";
+import { studioModule } from "@/store/studio";
+import { checkStudioExist, IDupCheckResults } from "../api/search";
 import { isQueryDifferent, SearchStateManager } from "../util/searchState";
 import { Dictionary, Route } from "vue-router/types/router";
 
@@ -293,6 +298,7 @@ export default class StudioList extends mixins(DrawerMixin) {
   }
 
   studiosBulkText = "" as string | null;
+  nameConflictsWarning = null as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
 
@@ -303,11 +309,25 @@ export default class StudioList extends mixins(DrawerMixin) {
   async runBulkImport() {
     this.bulkLoader = true;
 
+    let skippedStudios: string[] = [];
+    let aliasConflictStudios: string[] = [];
+    this.nameConflictsWarning = null;
+
     try {
       for (const name of this.studiosBulkImport) {
-        await this.createStudioWithName(name);
+        const existResult: IDupCheckResults = await checkStudioExist(name);
+        if (existResult?.aliasesDup?.length) {
+          aliasConflictStudios.push(name);
+        }
+        if (existResult?.nameDup) {
+          skippedStudios.push(name);
+        } else {
+          await this.createStudioWithName(name);
+        }
       }
-      this.loadPage();
+      if (skippedStudios.length && skippedStudios.length !== this.studiosBulkImport.length) {
+        this.loadPage();
+      }
       this.bulkImportDialog = false;
     } catch (error) {
       console.error(error);
@@ -315,6 +335,19 @@ export default class StudioList extends mixins(DrawerMixin) {
 
     this.studiosBulkText = "";
     this.bulkLoader = false;
+
+    // Warn of studios that were skipped because they already existed or for which an alias with this name existed
+    this.nameConflictsWarning = "";
+    if (skippedStudios.length) {
+      this.nameConflictsWarning += `These studio already exist and were skipped: ${skippedStudios.join(
+        ", "
+      )}. `;
+    }
+    if (aliasConflictStudios.length) {
+      this.nameConflictsWarning += `These created studios also exist as alias of other studios: ${aliasConflictStudios.join(
+        ", "
+      )}. You may want to check for potential duplicates.`;
+    }
   }
 
   get studiosBulkImport() {
@@ -422,7 +455,7 @@ export default class StudioList extends mixins(DrawerMixin) {
     try {
       await ApolloClient.mutate({
         mutation: gql`
-          mutation($name: String!) {
+          mutation ($name: String!) {
             addStudio(name: $name) {
               ...StudioFragment
               numScenes
@@ -478,7 +511,7 @@ export default class StudioList extends mixins(DrawerMixin) {
   async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
     const result = await ApolloClient.query({
       query: gql`
-        query($query: StudioSearchQuery!, $seed: String) {
+        query ($query: StudioSearchQuery!, $seed: String) {
           getStudios(query: $query, seed: $seed) {
             items {
               ...StudioFragment

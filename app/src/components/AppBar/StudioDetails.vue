@@ -34,6 +34,8 @@
           <v-form v-model="validEdit">
             <v-text-field
               :rules="studioNameRules"
+              :error-messages="studioNameErrors"
+              :hint="studioAliasWarning"
               color="primary"
               v-model="editName"
               placeholder="Name"
@@ -87,12 +89,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import ApolloClient from "../../apollo";
 import gql from "graphql-tag";
 import { studioModule } from "../../store/studio";
 import StudioSelector from "../../components/StudioSelector.vue";
 import studioFragment from "../../fragments/studio";
+import { checkStudioExist, IDupCheckResults } from "../../api/search";
 
 @Component({
   components: {
@@ -108,9 +111,32 @@ export default class StudioToolbar extends Vue {
   editAliases = [] as string[];
 
   studioNameRules = [(v) => (!!v && !!v.length) || "Invalid studio name"];
+  studioNameErrors = [] as string[];
+  studioAliasWarning = "" as string;
 
   removeDialog = false;
   removeLoader = false;
+
+  @Watch("editName", {})
+  async onEditNameChange(newVal: string) {
+    if (this.currentStudio?.name === this.editName) return;
+
+    const existResult: IDupCheckResults = await checkStudioExist(this.editName);
+    // Blocking error for name conflicts
+    if (existResult?.nameDup) {
+      this.studioNameErrors = ["This studio already exists."];
+    } else {
+      this.studioNameErrors = [];
+    }
+    // Non blocking hint warning for alias conflicts
+    if (existResult?.aliasesDup?.length) {
+      this.studioAliasWarning = `Warning: an alias with this name already exists for ${existResult.aliasesDup
+        .map((studio) => studio.name)
+        .join(", ")}.`;
+    } else {
+      this.studioAliasWarning = "";
+    }
+  }
 
   getDomainName(url: string) {
     return new URL(url).hostname.split(".").slice(0, -1).join(".");
@@ -182,7 +208,7 @@ export default class StudioToolbar extends Vue {
         },
       },
     })
-      .then(res => {
+      .then((res) => {
         const { aliases, parent } = res.data.updateStudios[0];
         studioModule.setName(this.editName.trim());
         studioModule.setDescription(this.editDescription.trim());
@@ -198,6 +224,8 @@ export default class StudioToolbar extends Vue {
   openEditDialog() {
     if (!this.currentStudio) return;
 
+    this.studioNameErrors = [];
+    this.studioAliasWarning = "";    
     this.editName = this.currentStudio.name;
     this.editDescription = this.currentStudio.description || "";
     this.editDialog = true;

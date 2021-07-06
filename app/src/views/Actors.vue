@@ -128,6 +128,9 @@
         </div>
       </v-container>
     </v-navigation-drawer>
+    <v-alert class="mb-3" v-if="nameConflictsWarning" dense text dismissible type="warning">{{
+      nameConflictsWarning
+    }}</v-alert>
 
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
@@ -243,9 +246,18 @@
           <v-form v-model="validCreation">
             <v-text-field
               :rules="actorNameRules"
+              :error-messages="ignoreDuplicateErrors ? [] : actorNameErrors"
+              :hint="actorAliasWarning"
               color="primary"
               v-model="createActorName"
               placeholder="Name"
+            />
+            <v-checkbox
+              color="primary"
+              hide-details
+              v-model="ignoreDuplicateErrors"
+              v-if="actorNameErrors.length"
+              label="Ignore the duplicate name error"
             />
 
             <v-combobox
@@ -374,6 +386,7 @@ import DrawerMixin from "@/mixins/drawer";
 import { mixins } from "vue-class-component";
 import CustomFieldFilter from "@/components/CustomFieldFilter.vue";
 import countries from "@/util/countries";
+import { checkActorExist, IDupCheckResults } from "../api/search";
 import { SearchStateManager, isQueryDifferent } from "../util/searchState";
 import { Dictionary, Route } from "vue-router/types/router";
 
@@ -457,6 +470,7 @@ export default class ActorList extends mixins(DrawerMixin) {
   }
 
   actorsBulkText = "" as string | null;
+  nameConflictsWarning = null as string | null;
   bulkImportDialog = false;
   bulkLoader = false;
 
@@ -485,11 +499,25 @@ export default class ActorList extends mixins(DrawerMixin) {
   async runBulkImport() {
     this.bulkLoader = true;
 
+    let skippedActors: string[] = [];
+    let aliasConflictActors: string[] = [];
+    this.nameConflictsWarning = null;
+
     try {
       for (const name of this.actorsBulkImport) {
-        await this.createActorWithName(name);
+        const existResult: IDupCheckResults = await checkActorExist(name);
+        if (existResult?.aliasesDup?.length) {
+          aliasConflictActors.push(name);
+        }
+        if (existResult?.nameDup) {
+          skippedActors.push(name);
+        } else {
+          await this.createActorWithName(name);
+        }
       }
-      this.loadPage();
+      if (skippedActors.length && skippedActors.length !== this.actorsBulkImport.length) {
+        this.loadPage();
+      }
       this.bulkImportDialog = false;
     } catch (error) {
       console.error(error);
@@ -497,6 +525,21 @@ export default class ActorList extends mixins(DrawerMixin) {
 
     this.actorsBulkText = "";
     this.bulkLoader = false;
+
+    // Warn of actors that were skipped because they already existed or for which an alias with this name existed
+    this.nameConflictsWarning = "";
+    if (skippedActors.length) {
+      this.nameConflictsWarning += `These ${
+        this.actorPlural?.toLowerCase() ?? ""
+      } already exist and were skipped: ${skippedActors.join(", ")}. `;
+    }
+    if (aliasConflictActors.length) {
+      this.nameConflictsWarning += `These created ${
+        this.actorPlural?.toLowerCase() ?? ""
+      } also exist as alias of other actors: ${aliasConflictActors.join(
+        ", "
+      )}. You may want to check for potential duplicates.`;
+    }
   }
 
   get actorsBulkImport() {
@@ -515,6 +558,29 @@ export default class ActorList extends mixins(DrawerMixin) {
   addActorLoader = false;
 
   actorNameRules = [(v) => (!!v && !!v.length) || "Invalid name"];
+  actorNameErrors = [] as string[];
+  actorAliasWarning = "" as string;
+  ignoreDuplicateErrors = false as boolean;
+
+  @Watch("createActorName", {})
+  async onCreateActorNameChange(newVal: string) {
+    const existResult: IDupCheckResults = await checkActorExist(this.createActorName);
+    // Blocking error for name conflicts
+    if (existResult?.nameDup) {
+      this.actorNameErrors = [`This ${this.actorSingular?.toLowerCase() ?? ""} already exists.`];
+      this.ignoreDuplicateErrors = false;
+    } else {
+      this.actorNameErrors = [];
+    }
+    // Non blocking hint warning for alias conflicts
+    if (existResult?.aliasesDup?.length) {
+      this.actorAliasWarning = `Warning: an alias with this name already exists for ${existResult.aliasesDup
+        .map((actor) => actor.name)
+        .join(", ")}.`;
+    } else {
+      this.actorAliasWarning = "";
+    }
+  }
 
   @Watch("$route")
   onRouteChange(to: Route, from: Route) {
@@ -745,6 +811,7 @@ export default class ActorList extends mixins(DrawerMixin) {
 
   openCreateDialog() {
     this.createActorDialog = true;
+    this.actorNameErrors = [];
   }
 
   actorLabels(actor: any) {

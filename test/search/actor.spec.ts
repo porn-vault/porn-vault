@@ -7,7 +7,7 @@ import { collections } from "../../src/database";
 
 describe("Search", () => {
   describe("Actor", () => {
-    const actor = new Actor("Ginebra Bellucci");
+    const actor = new Actor("Ginebra Bellucci", ["Ginebra Spainish"]);
 
     before(async function () {
       await startTestServer.call(this);
@@ -41,6 +41,17 @@ describe("Search", () => {
         items: [],
         total: 0,
         numPages: 0,
+      });
+    });
+
+    it("Should find actor through alias", async function () {
+      const searchResult = await searchActors({
+        query: "Spainish",
+      });
+      expect(searchResult).to.deep.equal({
+        items: [actor._id],
+        total: 1,
+        numPages: 1,
       });
     });
 

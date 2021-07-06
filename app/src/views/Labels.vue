@@ -65,6 +65,8 @@
                 v-model="editLabelName"
                 placeholder="Label name"
                 :rules="labelNameRules"
+                :error-messages="editLabelNameErrors"
+                :hint="editLabelAliasWarning"
                 @keydown.enter="editLabel"
               ></v-text-field>
 
@@ -121,6 +123,8 @@
                 v-model="createLabelName"
                 placeholder="Label name"
                 :rules="labelNameRules"
+                :error-messages="createLabelNameErrors"
+                :hint="createLabelAliasWarning"
                 @keydown.enter="addLabel"
               ></v-text-field>
 
@@ -158,11 +162,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import ApolloClient from "@/apollo";
 import gql from "graphql-tag";
 import LabelSelector from "@/components/LabelSelector.vue";
 import ILabel from "@/types/label";
+import { IDupCheckResults } from "../api/search";
 
 @Component({
   components: {
@@ -179,6 +184,7 @@ export default class Home extends Vue {
   editLabelLoader = false;
   editColor = "";
   editingLabel = null as ILabel | null;
+  initialEditLabelName = "";
   editLabelName = "";
   editLabelAliases = [] as string[];
   validEditing = false;
@@ -190,6 +196,10 @@ export default class Home extends Vue {
   validCreation = false;
 
   labelNameRules = [(v) => (!!v && !!v.length) || "Invalid label name"];
+  editLabelNameErrors = [] as string[];
+  createLabelNameErrors = [] as string[];
+  editLabelAliasWarning = "" as string;
+  createLabelAliasWarning = "" as string;
   labelColorRules = [
     (v) => {
       if (!v) {
@@ -203,7 +213,10 @@ export default class Home extends Vue {
 
   openEditDialog(label: ILabel) {
     this.editLabelDialog = true;
+    this.editLabelNameErrors = [];
+    this.editLabelAliasWarning = "";
     this.editingLabel = label;
+    this.initialEditLabelName = label.name;
     this.editLabelName = label.name;
     this.editLabelAliases = label.aliases;
     this.editColor = label.color ? label.color.replace("#", "") : "";
@@ -215,6 +228,62 @@ export default class Home extends Vue {
 
   async sleep(ms: number) {
     return new Promise((r) => setTimeout(r, ms));
+  }
+
+  checkLabelExist(name: string): IDupCheckResults {
+    const searchName = name.trim();
+    return {
+      nameDup: this.labels.find(
+        (l) => l.name.localeCompare(searchName, undefined, { sensitivity: "base" }) === 0
+      ),
+      aliasesDup: this.labels.filter(({ aliases }) =>
+        aliases.find(
+          (alias) => alias.localeCompare(searchName, undefined, { sensitivity: "base" }) === 0
+        )
+      ),
+    };
+  }
+
+  @Watch("createLabelName", {})
+  onCreateLabelNameChange(newVal: string) {
+    const existResult: IDupCheckResults = this.checkLabelExist(this.createLabelName);
+
+    // Blocking error for name conflicts
+    if (existResult?.nameDup) {
+      this.createLabelNameErrors = ["This label already exists."];
+    } else {
+      this.createLabelNameErrors = [];
+    }
+    // Non blocking hint warning for alias conflicts
+    if (existResult?.aliasesDup?.length) {
+      this.createLabelAliasWarning = `Warning: an alias with this name already exists for ${existResult.aliasesDup
+        .map((label) => label.name)
+        .join(", ")}.`;
+    } else {
+      this.createLabelAliasWarning = "";
+    }
+  }
+
+  @Watch("editLabelName", {})
+  onEditLabelNameChange(newVal: string) {
+    if (this.initialEditLabelName === this.editLabelName) return;
+
+    const existResult: IDupCheckResults = this.checkLabelExist(this.editLabelName);
+
+    // Blocking error for name conflicts
+    if (existResult?.nameDup) {
+      this.editLabelNameErrors = ["This label already exists."];
+    } else {
+      this.editLabelNameErrors = [];
+    }
+    // Non blocking hint warning for alias conflicts
+    if (existResult?.aliasesDup?.length) {
+      this.editLabelAliasWarning = `Warning: an alias with this name already exists for ${existResult.aliasesDup
+        .map((label) => label.name)
+        .join(", ")}.`;
+    } else {
+      this.editLabelAliasWarning = "";
+    }
   }
 
   async editLabel() {
