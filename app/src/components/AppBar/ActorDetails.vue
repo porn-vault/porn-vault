@@ -143,7 +143,7 @@ export default class ActorToolbar extends Vue {
     const existResult: IDupCheckResults = await checkActorExist(this.editName);
     // Blocking error for name conflicts
     if (existResult?.nameDup) {
-      this.actorNameErrors = ["This actor already exists."];
+      this.actorNameErrors = [`This ${this.actorSingular?.toLowerCase() ?? ""} already exists.`];
       this.ignoreDuplicateErrors = false;
     } else {
       this.actorNameErrors = [];

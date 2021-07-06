@@ -529,12 +529,14 @@ export default class ActorList extends mixins(DrawerMixin) {
     // Warn of actors that were skipped because they already existed or for which an alias with this name existed
     this.nameConflictsWarning = "";
     if (skippedActors.length) {
-      this.nameConflictsWarning += `These actors already exist and were skipped: ${skippedActors.join(
-        ", "
-      )}. `;
+      this.nameConflictsWarning += `These ${
+        this.actorPlural?.toLowerCase() ?? ""
+      } already exist and were skipped: ${skippedActors.join(", ")}. `;
     }
     if (aliasConflictActors.length) {
-      this.nameConflictsWarning += `These created actors also exist as alias of other actors: ${aliasConflictActors.join(
+      this.nameConflictsWarning += `These created ${
+        this.actorPlural?.toLowerCase() ?? ""
+      } also exist as alias of other actors: ${aliasConflictActors.join(
         ", "
       )}. You may want to check for potential duplicates.`;
     }
@@ -565,7 +567,7 @@ export default class ActorList extends mixins(DrawerMixin) {
     const existResult: IDupCheckResults = await checkActorExist(this.createActorName);
     // Blocking error for name conflicts
     if (existResult?.nameDup) {
-      this.actorNameErrors = ["This actor already exists."];
+      this.actorNameErrors = [`This ${this.actorSingular?.toLowerCase() ?? ""} already exists.`];
       this.ignoreDuplicateErrors = false;
     } else {
       this.actorNameErrors = [];
