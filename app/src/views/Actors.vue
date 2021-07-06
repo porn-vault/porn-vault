@@ -515,7 +515,9 @@ export default class ActorList extends mixins(DrawerMixin) {
           await this.createActorWithName(name);
         }
       }
-      this.loadPage();
+      if (skippedActors.length && skippedActors.length !== this.actorsBulkImport.length) {
+        this.loadPage();
+      }
       this.bulkImportDialog = false;
     } catch (error) {
       console.error(error);

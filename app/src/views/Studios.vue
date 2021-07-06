@@ -325,7 +325,9 @@ export default class StudioList extends mixins(DrawerMixin) {
           await this.createStudioWithName(name);
         }
       }
-      this.loadPage();
+      if (skippedStudios.length && skippedStudios.length !== this.studiosBulkImport.length) {
+        this.loadPage();
+      }
       this.bulkImportDialog = false;
     } catch (error) {
       console.error(error);
@@ -453,7 +455,7 @@ export default class StudioList extends mixins(DrawerMixin) {
     try {
       await ApolloClient.mutate({
         mutation: gql`
-          mutation($name: String!) {
+          mutation ($name: String!) {
             addStudio(name: $name) {
               ...StudioFragment
               numScenes
@@ -509,7 +511,7 @@ export default class StudioList extends mixins(DrawerMixin) {
   async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
     const result = await ApolloClient.query({
       query: gql`
-        query($query: StudioSearchQuery!, $seed: String) {
+        query ($query: StudioSearchQuery!, $seed: String) {
           getStudios(query: $query, seed: $seed) {
             items {
               ...StudioFragment

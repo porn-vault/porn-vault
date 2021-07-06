@@ -410,7 +410,9 @@ export default class MovieList extends mixins(DrawerMixin) {
           await this.createMovieWithName(name);
         }
       }
-      this.loadPage();
+      if (skippedMovies.length && skippedMovies.length !== this.moviesBulkImport.length) {
+        this.loadPage();
+      }
       this.bulkImportDialog = false;
     } catch (error) {
       console.error(error);
