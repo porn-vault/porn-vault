@@ -101,9 +101,17 @@
       <v-card :loading="removeLoader">
         <v-card-title>Really delete '{{ currentScene.name }}'?</v-card-title>
         <v-card-text>
-          <v-alert v-if="currentScene.path" type="error"
-            >This will absolutely annihilate the original source file on disk</v-alert
-          >
+          <template v-if="currentScene.path">
+            <v-checkbox
+              hide-details
+              color="error"
+              v-model="deleteFile"
+              label="Delete file"
+            ></v-checkbox>
+            <v-alert v-if="deleteFile" class="mt-3" type="error"
+              >This will absolutely annihilate the original source file on disk
+            </v-alert>
+          </template>
           <v-checkbox
             color="error"
             v-model="deleteImages"
@@ -112,7 +120,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn class="text-none" text color="error" @click="remove">Delete</v-btn>
+          <v-btn :loading="removeLoader" class="text-none" text color="error" @click="remove"
+            >Delete</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -153,6 +163,7 @@ export default class SceneToolbar extends Vue {
   sceneNameRules = [(v: string | null) => (!!v && !!v.length) || "Invalid scene name"];
 
   removeDialog = false;
+  deleteFile = false;
   deleteImages = false;
   removeLoader = false;
 
@@ -171,33 +182,32 @@ export default class SceneToolbar extends Vue {
     return new URL(url).hostname.split(".").slice(0, -1).join(".");
   }
 
-  remove() {
+  async remove() {
     if (!this.currentScene) {
       return;
     }
 
     this.removeLoader = true;
-    ApolloClient.mutate({
-      mutation: gql`
-        mutation($ids: [String!]!, $deleteImages: Boolean) {
-          removeScenes(ids: $ids, deleteImages: $deleteImages)
+
+    try {
+      await ApolloClient.mutate({
+        mutation: gql`
+        mutation($ids: [String!]!, $deleteImages: Boolean, $deleteFile: Boolean) {
+          removeScenes(ids: $ids, deleteImages: $deleteImages, deleteFile: $deleteFile)
         }
       `,
-      variables: {
-        ids: [this.currentScene._id],
-        deleteImages: this.deleteImages,
-      },
-    })
-      .then(() => {
-        this.removeDialog = false;
-        this.$router.replace("/scenes");
-      })
-      .catch((err) => {
-        console.error(err);
-      })
-      .finally(() => {
-        this.removeLoader = false;
+        variables: {
+          ids: [this.currentScene._id],
+          deleteImages: this.deleteImages,
+          deleteFile: this.deleteFile,
+        },
       });
+      this.removeDialog = false;
+      this.$router.replace("/scenes");
+    } catch (err) {
+      console.error(err);
+    }
+    this.removeLoader = false;
   }
 
   openRemoveDialog() {

@@ -37,7 +37,7 @@
           <v-card-title>Scenes</v-card-title>
 
           <v-card-text>
-            <div class="subtitle-1">Scene cards</div>
+            <div class="subtitle-1">Scene &amp; marker cards</div>
             <v-radio-group v-model="sceneRatio" label="Aspect ratio">
               <v-radio color="primary" :value="1" label="Square"></v-radio>
               <v-radio color="primary" :value="16 / 9" label="16:9"></v-radio>

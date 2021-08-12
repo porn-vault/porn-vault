@@ -22,7 +22,29 @@ type IMovieUpdateOpts = Partial<{
   customFields: Dictionary<string[] | boolean | string | null>;
 }>;
 
+async function runMoviePlugins(id: string): Promise<Movie | null> {
+  let movie = await Movie.getById(id);
+
+  if (movie) {
+    movie = await onMovieCreate(movie, "movieCustom");
+
+    await collections.movies.upsert(movie._id, movie);
+    await indexMovies([movie]);
+  }
+
+  return movie;
+}
+
 export default {
+  async runMoviePlugins(_: unknown, { id }: { id: string }): Promise<Movie> {
+    logger.debug(`Mutation: runMoviePlugins, for movie ${id}`);
+    const result = await runMoviePlugins(id);
+    if (!result) {
+      throw new Error("Movie not found");
+    }
+    return result;
+  },
+
   async addMovie(_: unknown, args: { name: string; scenes: string[] }): Promise<Movie> {
     let movie = new Movie(args.name);
 

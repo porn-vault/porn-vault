@@ -30,19 +30,19 @@ export function formatCollectionName(name: string) {
 }
 
 export const collections = {
-  scenes: (null as unknown) as Izzy.Collection<Scene>,
-  images: (null as unknown) as Izzy.Collection<Image>,
-  actors: (null as unknown) as Izzy.Collection<Actor>,
-  movies: (null as unknown) as Izzy.Collection<Movie>,
-  labelledItems: (null as unknown) as Izzy.Collection<LabelledItem>,
-  movieScenes: (null as unknown) as Izzy.Collection<MovieScene>,
-  actorReferences: (null as unknown) as Izzy.Collection<ActorReference>,
-  views: (null as unknown) as Izzy.Collection<SceneView>,
-  labels: (null as unknown) as Izzy.Collection<Label>,
-  customFields: (null as unknown) as Izzy.Collection<CustomField>,
-  markers: (null as unknown) as Izzy.Collection<Marker>,
-  studios: (null as unknown) as Izzy.Collection<Studio>,
-  processing: (null as unknown) as Izzy.Collection<ISceneProcessingItem>,
+  scenes: null as unknown as Izzy.Collection<Scene>,
+  images: null as unknown as Izzy.Collection<Image>,
+  actors: null as unknown as Izzy.Collection<Actor>,
+  movies: null as unknown as Izzy.Collection<Movie>,
+  labelledItems: null as unknown as Izzy.Collection<LabelledItem>,
+  movieScenes: null as unknown as Izzy.Collection<MovieScene>,
+  actorReferences: null as unknown as Izzy.Collection<ActorReference>,
+  views: null as unknown as Izzy.Collection<SceneView>,
+  labels: null as unknown as Izzy.Collection<Label>,
+  customFields: null as unknown as Izzy.Collection<CustomField>,
+  markers: null as unknown as Izzy.Collection<Marker>,
+  studios: null as unknown as Izzy.Collection<Studio>,
+  processing: null as unknown as Izzy.Collection<ISceneProcessingItem>,
 };
 
 interface CollectionItem<T extends { _id: string }> {

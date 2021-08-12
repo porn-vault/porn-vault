@@ -98,26 +98,107 @@
       </v-container>
     </v-navigation-drawer>
 
-    <div class="mr-3">
-      <span class="display-1 font-weight-bold mr-2">{{ fetchLoader ? "-" : numResults }}</span>
-      <span class="title font-weight-regular">markers found</span>
-    </div>
+    <v-expand-transition>
+      <v-banner app sticky class="mb-2" v-if="selectionMode">
+        {{ selectedMarkers.length }} markers selected
+        <template v-slot:actions>
+          <v-flex class="flex-wrap justify-end" shrink>
+            <v-btn
+              :disabled="!selectedMarkers.length"
+              text
+              @click="selectedMarkers = []"
+              class="text-none"
+              >Deselect</v-btn
+            >
+            <v-btn
+              :disabled="selectedMarkers.length === markers.length"
+              text
+              @click="selectedMarkers = markers.map((act) => act._id)"
+              class="text-none"
+              >Select all</v-btn
+            >
+            <v-btn
+              :disabled="!selectedMarkers.length"
+              @click="deleteSelectedMarkersDialog = true"
+              text
+              class="text-none"
+              color="error"
+              >Delete</v-btn
+            >
+          </v-flex>
+        </template>
+      </v-banner>
+    </v-expand-transition>
 
-    <v-row dense v-if="!fetchLoader && numResults">
-      <v-col
-        class="mb-1"
-        v-for="(marker, i) in markers"
-        :key="marker._id"
-        cols="6"
-        md="4"
-        lg="3"
-        xl="2"
-      >
-        <MarkerCard v-model="markers[i]" :showLabels="showCardLabels" />
-      </v-col>
-    </v-row>
-    <NoResults v-else-if="!fetchLoader && !numResults" />
-    <Loading v-else />
+    <div class="text-center" v-if="fetchError">
+      <div>There was an error</div>
+      <v-btn class="mt-2" @click="loadPage">Try again</v-btn>
+    </div>
+    <div v-else>
+      <div class="mb-2 d-flex align-center">
+        <div class="mr-3">
+          <span class="display-1 font-weight-bold mr-2">{{ fetchLoader ? "-" : numResults }}</span>
+          <span class="title font-weight-regular">markers found</span>
+        </div>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" @click="toggleSelectionMode" icon>
+              <v-icon
+                >{{
+                  selectionMode ? "mdi-checkbox-blank-off-outline" : "mdi-checkbox-blank-outline"
+                }}
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Toggle selection mode</span>
+        </v-tooltip>
+        <v-spacer />
+        <div>
+          <v-pagination
+            v-if="!fetchLoader && $vuetify.breakpoint.mdAndUp"
+            :value="searchState.page"
+            @input="onPageChange"
+            :total-visible="9"
+            :disabled="fetchLoader"
+            :length="numPages"
+          />
+        </div>
+      </div>
+      <v-row dense v-if="!fetchLoader && numResults">
+        <v-col
+          class="mb-1"
+          v-for="(marker, markerIdx) in markers"
+          :key="marker._id"
+          cols="6"
+          md="4"
+          lg="3"
+          xl="2"
+        >
+          <MarkerCard
+            v-model="markers[markerIdx]"
+            :showLabels="showCardLabels"
+            @click.native.stop.prevent="onMarkerClick(marker, markerIdx, $event, false)"
+          >
+            <template v-slot:action="{ hover }">
+              <v-fade-transition>
+                <v-checkbox
+                  v-if="selectionMode || hover || selectedMarkers.includes(marker._id)"
+                  color="primary"
+                  :input-value="selectedMarkers.includes(marker._id)"
+                  readonly
+                  @click.native.stop.prevent="onMarkerClick(marker, markerIdx, $event, true)"
+                  class="mt-0"
+                  hide-details
+                  :contain="true"
+                />
+              </v-fade-transition>
+            </template>
+          </MarkerCard>
+        </v-col>
+      </v-row>
+      <NoResults v-else-if="!fetchLoader && !numResults" />
+      <Loading v-else />
+    </div>
 
     <div class="mt-3" v-if="numResults && numPages > 1">
       <v-pagination
@@ -151,6 +232,23 @@
         >
       </div>
     </div>
+
+    <v-dialog v-model="deleteSelectedMarkersDialog" max-width="400px">
+      <v-card>
+        <v-card-title>Really delete {{ selectedMarkers.length }} markers?</v-card-title>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            class="text-none"
+            color="error"
+            text
+            @click="deleteSelection"
+            :loading="deleteMarkersLoader"
+            >Delete</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -167,6 +265,7 @@ import actorFragment from "@/fragments/actor";
 import { SearchStateManager, isQueryDifferent } from "../util/searchState";
 import { Route } from "vue-router";
 import { Dictionary } from "vue-router/types/router";
+import { IMarker } from "@/types/marker";
 
 @Component({
   components: { MarkerCard },
@@ -220,13 +319,16 @@ export default class MarkerList extends mixins(DrawerMixin) {
     },
   ];
 
+  allLabels = [] as ILabel[];
+
   fetchError = false;
   fetchLoader = false;
 
   numResults = 0;
   numPages = 0;
+  selectionMode = false;
 
-  allLabels = [] as ILabel[];
+  deleteMarkersLoader = false;
 
   searchStateManager = new SearchStateManager<{
     page: number;
@@ -278,6 +380,101 @@ export default class MarkerList extends mixins(DrawerMixin) {
       this.loadPage();
       return;
     }
+  }
+
+  selectedMarkers = [] as string[];
+  lastSelectionMarkerId: string | null = null;
+  deleteSelectedMarkersDialog = false;
+
+  isMarkerSelected(id: string) {
+    return !!this.selectedMarkers.includes(id);
+  }
+
+  selectMarker(id: string, add: boolean) {
+    this.lastSelectionMarkerId = id;
+    if (add && !this.isMarkerSelected(id)) {
+      this.selectedMarkers.push(id);
+    } else {
+      this.selectedMarkers = this.selectedMarkers.filter((i) => i != id);
+    }
+  }
+
+  toggleSelectionMode() {
+    this.selectionMode = !this.selectionMode;
+    if (!this.selectionMode) {
+      this.selectedMarkers = [];
+    }
+  }
+
+  @Watch("selectedMarkers")
+  onSelectedMarkersChange(nextVal: string[]) {
+    if (nextVal.length) {
+      this.selectionMode = true;
+    } else {
+      this.selectionMode = false;
+    }
+  }
+
+  /**
+   * @param marker - the clicked marker
+   * @param index - the index of the marker in the array
+   * @param event - the mouse click event
+   * @param forceSelectionChange - whether to force a selection change, instead of opening the scene
+   * at the marker time
+   */
+  onMarkerClick(marker: IMarker, index: number, event: MouseEvent, forceSelectionChange = true) {
+    let lastSelectionMarkerIndex =
+      this.lastSelectionMarkerId !== null
+        ? this.markers.findIndex((im) => im._id === this.lastSelectionMarkerId)
+        : index;
+    lastSelectionMarkerIndex = lastSelectionMarkerIndex === -1 ? index : lastSelectionMarkerIndex;
+
+    if (event.shiftKey) {
+      // Next state is opposite of the clicked scene state
+      const nextSelectionState = !this.isMarkerSelected(marker._id);
+
+      // Use >= to include the currently clicked scene, so it can be toggled
+      // if necessary
+      if (index >= lastSelectionMarkerIndex) {
+        for (let i = lastSelectionMarkerIndex + 1; i <= index; i++) {
+          this.selectMarker(this.markers[i]._id, nextSelectionState);
+        }
+      } else if (index < lastSelectionMarkerIndex) {
+        for (let i = lastSelectionMarkerIndex; i >= index; i--) {
+          this.selectMarker(this.markers[i]._id, nextSelectionState);
+        }
+      }
+    } else if (forceSelectionChange || event.ctrlKey) {
+      this.selectMarker(marker._id, !this.isMarkerSelected(marker._id));
+    } else if (!forceSelectionChange) {
+      this.$router.push(`/scene/${marker.scene._id}?t=${marker.time}&mk_name=${marker.name}`);
+    }
+  }
+
+  async deleteSelection() {
+    this.deleteMarkersLoader = true;
+
+    try {
+      await ApolloClient.mutate({
+        mutation: gql`
+          mutation($ids: [String!]!) {
+            removeMarkers(ids: $ids)
+          }
+        `,
+        variables: {
+          ids: this.selectedMarkers,
+        },
+      });
+
+      this.numResults = Math.max(0, this.numResults - this.selectedMarkers.length);
+      this.markers = this.markers.filter((act) => !this.selectedMarkers.includes(act._id));
+      this.selectedMarkers = [];
+      this.deleteSelectedMarkersDialog = false;
+    } catch (err) {
+      console.error(err);
+    }
+
+    this.deleteMarkersLoader = false;
   }
 
   get fetchQuery() {

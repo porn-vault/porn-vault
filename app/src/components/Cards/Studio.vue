@@ -1,10 +1,16 @@
 <template>
   <v-card tile v-if="studio">
-    <router-link :to="`/studio/${studio._id}`">
-      <div class="pa-2" v-ripple>
-        <v-img contain aspect-ratio="2" :src="thumbnail"></v-img>
-      </div>
-    </router-link>
+    <a :href="`/#/studio/${studio._id}`">
+      <v-hover v-slot:default="{ hover }">
+        <div class="pa-2" v-ripple>
+          <v-img contain aspect-ratio="2" :src="thumbnail"></v-img>
+
+          <div class="corner-actions top-right" style="z-index: 6">
+            <slot name="action" :hover="hover"></slot>
+          </div>
+        </div>
+      </v-hover>
+    </a>
 
     <div class="px-2">
       <div v-if="studio.parent" class="mt-2 text-uppercase caption">
@@ -56,4 +62,12 @@ export default class ActorCard extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.corner-actions {
+  position: absolute;
+
+  &.top-right {
+    right: 2px;
+    top: 2px;
+  }
+}
 </style>

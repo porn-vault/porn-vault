@@ -222,13 +222,13 @@ export function emptyField(emptyField?: string): unknown[] {
   if (emptyField) {
     return [
       {
-        "exists": {
-          "field": emptyField,
+        exists: {
+          field: emptyField,
         },
       },
-    ]
+    ];
   }
-  return []
+  return [];
 }
 
 export function shuffleSwitch(query: unknown[], shuffle: unknown[]): Record<string, unknown> {

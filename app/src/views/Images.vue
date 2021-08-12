@@ -2,52 +2,84 @@
   <v-container fluid>
     <BindFavicon />
     <BindTitle value="Images" />
-    <v-banner app sticky class="mb-2">
-      <div class="d-flex align-center">
-        <v-btn
-          v-if="!selectedImages.length"
-          icon
-          @click="selectedImages = images.map((im) => im._id)"
-        >
-          <v-icon>mdi-checkbox-blank-circle-outline</v-icon>
-        </v-btn>
-
-        <v-btn v-else icon @click="selectedImages = []">
-          <v-icon>mdi-checkbox-marked-circle</v-icon>
-        </v-btn>
-
-        <div class="title ml-2">
-          {{ selectedImages.length }}
-        </div>
-      </div>
-
-      <template v-slot:actions>
-        <v-btn @click="addLabelsDialog = true" icon v-if="selectedImages.length">
-          <v-icon>mdi-label</v-icon>
-        </v-btn>
-
-        <v-btn @click="subtractLabelsDialog = true" icon v-if="selectedImages.length">
-          <v-icon>mdi-label-off</v-icon>
-        </v-btn>
-
-        <v-btn @click="addActorsDialog = true" icon v-if="selectedImages.length">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon v-bind="attrs" v-on="on">mdi-account-plus</v-icon>
+    <v-expand-transition>
+      <v-banner app sticky class="mb-2" v-if="selectionMode">
+        <div class="d-flex align-center">
+          <v-tooltip bottom v-if="!selectedImages.length">
+            <template #activator="{ on }">
+              <v-btn icon v-on="on" @click="selectedImages = images.map((im) => im._id)">
+                <v-icon>mdi-checkbox-blank-circle-outline</v-icon>
+              </v-btn>
             </template>
-            <span>Add {{ (actorPlural || "").toLowerCase() }} to selected images</span>
+            Select all
           </v-tooltip>
-        </v-btn>
+          <v-tooltip bottom v-else>
+            <template #activator="{ on }">
+              <v-btn icon v-on="on" @click="selectedImages = []">
+                <v-icon>mdi-checkbox-marked-circle</v-icon>
+              </v-btn>
+            </template>
+            Deselect
+          </v-tooltip>
 
-        <v-btn
-          v-if="selectedImages.length"
-          @click="deleteSelectedImagesDialog = true"
-          icon
-          color="error"
-          ><v-icon>mdi-delete-forever</v-icon>
-        </v-btn>
-      </template>
-    </v-banner>
+          <div class="title ml-2">
+            {{ selectedImages.length }}
+          </div>
+        </div>
+
+        <template v-slot:actions>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click="addLabelsDialog = true"
+                icon
+                :disabled="!selectedImages.length"
+              >
+                <v-icon>mdi-label</v-icon>
+              </v-btn>
+            </template>
+            Add labels
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click="subtractLabelsDialog = true"
+                icon
+                :disabled="!selectedImages.length"
+              >
+                <v-icon>mdi-label-off</v-icon>
+              </v-btn>
+            </template>
+            Subtract labels
+          </v-tooltip>
+
+          <v-btn @click="addActorsDialog = true" icon v-if="selectedImages.length">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon v-bind="attrs" v-on="on">mdi-account-plus</v-icon>
+              </template>
+              <span>Add {{ (actorPlural || "").toLowerCase() }} to selected images</span>
+            </v-tooltip>
+          </v-btn>
+
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click="deleteSelectedImagesDialog = true"
+                :disabled="!selectedImages.length"
+                icon
+                color="error"
+                ><v-icon>mdi-delete-forever</v-icon>
+              </v-btn>
+            </template>
+            Delete
+          </v-tooltip>
+        </template>
+      </v-banner>
+    </v-expand-transition>
 
     <v-navigation-drawer v-if="showSidenav" style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
@@ -142,7 +174,7 @@
           placeholder="Sort by..."
           :items="sortByItems"
           class="mt-0 pt-0 mb-2"
-        ></v-select>
+        />
         <v-select
           solo
           flat
@@ -156,7 +188,7 @@
           @change="searchStateManager.onValueChanged('sortDir', $event)"
           placeholder="Sort direction"
           :items="sortDirItems"
-        ></v-select>
+        />
       </v-container>
     </v-navigation-drawer>
 
@@ -186,7 +218,19 @@
           </template>
           <span>Reshuffle</span>
         </v-tooltip>
-        <v-spacer></v-spacer>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" @click="toggleSelectionMode" icon>
+              <v-icon
+                >{{
+                  selectionMode ? "mdi-checkbox-blank-off-outline" : "mdi-checkbox-blank-outline"
+                }}
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Toggle selection mode</span>
+        </v-tooltip>
+        <v-spacer />
         <div>
           <v-pagination
             v-if="!fetchLoader && $vuetify.breakpoint.mdAndUp"
@@ -219,16 +263,19 @@
             :image="image"
             :contain="true"
           >
-            <template v-slot:action>
-              <v-checkbox
-                color="primary"
-                :input-value="selectedImages.includes(image._id)"
-                readonly
-                @click.native.stop="onImageClick(image, index, $event, true)"
-                class="mt-0"
-                hide-details
-                :contain="true"
-              ></v-checkbox>
+            <template v-slot:action="{ hover }">
+              <v-fade-transition>
+                <v-checkbox
+                  v-if="selectionMode || hover || selectedImages.includes(image._id)"
+                  color="primary"
+                  :input-value="selectedImages.includes(image._id)"
+                  readonly
+                  @click.native.stop="onImageClick(image, index, $event, true)"
+                  class="mt-0"
+                  hide-details
+                  :contain="true"
+                />
+              </v-fade-transition>
             </template>
           </ImageCard>
         </v-col>
@@ -279,90 +326,53 @@
         <v-card-text></v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn class="text-none" color="error" text @click="deleteSelection">Delete</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog :persistent="addLoader" scrollable v-model="addLabelsDialog" max-width="400px">
-      <v-card :loading="addLoader">
-        <v-card-title
-          >Add {{ addLabelsIndices.length }}
-          {{ addLabelsIndices.length === 1 ? "label" : "labels" }}</v-card-title
-        >
-
-        <v-text-field
-          clearable
-          color="primary"
-          hide-details
-          class="px-5 mb-2"
-          label="Find labels..."
-          v-model="addLabelsSearchQuery"
-        />
-
-        <v-card-text style="max-height: 400px">
-          <LabelSelector
-            :searchQuery="addLabelsSearchQuery"
-            :items="allLabels"
-            v-model="addLabelsIndices"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn @click="addLabelsIndices = []" text class="text-none">Clear</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn :loading="addLoader" class="text-none" color="primary" text @click="addLabels"
-            >Commit</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog
-      :persistent="subtractLoader"
-      scrollable
-      v-model="subtractLabelsDialog"
-      max-width="400px"
-    >
-      <v-card :loading="subtractLoader">
-        <v-card-title
-          >Subtract {{ subtractLabelsIndices.length }}
-          {{ subtractLabelsIndices.length === 1 ? "label" : "labels" }}</v-card-title
-        >
-
-        <v-text-field
-          clearable
-          color="primary"
-          hide-details
-          class="px-5 mb-2"
-          label="Find labels..."
-          v-model="subtractLabelsSearchQuery"
-        />
-
-        <v-card-text style="max-height: 400px">
-          <LabelSelector
-            :searchQuery="subtractLabelsSearchQuery"
-            :items="allLabels"
-            v-model="subtractLabelsIndices"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn @click="subtractLabelsIndices = []" text class="text-none">Clear</v-btn>
-          <v-spacer></v-spacer>
           <v-btn
-            :loading="subtractLoader"
             class="text-none"
-            color="primary"
+            color="error"
             text
-            @click="subtractLabels"
-            >Commit</v-btn
+            @click="deleteSelection"
+            :loading="deleteImagesLoader"
+            >Delete</v-btn
           >
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <LabelSelectorDialog
+      v-model="addLabelsDialog"
+      labelConfirm="Commit"
+      :loader="addLoader"
+      :selectedLabelIds="addLabelIds"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="addLabelIds = $event"
+      @confirm="addLabels"
+    >
+      <template #title>
+        Add {{ addLabelIds.length }} {{ addLabelIds.length === 1 ? "label" : "labels" }}
+      </template>
+    </LabelSelectorDialog>
+
+    <LabelSelectorDialog
+      v-model="subtractLabelsDialog"
+      labelConfirm="Commit"
+      :loader="subtractLoader"
+      :selectedLabelIds="subtractLabelIds"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="subtractLabelIds = $event"
+      @confirm="subtractLabels"
+    >
+      <template #title>
+        Subtract {{ subtractLabelIds.length }}
+        {{ subtractLabelIds.length === 1 ? "label" : "labels" }}
+      </template>
+    </LabelSelectorDialog>
 
     <v-dialog :persistent="addLoader" scrollable v-model="addActorsDialog" max-width="400px">
       <v-card :loading="addLoader">
-        <v-card-title>Add {{ addActorsIndices.length }} {{ (actorPlural || "").toLowerCase() }} to selected images</v-card-title>
+        <v-card-title
+          >Add {{ addActorsIndices.length }} {{ (actorPlural || "").toLowerCase() }} to selected
+          images</v-card-title
+        >
         <v-card-text style="max-height: 400px">
           <ActorSelector v-model="addActors" />
         </v-card-text>
@@ -396,7 +406,7 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import ApolloClient from "@/apollo";
 import gql from "graphql-tag";
-import LabelSelector from "@/components/LabelSelector.vue";
+import LabelSelectorDialog from "@/components/LabelSelectorDialog.vue";
 import { contextModule } from "@/store/context";
 import ImageCard from "@/components/Cards/Image.vue";
 import Lightbox from "@/components/Lightbox.vue";
@@ -412,10 +422,11 @@ import ActorSelector from "@/components/ActorSelector.vue";
 import { isQueryDifferent, SearchStateManager } from "../util/searchState";
 import { Route } from "vue-router";
 import { Dictionary } from "vue-router/types/router";
+import { attachLabelsToItem, detachLabelsFromItem } from "@/api/label";
 
 @Component({
   components: {
-    LabelSelector,
+    LabelSelectorDialog,
     ImageCard,
     Lightbox,
     ImageUploader,
@@ -449,6 +460,9 @@ export default class ImageList extends mixins(DrawerMixin) {
   fetchingRandom = false;
   numResults = 0;
   numPages = 0;
+  selectionMode = false;
+
+  deleteImagesLoader = false;
 
   searchStateManager = new SearchStateManager<{
     page: number;
@@ -488,7 +502,7 @@ export default class ImageList extends mixins(DrawerMixin) {
       sortDir: {
         default: () => "desc",
       },
-      showEmptyField: {default: () => ""},
+      showEmptyField: { default: () => "" },
     },
   });
 
@@ -591,39 +605,15 @@ export default class ImageList extends mixins(DrawerMixin) {
   deleteSelectedImagesDialog = false;
 
   addLabelsDialog = false;
-  addLabelsIndices: number[] = [];
-  addLabelsSearchQuery = "";
+  addLabelIds: string[] = [];
   addLoader = false;
   addActorsDialog = false;
   addActorsIndices: number[] = [];
   addActors = [] as IActor[];
 
   subtractLabelsDialog = false;
-  subtractLabelsIndices: number[] = [];
-  subtractLabelsSearchQuery = "";
+  subtractLabelIds: string[] = [];
   subtractLoader = false;
-
-  get labelsToAdd(): ILabel[] {
-    return this.addLabelsIndices.map((i) => this.allLabels[i]).filter(Boolean);
-  }
-
-  get labelsToSubtract(): ILabel[] {
-    return this.subtractLabelsIndices.map((i) => this.allLabels[i]).filter(Boolean);
-  }
-
-  async addLabelsToImage(imageId: string, labelIds: string[]): Promise<void> {
-    await ApolloClient.mutate({
-      mutation: gql`
-        mutation ($item: String!, $labels: [String!]!) {
-          attachLabels(item: $item, labels: $labels)
-        }
-      `,
-      variables: {
-        item: imageId,
-        labels: labelIds,
-      },
-    });
-  }
 
   async addActorsToImage(image: IImage): Promise<void> {
     // get array of existing actor ids of the current image
@@ -647,23 +637,8 @@ export default class ImageList extends mixins(DrawerMixin) {
     });
   }
 
-  async removeLabelFromImage(imageId: string, labelId: string): Promise<void> {
-    await ApolloClient.mutate({
-      mutation: gql`
-        mutation ($item: String!, $label: String!) {
-          removeLabel(item: $item, label: $label)
-        }
-      `,
-      variables: {
-        item: imageId,
-        label: labelId,
-      },
-    });
-  }
-
   async subtractLabels(): Promise<void> {
     try {
-      const labelIdsToSubtract = this.labelsToSubtract.map((l) => l._id);
       this.subtractLoader = true;
 
       for (let i = 0; i < this.selectedImages.length; i++) {
@@ -672,15 +647,14 @@ export default class ImageList extends mixins(DrawerMixin) {
         const image = this.images.find((img) => img._id === id);
 
         if (image) {
-          for (const labelId of labelIdsToSubtract) {
-            await this.removeLabelFromImage(id, labelId);
-          }
+          await detachLabelsFromItem(id, this.subtractLabelIds);
         }
       }
 
       // Refresh page
       await this.loadPage();
       this.subtractLabelsDialog = false;
+      this.subtractLabelIds = [];
     } catch (error) {
       console.error(error);
     }
@@ -689,7 +663,6 @@ export default class ImageList extends mixins(DrawerMixin) {
 
   async addLabels(): Promise<void> {
     try {
-      const labelIdsToAdd = this.labelsToAdd.map((l) => l._id);
       this.addLoader = true;
 
       for (let i = 0; i < this.selectedImages.length; i++) {
@@ -698,13 +671,14 @@ export default class ImageList extends mixins(DrawerMixin) {
         const image = this.images.find((img) => img._id === id);
 
         if (image) {
-          await this.addLabelsToImage(id, labelIdsToAdd);
+          await attachLabelsToItem(id, this.addLabelIds);
         }
       }
 
       // Refresh page
       await this.loadPage();
       this.addLabelsDialog = false;
+      this.addLabelIds = [];
     } catch (error) {
       console.error(error);
     }
@@ -748,6 +722,22 @@ export default class ImageList extends mixins(DrawerMixin) {
     }
   }
 
+  toggleSelectionMode() {
+    this.selectionMode = !this.selectionMode;
+    if (!this.selectionMode) {
+      this.selectedImages = [];
+    }
+  }
+
+  @Watch("selectedImages")
+  onSelectedImagesChange(nextVal: string[]) {
+    if (nextVal.length) {
+      this.selectionMode = true;
+    } else {
+      this.selectionMode = false;
+    }
+  }
+
   /**
    * @param image - the clicked image
    * @param index - the index of the image in the array
@@ -785,28 +775,30 @@ export default class ImageList extends mixins(DrawerMixin) {
     }
   }
 
-  deleteSelection() {
-    ApolloClient.mutate({
-      mutation: gql`
-        mutation ($ids: [String!]!) {
-          removeImages(ids: $ids)
-        }
-      `,
-      variables: {
-        ids: this.selectedImages,
-      },
-    })
-      .then((res) => {
-        for (const id of this.selectedImages) {
-          this.images = this.images.filter((img) => img._id != id);
-        }
-        this.selectedImages = [];
-        this.deleteSelectedImagesDialog = false;
-      })
-      .catch((err) => {
-        console.error(err);
-      })
-      .finally(() => {});
+  async deleteSelection() {
+    this.deleteImagesLoader = true;
+
+    try {
+      await ApolloClient.mutate({
+        mutation: gql`
+          mutation ($ids: [String!]!) {
+            removeImages(ids: $ids)
+          }
+        `,
+        variables: {
+          ids: this.selectedImages,
+        },
+      });
+
+      this.numResults = Math.max(0, this.numResults - this.selectedImages.length);
+      this.images = this.images.filter((img) => !this.selectedImages.includes(img._id));
+      this.selectedImages = [];
+      this.deleteSelectedImagesDialog = false;
+    } catch (err) {
+      console.error(err);
+    }
+
+    this.deleteImagesLoader = false;
   }
 
   removeImage(index: number) {
@@ -917,7 +909,7 @@ export default class ImageList extends mixins(DrawerMixin) {
     this.fetchLoader = true;
     this.selectedImages = [];
 
-    if (this.searchState.showEmptyField === 'actors') {
+    if (this.searchState.showEmptyField === "actors") {
       this.searchState.selectedActors = [];
     }
 

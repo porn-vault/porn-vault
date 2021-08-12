@@ -139,35 +139,17 @@
       </div>
     </v-card>
 
-    <v-dialog scrollable v-model="labelSelectorDialog" max-width="400px">
-      <v-card :loading="labelEditLoader" v-if="currentImage">
-        <v-card-title>Select image labels</v-card-title>
-
-        <v-text-field
-          clearable
-          color="primary"
-          hide-details
-          class="px-5 mb-2"
-          label="Find labels..."
-          v-model="labelSearchQuery"
-        />
-
-        <v-card-text style="max-height: 400px">
-          <LabelSelector
-            :searchQuery="labelSearchQuery"
-            :items="allLabels"
-            v-model="selectedLabels"
-          />
-        </v-card-text>
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-btn @click="selectedLabels = []" text class="text-none">Clear</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn @click="editLabels" text color="primary" class="text-none">Edit</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LabelSelectorDialog
+      v-model="labelSelectorDialog"
+      labelTitle="Select image labels"
+      labelConfirm="Edit"
+      :loader="labelEditLoader"
+      :selectedLabelIds="selectedLabels"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="selectedLabels = $event"
+      @confirm="editLabels"
+    >
+    </LabelSelectorDialog>
 
     <v-dialog v-model="removeDialog" max-width="400px">
       <v-card>
@@ -212,7 +194,7 @@
 import { Component, Vue, Watch, Prop } from "vue-property-decorator";
 import ApolloClient from "../apollo";
 import gql from "graphql-tag";
-import LabelSelector from "../components/LabelSelector.vue";
+import LabelSelectorDialog from "../components/LabelSelectorDialog.vue";
 import ImageCard from "../components/Cards/Image.vue";
 import ActorSelector from "../components/ActorSelector.vue";
 import IImage from "../types/image";
@@ -225,7 +207,7 @@ import { contextModule } from "@/store/context";
 
 @Component({
   components: {
-    LabelSelector,
+    LabelSelectorDialog,
     ImageCard,
     ActorSelector,
     SceneSelector,
@@ -242,7 +224,7 @@ export default class Lightbox extends Vue {
 
   labelSelectorDialog = false;
   allLabels = [] as ILabel[];
-  selectedLabels = [] as number[];
+  selectedLabels: string[] = [];
   labelEditLoader = false;
 
   editActorsDialog = false;
@@ -250,8 +232,6 @@ export default class Lightbox extends Vue {
   editScene = null as { _id: string; name: string } | null;
 
   removeDialog = false;
-
-  labelSearchQuery = "";
 
   get actorPlural() {
     return contextModule.actorPlural;
@@ -407,9 +387,7 @@ export default class Lightbox extends Vue {
     this.selectedLabels = [];
 
     if (this.items[newVal]) {
-      this.selectedLabels = this.items[newVal].labels.map((l) =>
-        this.allLabels.findIndex((k) => k._id == l._id)
-      );
+      this.selectedLabels = this.items[newVal].labels.map((l) => l._id);
       this.editScene = this.items[newVal].scene;
     }
   }
@@ -577,9 +555,7 @@ export default class Lightbox extends Vue {
           return;
         }
 
-        this.selectedLabels = this.currentImage.labels.map((l) =>
-          this.allLabels.findIndex((k) => k._id == l._id)
-        );
+        this.selectedLabels = this.currentImage.labels.map((l) => l._id);
         this.labelSelectorDialog = true;
       } catch (error) {
         console.error(error);

@@ -1,7 +1,7 @@
 <template>
   <v-card :dark="!!cardColor || $vuetify.theme.dark" :color="cardColor" v-if="value" tile>
-    <v-hover v-slot:default="{ hover }">
-      <a :href="`#/movie/${value._id}`">
+    <a :href="`#/movie/${value._id}`">
+      <v-hover v-slot:default="{ hover }">
         <v-img :aspect-ratio="ratio" v-ripple eager :src="frontCover">
           <v-fade-transition>
             <v-img eager :aspect-ratio="ratio" :src="backCover" v-if="hover"></v-img>
@@ -15,7 +15,11 @@
             {{ movieDuration }}
           </div>
 
-          <div class="corner-actions">
+          <div class="corner-actions top-right" style="z-index: 6">
+            <slot name="action" :hover="hover"></slot>
+          </div>
+
+          <div class="corner-actions bottom-left" style="z-index: 6">
             <v-btn
               light
               class="elevation-2 mr-1"
@@ -38,8 +42,8 @@
             </v-btn>
           </div>
         </v-img>
-      </a>
-    </v-hover>
+      </v-hover>
+    </a>
 
     <div v-if="showBody" class="px-2">
       <div v-if="hasTopLine" class="d-flex mt-2 text-uppercase caption">
@@ -217,7 +221,15 @@ export default class MovieCard extends Vue {
 
 .corner-actions {
   position: absolute;
-  bottom: 5px;
-  left: 5px;
+
+  &.top-right {
+    right: 2px;
+    top: 2px;
+  }
+
+  &.bottom-left {
+    bottom: 2px;
+    left: 2px;
+  }
 }
 </style>

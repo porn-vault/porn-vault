@@ -231,35 +231,17 @@
       </div>
     </div>
 
-    <v-dialog scrollable v-model="labelSelectorDialog" max-width="400px">
-      <v-card :loading="labelEditLoader" v-if="currentStudio">
-        <v-card-title>Edit studio labels</v-card-title>
-
-        <v-text-field
-          clearable
-          color="primary"
-          hide-details
-          class="px-5 mb-2"
-          label="Find labels..."
-          v-model="labelSearchQuery"
-        />
-
-        <v-card-text style="max-height: 400px">
-          <LabelSelector
-            :searchQuery="labelSearchQuery"
-            :items="allLabels"
-            v-model="selectedLabels"
-          />
-        </v-card-text>
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-btn @click="selectedLabels = []" text class="text-none">Clear</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn @click="editLabels" text color="primary" class="text-none">Edit</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LabelSelectorDialog
+      v-model="labelSelectorDialog"
+      labelTitle="Edit studio labels"
+      labelConfirm="Edit"
+      :loader="labelEditLoader"
+      :selectedLabelIds="selectedLabels"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="selectedLabels = $event"
+      @confirm="editLabels"
+    >
+    </LabelSelectorDialog>
 
     <v-dialog v-model="thumbnailDialog" max-width="400px">
       <v-card v-if="currentStudio" :loading="thumbnailLoader">
@@ -300,7 +282,7 @@ import studioFragment from "@/fragments/studio";
 import IScene from "@/types/scene";
 import IMovie from "@/types/movie";
 import StudioCard from "@/components/Cards/Studio.vue";
-import LabelSelector from "@/components/LabelSelector.vue";
+import LabelSelectorDialog from "@/components/LabelSelectorDialog.vue";
 import { contextModule } from "@/store/context";
 
 @Component({
@@ -310,7 +292,7 @@ import { contextModule } from "@/store/context";
     MovieCard,
     ActorCard,
     StudioCard,
-    LabelSelector,
+    LabelSelectorDialog,
   },
   beforeRouteLeave(_to, _from, next) {
     studioModule.setCurrent(null);
@@ -325,7 +307,7 @@ export default class StudioDetails extends Vue {
 
   labelSelectorDialog = false;
   allLabels = [] as ILabel[];
-  selectedLabels = [] as number[];
+  selectedLabels: string[] = [];
   labelEditLoader = false;
 
   pluginLoader = false;
@@ -345,8 +327,6 @@ export default class StudioDetails extends Vue {
   thumbnailDialog = false;
   thumbnailLoader = false;
   selectedThumbnail = null as File | null;
-
-  labelSearchQuery = "";
 
   activeTab = 0;
 
@@ -737,7 +717,10 @@ export default class StudioDetails extends Vue {
     }
 
     this.labelEditLoader = true;
-    return this.updateStudioLabels(this.selectedLabels.map((i) => this.allLabels[i]))
+    const labels = this.selectedLabels
+      .map((id) => this.allLabels.find((l) => l._id === id))
+      .filter(Boolean) as ILabel[];
+    return this.updateStudioLabels(labels)
       .then((res) => {
         this.labelSelectorDialog = false;
       })
@@ -775,9 +758,7 @@ export default class StudioDetails extends Vue {
             return;
           }
 
-          this.selectedLabels = this.currentStudio.labels.map((l) =>
-            this.allLabels.findIndex((k) => k._id == l._id)
-          );
+          this.selectedLabels = this.currentStudio.labels.map((l) => l._id);
           this.labelSelectorDialog = true;
         })
         .catch((err) => {

@@ -11,6 +11,7 @@ import Label from "../../types/label";
 import LabelledItem from "../../types/labelled_item";
 import Scene from "../../types/scene";
 import Studio from "../../types/studio";
+import { mapAsync } from "../../utils/async";
 import { formatMessage, logger } from "../../utils/logger";
 import { filterInvalidAliases } from "../../utils/misc";
 import { isHexColor } from "../../utils/string";
@@ -56,9 +57,11 @@ export default {
     return true;
   },
 
-  // TODO: bad name, rename; label is not removed, but rather a label reference between 1 label and 1 item
-  async removeLabel(_: unknown, { item, label }: { item: string; label: string }): Promise<true> {
-    await LabelledItem.remove(item, label);
+  async detachLabels(
+    _: unknown,
+    { item, labels }: { item: string; labels: string[] }
+  ): Promise<true> {
+    await mapAsync(labels, (label) => LabelledItem.remove(item, label));
 
     if (item.startsWith("sc_")) {
       const scene = await Scene.getById(item);

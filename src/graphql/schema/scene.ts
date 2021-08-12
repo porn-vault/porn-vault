@@ -113,7 +113,7 @@ export default gql`
     watchScene(id: String!): Scene!
     unwatchScene(id: String!): Scene!
     updateScenes(ids: [String!]!, opts: SceneUpdateOpts!): [Scene!]!
-    removeScenes(ids: [String!]!, deleteImages: Boolean): Boolean!
+    removeScenes(ids: [String!]!, deleteImages: Boolean, deleteFile: Boolean): Boolean!
     runScenePlugins(id: String!): Scene
     runFFProbe(id: String!): RunFFProbeResult
   }

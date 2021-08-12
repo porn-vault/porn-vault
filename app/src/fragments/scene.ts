@@ -18,6 +18,7 @@ export default gql`
       _id
       name
       color
+      aliases
     }
     thumbnail {
       _id

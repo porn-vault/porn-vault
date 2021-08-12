@@ -47,7 +47,7 @@ function injectServerFunctions(movie: Movie) {
 // This function has side effects
 export async function onMovieCreate(
   movie: Movie,
-  event: "movieCreated" = "movieCreated"
+  event: "movieCreated" | "movieCustom" = "movieCreated"
 ): Promise<Movie> {
   const config = getConfig();
 

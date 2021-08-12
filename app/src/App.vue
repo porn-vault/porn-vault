@@ -112,8 +112,23 @@
         <div style="min-height: 100vh">
           <router-view />
         </div>
-        <Footer v-if="!$route.meta || !$route.meta.hideFooter" /> </v-content
-    ></template>
+
+        <v-slide-y-reverse-transition>
+          <v-alert
+            class="ma-3 plugin-task-alert"
+            v-if="pluginLoader"
+            dense
+            type="info"
+            dismissible
+            elevation="1"
+          >
+            {{ pluginMessage }}
+          </v-alert>
+        </v-slide-y-reverse-transition>
+
+        <Footer v-if="!$route.meta || !$route.meta.hideFooter" />
+      </v-content>
+    </template>
   </v-app>
 </template>
 
@@ -124,6 +139,7 @@ import { actorModule } from "./store/actor";
 import { movieModule } from "./store/movie";
 import { studioModule } from "./store/studio";
 import { contextModule } from "./store/context";
+import { pluginTaskModule } from "./store/pluginTask";
 import moment from "moment";
 import { ensureDarkColor } from "./util/color";
 import Footer from "./components/Footer.vue";
@@ -296,16 +312,12 @@ export default class App extends Vue {
       contextModule.toggleExperimental(true);
     }
 
-    const actorSingularLocalStorage = localStorage.getItem(
-      "pm_actorSingular"
-    );
+    const actorSingularLocalStorage = localStorage.getItem("pm_actorSingular");
     if (actorSingularLocalStorage) {
       contextModule.setActorSingular(actorSingularLocalStorage);
     }
 
-    const actorPluralLocalStorage = localStorage.getItem(
-      "pm_actorPlural"
-    );
+    const actorPluralLocalStorage = localStorage.getItem("pm_actorPlural");
     if (actorPluralLocalStorage) {
       contextModule.setActorPlural(actorPluralLocalStorage);
     }
@@ -389,6 +401,14 @@ export default class App extends Vue {
     return btns;
   }
 
+  get pluginLoader() {
+    return pluginTaskModule.loader;
+  }
+
+  get pluginMessage() {
+    return pluginTaskModule.message;
+  }
+
   get loadingSetup() {
     return contextModule.loadingSetup;
   }
@@ -415,5 +435,12 @@ export default class App extends Vue {
 
 .med--text {
   opacity: 0.6;
+}
+
+.plugin-task-alert {
+  position: fixed !important;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
 }
 </style>

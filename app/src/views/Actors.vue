@@ -47,7 +47,7 @@
             }}</v-icon>
           </v-btn>
 
-          <v-spacer></v-spacer>
+          <v-spacer />
 
           <Rating
             @input="searchStateManager.onValueChanged('ratingFilter', $event)"
@@ -129,6 +129,89 @@
       </v-container>
     </v-navigation-drawer>
 
+    <v-expand-transition>
+      <v-banner app sticky class="mb-2" v-if="selectionMode">
+        <div class="d-flex align-center">
+          <v-tooltip bottom v-if="!selectedActors.length">
+            <template #activator="{ on }">
+              <v-btn icon v-on="on" @click="selectedActors = actors.map((im) => im._id)">
+                <v-icon>mdi-checkbox-blank-circle-outline</v-icon>
+              </v-btn>
+            </template>
+            Select all
+          </v-tooltip>
+          <v-tooltip bottom v-else>
+            <template #activator="{ on }">
+              <v-btn icon v-on="on" @click="selectedActors = []">
+                <v-icon>mdi-checkbox-marked-circle</v-icon>
+              </v-btn>
+            </template>
+            Deselect
+          </v-tooltip>
+
+          <div class="title ml-2">
+            {{ selectedActors.length }}
+          </div>
+        </div>
+
+        <template v-slot:actions>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                :disabled="!selectedActors.length"
+                v-on="on"
+                @click="runPluginsForSelectedActors"
+                :loading="pluginLoader"
+                icon
+              >
+                <v-icon>mdi-database-sync</v-icon>
+              </v-btn>
+            </template>
+            Run plugins for selected {{ (actorPlural || "").toLowerCase() }}
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click="addLabelsDialog = true"
+                icon
+                :disabled="!selectedActors.length"
+              >
+                <v-icon>mdi-label</v-icon>
+              </v-btn>
+            </template>
+            Add labels
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                v-on="on"
+                @click="subtractLabelsDialog = true"
+                icon
+                :disabled="!selectedActors.length"
+              >
+                <v-icon>mdi-label-off</v-icon>
+              </v-btn>
+            </template>
+            Subtract labels
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                :disabled="!selectedActors.length"
+                v-on="on"
+                @click="deleteSelectedActorsDialog = true"
+                icon
+                color="error"
+                ><v-icon>mdi-delete-forever</v-icon>
+              </v-btn>
+            </template>
+            Delete
+          </v-tooltip>
+        </template>
+      </v-banner>
+    </v-expand-transition>
+
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
       <v-btn class="mt-2" @click="loadPage">Try again</v-btn>
@@ -174,7 +257,27 @@
           </template>
           <span>Reshuffle</span>
         </v-tooltip>
-        <v-spacer></v-spacer>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" @click="runPluginsForSearch" icon :loading="pluginLoader">
+              <v-icon>mdi-database-sync</v-icon>
+            </v-btn>
+          </template>
+          <span>Run plugins for all {{ (actorPlural || "").toLowerCase() }} in current search</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" @click="toggleSelectionMode" icon>
+              <v-icon
+                >{{
+                  selectionMode ? "mdi-checkbox-blank-off-outline" : "mdi-checkbox-blank-outline"
+                }}
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Toggle selection mode</span>
+        </v-tooltip>
+        <v-spacer />
         <div>
           <v-pagination
             v-if="!fetchLoader && $vuetify.breakpoint.mdAndUp"
@@ -183,13 +286,13 @@
             :total-visible="9"
             :disabled="fetchLoader"
             :length="numPages"
-          ></v-pagination>
+          />
         </div>
       </div>
       <v-row v-if="!fetchLoader && numResults">
         <v-col
           class="pa-1"
-          v-for="(actor, i) in actors"
+          v-for="(actor, actorIdx) in actors"
           :key="actor._id"
           cols="6"
           sm="6"
@@ -197,7 +300,29 @@
           lg="3"
           xl="2"
         >
-          <actor-card :showLabels="showCardLabels" v-model="actors[i]" style="height: 100%" />
+          <actor-card
+            :showLabels="showCardLabels"
+            v-model="actors[actorIdx]"
+            :class="
+              selectedActors.length && !selectedActors.includes(actor._id) ? 'not-selected' : ''
+            "
+            @click.native.stop.prevent="onActorClick(actor, actorIdx, $event, false)"
+          >
+            <template v-slot:action="{ hover }">
+              <v-fade-transition>
+                <v-checkbox
+                  v-if="selectionMode || hover || selectedActors.includes(actor._id)"
+                  color="primary"
+                  :input-value="selectedActors.includes(actor._id)"
+                  readonly
+                  @click.native.stop.prevent="onActorClick(actor, actorIdx, $event, true)"
+                  class="mt-0"
+                  hide-details
+                  :contain="true"
+                />
+              </v-fade-transition>
+            </template>
+          </actor-card>
         </v-col>
       </v-row>
       <NoResults v-else-if="!fetchLoader && !numResults" />
@@ -278,9 +403,9 @@
             >
           </v-form>
         </v-card-text>
-        <v-divider></v-divider>
+        <v-divider />
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-btn text class="text-none" :disabled="!validCreation" color="primary" @click="addActor"
             >Add</v-btn
           >
@@ -288,24 +413,17 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog scrollable v-model="labelSelectorDialog" max-width="400px">
-      <v-card>
-        <v-card-title>Select labels for '{{ createActorName }}'</v-card-title>
-
-        <v-card-text style="max-height: 400px">
-          <LabelSelector :items="allLabels" v-model="createSelectedLabels" />
-        </v-card-text>
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-btn @click="createSelectedLabels = []" text class="text-none">Clear</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn @click="labelSelectorDialog = false" text color="primary" class="text-none"
-            >OK</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LabelSelectorDialog
+      v-model="labelSelectorDialog"
+      labelConfirm="OK"
+      :loader="false"
+      :selectedLabelIds="createSelectedLabels"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="createSelectedLabels = $event"
+      @confirm="labelSelectorDialog = false"
+    >
+      <template #title> Select labels for '{{ createActorName }}' </template>
+    </LabelSelectorDialog>
 
     <v-dialog :persistent="bulkLoader" scrollable v-model="bulkImportDialog" max-width="400px">
       <v-card :loading="bulkLoader">
@@ -322,10 +440,10 @@
             @hint="'1 ' + actorSingular.toLowerCase() + ' name per line'"
           ></v-textarea>
         </v-card-text>
-        <v-divider></v-divider>
+        <v-divider />
 
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-btn
             @click="runBulkImport"
             text
@@ -333,6 +451,26 @@
             class="text-none"
             :disabled="!actorsBulkImport.length"
             >Add {{ actorsBulkImport.length }} {{ actorPlural.toLowerCase() }}</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="deleteSelectedActorsDialog" max-width="400px">
+      <v-card>
+        <v-card-title>Really delete {{ selectedActors.length }} {{ (actorPlural || "").toLowerCase() }}?</v-card-title>
+        <v-card-text
+          >Scenes and images featuring the {{ (actorPlural || "").toLowerCase() }} will stay in your collection.</v-card-text
+        >
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            class="text-none"
+            color="error"
+            text
+            @click="deleteSelection"
+            :loading="deleteActorsLoader"
+            >Delete</v-btn
           >
         </v-card-actions>
       </v-card>
@@ -357,6 +495,35 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <LabelSelectorDialog
+      v-model="addLabelsDialog"
+      labelConfirm="Commit"
+      :loader="addLoader"
+      :selectedLabelIds="addLabelIds"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="addLabelIds = $event"
+      @confirm="addLabels"
+    >
+      <template #title>
+        Add {{ addLabelIds.length }} {{ addLabelIds.length === 1 ? "label" : "labels" }}
+      </template>
+    </LabelSelectorDialog>
+
+    <LabelSelectorDialog
+      v-model="subtractLabelsDialog"
+      labelConfirm="Commit"
+      :loader="subtractLoader"
+      :selectedLabelIds="subtractLabelIds"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="subtractLabelIds = $event"
+      @confirm="subtractLabels"
+    >
+      <template #title>
+        Subtract {{ subtractLabelIds.length }}
+        {{ subtractLabelIds.length === 1 ? "label" : "labels" }}
+      </template>
+    </LabelSelectorDialog>
   </v-container>
 </template>
 
@@ -365,7 +532,7 @@ import { Component, Watch } from "vue-property-decorator";
 import ApolloClient from "@/apollo";
 import gql from "graphql-tag";
 import ActorCard from "@/components/Cards/Actor.vue";
-import LabelSelector from "@/components/LabelSelector.vue";
+import LabelSelectorDialog from "@/components/LabelSelectorDialog.vue";
 import actorFragment from "@/fragments/actor";
 import { contextModule } from "@/store/context";
 import IActor from "@/types/actor";
@@ -376,11 +543,14 @@ import CustomFieldFilter from "@/components/CustomFieldFilter.vue";
 import countries from "@/util/countries";
 import { SearchStateManager, isQueryDifferent } from "../util/searchState";
 import { Dictionary, Route } from "vue-router/types/router";
+import { Actor } from "@/api/actor";
+import { pluginTaskModule } from "@/store/pluginTask";
+import { attachLabelsToItem, detachLabelsFromItem } from "@/api/label";
 
 @Component({
   components: {
     ActorCard,
-    LabelSelector,
+    LabelSelectorDialog,
     CustomFieldFilter,
   },
 })
@@ -418,6 +588,7 @@ export default class ActorList extends mixins(DrawerMixin) {
   fetchingRandom = false;
   numResults = 0;
   numPages = 0;
+  selectionMode = false;
 
   searchStateManager = new SearchStateManager<{
     page: number;
@@ -510,9 +681,10 @@ export default class ActorList extends mixins(DrawerMixin) {
   createActorDialog = false;
   createActorName = "";
   createActorAliases = [] as string[];
-  createSelectedLabels = [] as number[];
+  createSelectedLabels: string[] = [];
   labelSelectorDialog = false;
   addActorLoader = false;
+  deleteActorsLoader = false;
 
   actorNameRules = [(v) => (!!v && !!v.length) || "Invalid name"];
 
@@ -635,6 +807,57 @@ export default class ActorList extends mixins(DrawerMixin) {
     },
   ];
 
+  addLabelsDialog = false;
+  addLabelIds: string[] = [];
+  addLoader = false;
+
+  subtractLabelsDialog = false;
+  subtractLabelIds: string[] = [];
+  subtractLoader = false;
+
+  async subtractLabels(): Promise<void> {
+    try {
+      this.subtractLoader = true;
+      for (let i = 0; i < this.selectedActors.length; i++) {
+        const id = this.selectedActors[i];
+        const actor = this.actors.find((sc) => sc._id === id);
+        if (actor) {
+          await detachLabelsFromItem(id, this.subtractLabelIds);
+        }
+      }
+      // Refresh page
+      await this.loadPage();
+      this.subtractLabelsDialog = false;
+      this.subtractLabelIds = [];
+    } catch (error) {
+      console.error(error);
+    }
+    this.subtractLoader = false;
+  }
+
+  async addLabels(): Promise<void> {
+    try {
+      this.addLoader = true;
+
+      for (let i = 0; i < this.selectedActors.length; i++) {
+        const id = this.selectedActors[i];
+
+        const actor = this.actors.find((img) => img._id === id);
+        if (actor) {
+          await attachLabelsToItem(id, this.addLabelIds);
+        }
+      }
+
+      // Refresh page
+      await this.loadPage();
+      this.addLabelsDialog = false;
+      this.addLabelIds = [];
+    } catch (error) {
+      console.error(error);
+    }
+    this.addLoader = false;
+  }
+
   createActorWithName(name: string) {
     return new Promise<void>((resolve, reject) => {
       ApolloClient.mutate({
@@ -646,10 +869,14 @@ export default class ActorList extends mixins(DrawerMixin) {
                 _id
                 name
                 color
+                aliases
               }
               thumbnail {
                 _id
                 color
+              }
+              altThumbnail {
+                _id
               }
               numScenes
             }
@@ -680,10 +907,14 @@ export default class ActorList extends mixins(DrawerMixin) {
               _id
               name
               color
+              aliases
             }
             thumbnail {
               _id
               color
+            }
+            altThumbnail {
+              _id
             }
             numScenes
           }
@@ -693,7 +924,7 @@ export default class ActorList extends mixins(DrawerMixin) {
       variables: {
         name: this.createActorName,
         aliases: this.createActorAliases,
-        labels: this.labelIDs(this.createSelectedLabels),
+        labels: this.createSelectedLabels,
       },
     })
       .then((res) => {
@@ -735,12 +966,8 @@ export default class ActorList extends mixins(DrawerMixin) {
     }
   }
 
-  labelIDs(indices: number[]) {
-    return indices.map((i) => this.allLabels[i]).map((l) => l._id);
-  }
-
-  labelNames(indices: number[]) {
-    return indices.map((i) => this.allLabels[i].name);
+  labelNames(ids: string[]) {
+    return ids.map((id) => this.allLabels.find((l) => l._id === id)?.name).filter(Boolean);
   }
 
   openCreateDialog() {
@@ -773,12 +1000,204 @@ export default class ActorList extends mixins(DrawerMixin) {
     this.fetchingRandom = true;
     this.fetchPage(1, 1, true, Math.random().toString())
       .then((result) => {
-        // @ts-ignore
         this.$router.push(`/actor/${result.items[0]._id}`);
       })
       .catch((err) => {
         this.fetchingRandom = false;
       });
+  }
+
+  get pluginLoader() {
+    return pluginTaskModule.loader;
+  }
+
+  async runPluginsForSelectedActors() {
+    if (this.pluginLoader) {
+      // Don't trigger plugins if there is already a task running
+      return;
+    }
+
+    pluginTaskModule.startLoading({ itemsName: "actor", total: this.selectedActors.length });
+
+    try {
+      for (const id of this.selectedActors) {
+        await this.runPluginsForAnActor(id);
+        pluginTaskModule.incrementProgress();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    pluginTaskModule.stopLoading();
+  }
+
+  async runPluginsForSearch() {
+    if (this.pluginLoader) {
+      // Don't trigger plugins if there is already a task running
+      return;
+    }
+
+    pluginTaskModule.startLoading({ itemsName: "actor" });
+
+    try {
+      await Actor.iterate(
+        (actor) => this.runPluginsForAnActor(actor._id),
+        this.fetchQuery,
+        ({ iteratedCount, total }) => {
+          pluginTaskModule.setProgress({ iteratedCount, total });
+        }
+      );
+    } catch (err) {
+      console.error(err);
+    }
+
+    pluginTaskModule.stopLoading();
+  }
+
+  async runPluginsForAnActor(id: string) {
+    try {
+      const res = await ApolloClient.mutate({
+        mutation: gql`
+          mutation ($id: String!) {
+            runActorPlugins(id: $id) {
+              ...ActorFragment
+              labels {
+                _id
+                name
+                color
+                aliases
+              }
+              thumbnail {
+                _id
+                color
+              }
+              altThumbnail {
+                _id
+              }
+              numScenes
+            }
+          }
+          ${actorFragment}
+        `,
+        variables: {
+          id: id,
+        },
+      });
+      const actor = res.data.runActorPlugins;
+      const actorIndex = this.actors.findIndex((a) => a._id === id);
+      if (actorIndex !== -1) {
+        this.actors.splice(actorIndex, 1, actor);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  selectedActors = [] as string[];
+  lastSelectionActorId: string | null = null;
+  deleteSelectedActorsDialog = false;
+
+  isActorSelected(id: string) {
+    return !!this.selectedActors.includes(id);
+  }
+
+  selectActor(id: string, add: boolean) {
+    this.lastSelectionActorId = id;
+    if (add && !this.isActorSelected(id)) {
+      this.selectedActors.push(id);
+    } else {
+      this.selectedActors = this.selectedActors.filter((i) => i != id);
+    }
+  }
+
+  toggleSelectionMode() {
+    this.selectionMode = !this.selectionMode;
+    if (!this.selectionMode) {
+      this.selectedActors = [];
+    }
+  }
+
+  @Watch("selectedActors")
+  onSelectedActorsChange(nextVal: string[]) {
+    if (nextVal.length) {
+      this.selectionMode = true;
+    } else {
+      this.selectionMode = false;
+    }
+  }
+
+  /**
+   * @param actor - the clicked actor
+   * @param index - the index of the actor in the array
+   * @param event - the mouse click event
+   * @param forceSelectionChange - whether to force a selection change, instead of opening the actor
+   */
+  onActorClick(actor: IActor, index: number, event: MouseEvent, forceSelectionChange = true) {
+    let lastSelectionActorIndex =
+      this.lastSelectionActorId !== null
+        ? this.actors.findIndex((im) => im._id === this.lastSelectionActorId)
+        : index;
+    lastSelectionActorIndex = lastSelectionActorIndex === -1 ? index : lastSelectionActorIndex;
+
+    if (event.shiftKey) {
+      // Next state is opposite of the clicked scene state
+      const nextSelectionState = !this.isActorSelected(actor._id);
+
+      // Use >= to include the currently clicked scene, so it can be toggled
+      // if necessary
+      if (index >= lastSelectionActorIndex) {
+        for (let i = lastSelectionActorIndex + 1; i <= index; i++) {
+          this.selectActor(this.actors[i]._id, nextSelectionState);
+        }
+      } else if (index < lastSelectionActorIndex) {
+        for (let i = lastSelectionActorIndex; i >= index; i--) {
+          this.selectActor(this.actors[i]._id, nextSelectionState);
+        }
+      }
+    } else if (forceSelectionChange || event.ctrlKey) {
+      this.selectActor(actor._id, !this.isActorSelected(actor._id));
+    } else if (!forceSelectionChange) {
+      this.$router.push(`/actor/${actor._id}`);
+    }
+  }
+
+  async deleteSelection() {
+    this.deleteActorsLoader = true;
+
+    try {
+      await ApolloClient.mutate({
+        mutation: gql`
+          mutation ($ids: [String!]!) {
+            removeActors(ids: $ids)
+          }
+        `,
+        variables: {
+          ids: this.selectedActors,
+        },
+      });
+
+      this.numResults = Math.max(0, this.numResults - this.selectedActors.length);
+      this.actors = this.actors.filter((act) => !this.selectedActors.includes(act._id));
+      this.selectedActors = [];
+      this.deleteSelectedActorsDialog = false;
+    } catch (err) {
+      console.error(err);
+    }
+
+    this.deleteActorsLoader = false;
+  }
+
+  get fetchQuery() {
+    return {
+      query: this.searchState.query || "",
+      include: this.searchState.selectedLabels.include,
+      exclude: this.searchState.selectedLabels.exclude,
+      nationality: this.searchState.countryFilter || null,
+      favorite: this.searchState.favoritesOnly,
+      bookmark: this.searchState.bookmarksOnly,
+      rating: this.searchState.ratingFilter,
+      custom: this.searchState.customFilter,
+    };
   }
 
   async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
@@ -799,6 +1218,7 @@ export default class ActorList extends mixins(DrawerMixin) {
                 _id
                 name
                 color
+                aliases
               }
               thumbnail {
                 _id
@@ -817,18 +1237,11 @@ export default class ActorList extends mixins(DrawerMixin) {
       `,
       variables: {
         query: {
-          query: this.searchState.query || "",
-          include: this.searchState.selectedLabels.include,
-          exclude: this.searchState.selectedLabels.exclude,
-          nationality: this.searchState.countryFilter || null,
+          ...this.fetchQuery,
           take,
           page: page - 1,
           sortDir,
           sortBy: random ? "$shuffle" : this.searchState.sortBy,
-          favorite: this.searchState.favoritesOnly,
-          bookmark: this.searchState.bookmarksOnly,
-          rating: this.searchState.ratingFilter,
-          custom: this.searchState.customFilter,
         },
         seed: seed || localStorage.getItem("pm_seed") || "default",
       },

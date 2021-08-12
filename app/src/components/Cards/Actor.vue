@@ -1,7 +1,13 @@
 <template>
-  <v-card :dark="!!cardColor || $vuetify.theme.dark" :color="cardColor" v-if="value" tile>
-    <v-hover v-slot:default="{ hover }">
-      <a :href="`#/actor/${value._id}`">
+  <v-card
+    :dark="!!cardColor || $vuetify.theme.dark"
+    :color="cardColor"
+    v-if="value"
+    tile
+    style="height: 100%"
+  >
+    <a :href="`#/actor/${value._id}`">
+      <v-hover v-slot:default="{ hover }">
         <v-img
           :cover="fillThumbnail"
           :contain="!fillThumbnail"
@@ -19,10 +25,14 @@
               :aspect-ratio="aspectRatio"
               :src="altThumbnail"
               v-if="altThumbnail && hover"
-            ></v-img>
+            />
           </v-fade-transition>
 
-          <div class="corner-actions">
+          <div class="corner-actions top-right" style="z-index: 6">
+            <slot name="action" :hover="hover"></slot>
+          </div>
+
+          <div class="corner-actions bottom-left" style="z-index: 6">
             <v-btn
               light
               class="elevation-2 mr-1"
@@ -45,8 +55,8 @@
             </v-btn>
           </div>
         </v-img>
-      </a>
-    </v-hover>
+      </v-hover>
+    </a>
 
     <div class="px-2">
       <v-card-title class="d-flex align-center px-0 pt-1" style="font-size: 1.1rem">
@@ -188,7 +198,15 @@ export default class ActorCard extends Vue {
 <style lang="scss" scoped>
 .corner-actions {
   position: absolute;
-  bottom: 5px;
-  left: 5px;
+
+  &.top-right {
+    right: 2px;
+    top: 2px;
+  }
+
+  &.bottom-left {
+    bottom: 2px;
+    left: 2px;
+  }
 }
 </style>

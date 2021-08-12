@@ -366,35 +366,17 @@
       <v-progress-circular indeterminate></v-progress-circular>
     </div>
 
-    <v-dialog scrollable v-model="labelSelectorDialog" max-width="400px">
-      <v-card :loading="labelEditLoader" v-if="currentActor">
-        <v-card-title>Select {{ actorSingular.toLowerCase() }} labels</v-card-title>
-
-        <v-text-field
-          clearable
-          color="primary"
-          hide-details
-          class="px-5 mb-2"
-          label="Find labels..."
-          v-model="labelSearchQuery"
-        />
-
-        <v-card-text style="max-height: 400px">
-          <LabelSelector
-            :searchQuery="labelSearchQuery"
-            :items="allLabels"
-            v-model="selectedLabels"
-          />
-        </v-card-text>
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-btn @click="selectedLabels = []" text class="text-none">Clear</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn @click="editLabels" text color="primary" class="text-none">Edit</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LabelSelectorDialog
+      v-model="labelSelectorDialog"
+      :labelTitle="`Select ${actorSingular.toLowerCase()} labels`"
+      labelConfirm="Edit"
+      :loader="labelEditLoader"
+      :selectedLabelIds="selectedLabels"
+      :allLabels="allLabels"
+      @changeSelectedLabelIds="selectedLabels = $event"
+      @confirm="editLabels"
+    >
+    </LabelSelectorDialog>
 
     <v-dialog
       v-if="currentActor"
@@ -660,7 +642,7 @@ import movieFragment from "@/fragments/movie";
 import studioFragment from "@/fragments/studio";
 import { actorModule } from "@/store/actor";
 import SceneCard from "@/components/Cards/Scene.vue";
-import LabelSelector from "@/components/LabelSelector.vue";
+import LabelSelectorDialog from "@/components/LabelSelectorDialog.vue";
 import Lightbox from "@/components/Lightbox.vue";
 import MovieCard from "@/components/Cards/Movie.vue";
 import ImageCard from "@/components/Cards/Image.vue";
@@ -689,7 +671,7 @@ interface ICropResult {
 @Component({
   components: {
     SceneCard,
-    LabelSelector,
+    LabelSelectorDialog,
     Lightbox,
     ImageCard,
     Cropper,
@@ -715,7 +697,7 @@ export default class ActorDetails extends Vue {
 
   labelSelectorDialog = false;
   allLabels = [] as ILabel[];
-  selectedLabels = [] as number[];
+  selectedLabels: string[] = [];
   labelEditLoader = false;
 
   numScenes = -1;
@@ -765,8 +747,6 @@ export default class ActorDetails extends Vue {
   sceneLoader = false;
   pluginLoader = false;
   attachUnmatchedScenesLoader = false;
-
-  labelSearchQuery = "";
 
   get avatarColor() {
     if (!this.currentActor) {
@@ -1680,9 +1660,7 @@ export default class ActorDetails extends Vue {
             return;
           }
 
-          this.selectedLabels = this.currentActor.labels.map((l) =>
-            this.allLabels.findIndex((k) => k._id == l._id)
-          );
+          this.selectedLabels = this.currentActor.labels.map((l) => l._id);
           this.labelSelectorDialog = true;
         })
         .catch((err) => {

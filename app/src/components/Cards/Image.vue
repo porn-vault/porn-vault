@@ -1,25 +1,27 @@
 <template>
   <v-card width="100%" height="100%" v-if="image" outlined>
-    <v-img
-      eager
-      class="hover"
-      :src="imageLink(image)"
-      :alt="image.name"
-      width="100%"
-      height="100%"
-      min-height="100px"
-      @click="$emit('click', $event)"
-      v-ripple
-      :contain="contain"
-    >
-      <div class="corner-actions">
-        <slot name="action"></slot>
-      </div>
+    <v-hover v-slot:default="{ hover }">
+      <v-img
+        eager
+        class="hover"
+        :src="imageLink(image)"
+        :alt="image.name"
+        width="100%"
+        height="100%"
+        min-height="100px"
+        @click="$emit('click', $event)"
+        v-ripple
+        :contain="contain"
+      >
+        <div class="corner-actions top-right" style="z-index: 6">
+          <slot name="action" :hover="hover"></slot>
+        </div>
 
-      <template v-slot:placeholder>
-        <v-skeleton-loader width="100%" height="100%" tile loading type="image"></v-skeleton-loader>
-      </template>
-    </v-img>
+        <template v-slot:placeholder>
+          <v-skeleton-loader width="100%" height="100%" tile loading type="image" />
+        </template>
+      </v-img>
+    </v-hover>
   </v-card>
 </template>
 
@@ -44,7 +46,10 @@ export default class ImageCard extends Vue {
 <style lang="scss" scoped>
 .corner-actions {
   position: absolute;
-  top: 5px;
-  right: 5px;
+
+  &.top-right {
+    right: 2px;
+    top: 2px;
+  }
 }
 </style>

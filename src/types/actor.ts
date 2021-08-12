@@ -186,9 +186,7 @@ export default class Actor {
     return createObjectSet(movies.flat(), "_id");
   }
 
-  static async getCollabs(
-    actor: Actor
-  ): Promise<
+  static async getCollabs(actor: Actor): Promise<
     {
       scene: Scene;
       actors: Actor[];

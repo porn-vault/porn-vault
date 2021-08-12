@@ -40,11 +40,10 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import ApolloClient from "../apollo";
-import gql from "graphql-tag";
 import ILabel from "../types/label";
 import { copy } from "../util/object";
 import Color from "color";
+import { detachLabelsFromItem } from "../api/label";
 
 @Component
 export default class LabelGroup extends Vue {
@@ -63,17 +62,7 @@ export default class LabelGroup extends Vue {
 
   async removeLabel(id: string) {
     try {
-      await ApolloClient.mutate({
-        mutation: gql`
-          mutation($item: String!, $label: String!) {
-            removeLabel(item: $item, label: $label)
-          }
-        `,
-        variables: {
-          item: this.item,
-          label: id,
-        },
-      });
+      await detachLabelsFromItem(this.item, [id]);
       this.$emit(
         "input",
         copy(this.value).filter((x) => x._id !== id)
@@ -83,5 +72,4 @@ export default class LabelGroup extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

@@ -75,6 +75,7 @@ export default gql`
 
     getActorsWithoutScenes(num: Int): [Actor!]!
     getActorsWithoutLabels(num: Int): [Actor!]!
+    getAllActorsIds: [String!]
   }
 
   input ActorUpdateOpts {

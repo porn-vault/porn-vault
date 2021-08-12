@@ -1,3 +1,4 @@
+import Axios from "axios";
 import { FfprobeData } from "fluent-ffmpeg";
 
 import { getConfig } from "../../config";
@@ -277,13 +278,17 @@ export default {
 
   async removeScenes(
     _: unknown,
-    { ids, deleteImages }: { ids: string[]; deleteImages?: boolean }
+    {
+      ids,
+      deleteImages,
+      deleteFile,
+    }: { ids: string[]; deleteImages?: boolean; deleteFile?: boolean }
   ): Promise<boolean> {
     for (const id of ids) {
       const scene = await Scene.getById(id);
 
       if (scene) {
-        await Scene.remove(scene);
+        await Scene.remove(scene, !!deleteFile);
         await removeScene(scene._id);
 
         if (deleteImages) {
@@ -315,10 +320,11 @@ export default {
           logger.debug("Deleting scene from queue (if needed)");
           await removeSceneFromQueue(scene._id);
         } catch (err) {
-          handleError(
-            `Could not delete scene ${scene._id} from queue (ignore if 404, just means that the deleted scene wasn't going to be processed)`,
-            err
-          );
+          if (Axios.isAxiosError(err) && err.response?.status === 404) {
+            logger.debug("Scene was not in queue");
+          } else {
+            handleError(`Could not delete scene ${scene._id} from queue`, err);
+          }
         }
       }
     }

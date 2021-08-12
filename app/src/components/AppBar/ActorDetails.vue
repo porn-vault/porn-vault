@@ -84,7 +84,7 @@
       <v-card :loading="removeLoader">
         <v-card-title>Really delete '{{ currentActor.name }}'?</v-card-title>
         <v-card-text>
-          Scene and images featuring {{ currentActor.name }} will stay in your collection.
+          Scenes and images featuring {{ currentActor.name }} will stay in your collection.
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>

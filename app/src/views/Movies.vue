@@ -2,6 +2,7 @@
   <v-container fluid>
     <BindFavicon />
     <BindTitle value="Movies" />
+
     <v-navigation-drawer v-if="showSidenav" style="z-index: 14" v-model="drawer" clipped app>
       <v-container>
         <v-btn
@@ -113,6 +114,63 @@
       </v-container>
     </v-navigation-drawer>
 
+    <v-expand-transition>
+      <v-banner app sticky class="mb-2" v-if="selectionMode">
+        <div class="d-flex align-center">
+          <v-tooltip bottom v-if="!selectedMovies.length">
+            <template #activator="{ on }">
+              <v-btn icon v-on="on" @click="selectedMovies = movies.map((im) => im._id)">
+                <v-icon>mdi-checkbox-blank-circle-outline</v-icon>
+              </v-btn>
+            </template>
+            Select all
+          </v-tooltip>
+          <v-tooltip bottom v-else>
+            <template #activator="{ on }">
+              <v-btn icon v-on="on" @click="selectedMovies = []">
+                <v-icon>mdi-checkbox-marked-circle</v-icon>
+              </v-btn>
+            </template>
+            Deselect
+          </v-tooltip>
+
+          <div class="title ml-2">
+            {{ selectedMovies.length }}
+          </div>
+        </div>
+
+        <template v-slot:actions>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                :disabled="!selectedMovies.length"
+                v-on="on"
+                @click="runPluginsForSelectedMovies"
+                :loading="pluginLoader"
+                icon
+              >
+                <v-icon>mdi-database-sync</v-icon>
+              </v-btn>
+            </template>
+            Run plugins for selected movies
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template #activator="{ on }">
+              <v-btn
+                :disabled="!selectedMovies.length"
+                v-on="on"
+                @click="deleteSelectedMoviesDialog = true"
+                icon
+                color="error"
+                ><v-icon>mdi-delete-forever</v-icon>
+              </v-btn>
+            </template>
+            Delete
+          </v-tooltip>
+        </template>
+      </v-banner>
+    </v-expand-transition>
+
     <div class="text-center" v-if="fetchError">
       <div>There was an error</div>
       <v-btn class="mt-2" @click="loadPage">Try again</v-btn>
@@ -155,6 +213,26 @@
           </template>
           <span>Reshuffle</span>
         </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" @click="runPluginsForSearch" icon :loading="pluginLoader">
+              <v-icon>mdi-database-sync</v-icon>
+            </v-btn>
+          </template>
+          <span>Run plugins for all movies in current search</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" @click="toggleSelectionMode" icon>
+              <v-icon
+                >{{
+                  selectionMode ? "mdi-checkbox-blank-off-outline" : "mdi-checkbox-blank-outline"
+                }}
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Toggle selection mode</span>
+        </v-tooltip>
         <v-spacer></v-spacer>
         <div>
           <v-pagination
@@ -170,7 +248,7 @@
       <v-row v-if="!fetchLoader && numResults">
         <v-col
           class="pa-1"
-          v-for="(movie, i) in movies"
+          v-for="(movie, movieIdx) in movies"
           :key="movie._id"
           cols="6"
           sm="6"
@@ -182,8 +260,24 @@
             :showLabels="showCardLabels"
             :movie="movie"
             style="height: 100%"
-            v-model="movies[i]"
-          />
+            v-model="movies[movieIdx]"
+            @click.native.stop.prevent="onMovieClick(movie, movieIdx, $event, false)"
+          >
+            <template v-slot:action="{ hover }">
+              <v-fade-transition>
+                <v-checkbox
+                  v-if="selectionMode || hover || selectedMovies.includes(movie._id)"
+                  color="primary"
+                  :input-value="selectedMovies.includes(movie._id)"
+                  readonly
+                  @click.native.stop.prevent="onMovieClick(movie, movieIdx, $event, true)"
+                  class="mt-0"
+                  hide-details
+                  :contain="true"
+                ></v-checkbox>
+              </v-fade-transition>
+            </template>
+          </MovieCard>
         </v-col>
       </v-row>
       <NoResults v-else-if="!fetchLoader && !numResults" />
@@ -276,6 +370,24 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="deleteSelectedMoviesDialog" max-width="400px">
+      <v-card>
+        <v-card-title>Really delete {{ selectedMovies.length }} movies?</v-card-title>
+        <v-card-text> Images will stay in your collection. </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            class="text-none"
+            color="error"
+            text
+            @click="deleteSelection"
+            :loading="deleteMoviesLoader"
+            >Delete</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -287,7 +399,7 @@ import actorFragment from "@/fragments/actor";
 import { contextModule } from "@/store/context";
 import SceneSelector from "@/components/SceneSelector.vue";
 import IActor from "@/types/actor";
-import IScene from "@/types/scene";
+import IScene from "@/types/movie";
 import ILabel from "@/types/label";
 import MovieCard from "@/components/Cards/Movie.vue";
 import IMovie from "@/types/movie";
@@ -299,6 +411,8 @@ import ActorSelector from "@/components/ActorSelector.vue";
 import { SearchStateManager, isQueryDifferent } from "../util/searchState";
 import { Route } from "vue-router";
 import { Dictionary } from "vue-router/types/router";
+import { Movie } from "@/api/movie";
+import { pluginTaskModule } from "@/store/pluginTask";
 
 @Component({
   components: {
@@ -331,6 +445,12 @@ export default class MovieList extends mixins(DrawerMixin) {
   fetchingRandom = false;
   numResults = 0;
   numPages = 0;
+  selectionMode = false;
+
+  selectedMovies = [] as string[];
+  lastSelectionMovieId: string | null = null;
+  deleteSelectedMoviesDialog = false;
+  deleteMoviesLoader = false;
 
   searchStateManager = new SearchStateManager<{
     page: number;
@@ -618,6 +738,186 @@ export default class MovieList extends mixins(DrawerMixin) {
       });
   }
 
+  get pluginLoader() {
+    return pluginTaskModule.loader;
+  }
+
+  async runPluginsForSelectedMovies() {
+    if (this.pluginLoader) {
+      // Don't trigger plugins if there is already a task running
+      return;
+    }
+
+    pluginTaskModule.startLoading({ itemsName: "movie", total: this.selectedMovies.length });
+
+    try {
+      for (const id of this.selectedMovies) {
+        await this.runPluginsForAMovie(id);
+        pluginTaskModule.incrementProgress();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    pluginTaskModule.stopLoading();
+  }
+
+  async runPluginsForSearch() {
+    if (this.pluginLoader) {
+      // Don't trigger plugins if there is already a task running
+      return;
+    }
+
+    pluginTaskModule.startLoading({ itemsName: "movie" });
+
+    try {
+      await Movie.iterate(
+        (movie) => this.runPluginsForAMovie(movie._id),
+        this.fetchQuery,
+        ({ iteratedCount, total }) => {
+          pluginTaskModule.setProgress({ iteratedCount, total });
+        }
+      );
+    } catch (err) {
+      console.error(err);
+    }
+
+    pluginTaskModule.stopLoading();
+  }
+
+  async runPluginsForAMovie(id: string) {
+    try {
+      const res = await ApolloClient.mutate({
+        mutation: gql`
+          mutation($id: String!) {
+            runMoviePlugins(id: $id) {
+              ...MovieFragment
+              actors {
+                ...ActorFragment
+              }
+              scenes {
+                _id
+              }
+            }
+          }
+          ${movieFragment}
+          ${actorFragment}
+        `,
+        variables: {
+          id: id,
+        },
+      });
+      const movie = res.data.runMoviePlugins;
+      const movieIndex = this.movies.findIndex((a) => a._id === id);
+      if (movieIndex !== -1) {
+        this.movies.splice(movieIndex, 1, movie);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  isMovieSelected(id: string) {
+    return !!this.selectedMovies.includes(id);
+  }
+
+  selectMovie(id: string, add: boolean) {
+    this.lastSelectionMovieId = id;
+    if (add && !this.isMovieSelected(id)) {
+      this.selectedMovies.push(id);
+    } else {
+      this.selectedMovies = this.selectedMovies.filter((i) => i != id);
+    }
+  }
+
+  toggleSelectionMode() {
+    this.selectionMode = !this.selectionMode;
+    if (!this.selectionMode) {
+      this.selectedMovies = [];
+    }
+  }
+
+  @Watch("selectedMovies")
+  onSelectedMoviesChange(nextVal: string[]) {
+    if (nextVal.length) {
+      this.selectionMode = true;
+    } else {
+      this.selectionMode = false;
+    }
+  }
+
+  /**
+   * @param movie - the clicked movie
+   * @param index - the index of the movie in the array
+   * @param event - the mouse click event
+   * @param forceSelectionChange - whether to force a selection change, instead of opening the movie
+   */
+  onMovieClick(movie: IMovie, index: number, event: MouseEvent, forceSelectionChange = true) {
+    let lastSelectionMovieIndex =
+      this.lastSelectionMovieId !== null
+        ? this.movies.findIndex((im) => im._id === this.lastSelectionMovieId)
+        : index;
+    lastSelectionMovieIndex = lastSelectionMovieIndex === -1 ? index : lastSelectionMovieIndex;
+    if (event.shiftKey) {
+      // Next state is opposite of the clicked movie state
+      const nextSelectionState = !this.isMovieSelected(movie._id);
+      // Use >= to include the currently clicked movie, so it can be toggled
+      // if necessary
+      if (index >= lastSelectionMovieIndex) {
+        for (let i = lastSelectionMovieIndex + 1; i <= index; i++) {
+          this.selectMovie(this.movies[i]._id, nextSelectionState);
+        }
+      } else if (index < lastSelectionMovieIndex) {
+        for (let i = lastSelectionMovieIndex; i >= index; i--) {
+          this.selectMovie(this.movies[i]._id, nextSelectionState);
+        }
+      }
+    } else if (forceSelectionChange || event.ctrlKey) {
+      this.selectMovie(movie._id, !this.isMovieSelected(movie._id));
+    } else if (!forceSelectionChange) {
+      this.$router.push(`/movie/${movie._id}`);
+    }
+  }
+
+  async deleteSelection() {
+    this.deleteMoviesLoader = true;
+
+    try {
+      await ApolloClient.mutate({
+        mutation: gql`
+          mutation($ids: [String!]!) {
+            removeMovies(ids: $ids)
+          }
+        `,
+        variables: {
+          ids: this.selectedMovies,
+        },
+      });
+
+      this.numResults = Math.max(0, this.numResults - this.selectedMovies.length);
+      this.movies = this.movies.filter((act) => !this.selectedMovies.includes(act._id));
+      this.selectedMovies = [];
+      this.deleteSelectedMoviesDialog = false;
+    } catch (err) {
+      console.error(err);
+    }
+
+    this.deleteMoviesLoader = false;
+  }
+
+  get fetchQuery() {
+    return {
+      query: this.searchState.query || "",
+      include: this.searchState.selectedLabels.include,
+      exclude: this.searchState.selectedLabels.exclude,
+      favorite: this.searchState.favoritesOnly,
+      bookmark: this.searchState.bookmarksOnly,
+      rating: this.searchState.ratingFilter,
+      studios: this.searchState.selectedStudio ? this.searchState.selectedStudio._id : null,
+      actors: this.selectedActorIds,
+    };
+  }
+
   async fetchPage(page: number, take = 24, random?: boolean, seed?: string) {
     const result = await ApolloClient.query({
       query: gql`
@@ -641,18 +941,11 @@ export default class MovieList extends mixins(DrawerMixin) {
       `,
       variables: {
         query: {
-          query: this.searchState.query || "",
-          include: this.searchState.selectedLabels.include,
-          exclude: this.searchState.selectedLabels.exclude,
+          ...this.fetchQuery,
           take,
           page: page - 1,
           sortDir: this.searchState.sortDir,
           sortBy: random ? "$shuffle" : this.searchState.sortBy,
-          favorite: this.searchState.favoritesOnly,
-          bookmark: this.searchState.bookmarksOnly,
-          rating: this.searchState.ratingFilter,
-          studios: this.searchState.selectedStudio ? this.searchState.selectedStudio._id : null,
-          actors: this.selectedActorIds,
         },
         seed: seed || localStorage.getItem("pm_seed") || "default",
       },

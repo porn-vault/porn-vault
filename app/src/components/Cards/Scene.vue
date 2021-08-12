@@ -1,73 +1,69 @@
 <template>
   <v-card :dark="!!cardColor || $vuetify.theme.dark" tile :color="cardColor" v-if="value">
     <a :href="`#/scene/${value._id}`">
-      <v-hover>
-        <template v-slot:default="{ hover }">
-          <v-img cover :aspect-ratio="aspectRatio" v-ripple eager :src="thumbnail">
-            <v-fade-transition>
-              <div
-                @mouseenter="mouseenter"
-                @mouseleave="mouseleave"
-                v-if="previewSceneOnMouseHover && hover"
-                style="position: absolute: top: 0; left: 0; width: 100%; height: 100%"
-              >
-                <div style="width: 100%; height: 100%; position: relative">
-                  <video class="video-insert" ref="video" autoplay muted :src="videoPath" />
-                </div>
-              </div>
-            </v-fade-transition>
-
+      <v-hover v-slot:default="{ hover }">
+        <v-img cover :aspect-ratio="aspectRatio" v-ripple eager :src="thumbnail">
+          <v-fade-transition>
             <div
-              style="z-index: 6"
-              class="white--text body-2 font-weight-bold duration-stamp"
-              v-if="value.meta.duration"
+              @mouseenter="mouseenter"
+              @mouseleave="mouseleave"
+              v-if="previewSceneOnMouseHover && hover"
+              style="position: absolute: top: 0; left: 0; width: 100%; height: 100%"
             >
-              {{ videoDuration }}
+              <div style="width: 100%; height: 100%; position: relative">
+                <video class="video-insert" ref="video" autoplay muted :src="videoPath" />
+              </div>
             </div>
+          </v-fade-transition>
 
-            <div class="corner-slot" style="z-index: 6">
-              <slot name="action" :hover="hover"></slot>
-            </div>
+          <div
+            style="z-index: 6"
+            class="white--text body-2 font-weight-bold duration-stamp"
+            v-if="value.meta.duration"
+          >
+            {{ videoDuration }}
+          </div>
 
-            <div class="corner-actions top-left" style="z-index: 6">
-              <v-fade-transition>
-                <v-chip
-                  v-if="!hover && value.watches.length"
-                  label
-                  small
-                  color="#1b1b1b"
-                  class="elevation-2 chip-watched"
-                  >WATCHED</v-chip
-                >
-              </v-fade-transition>
-            </div>
+          <div class="corner-actions top-right" style="z-index: 6">
+            <slot name="action" :hover="hover"></slot>
+          </div>
 
-            <div class="corner-actions bottom-left" style="z-index: 6">
-              <v-btn
-                light
-                class="elevation-2 mr-1"
-                @click.stop.prevent="favorite"
-                icon
-                style="background: #fafafa"
+          <div class="corner-actions top-left" style="z-index: 6">
+            <v-fade-transition>
+              <v-chip
+                v-if="!hover && value.watches.length"
+                label
+                small
+                color="#1b1b1b"
+                class="elevation-2 chip-watched"
+                >WATCHED</v-chip
               >
-                <v-icon :color="value.favorite ? 'red' : undefined">{{
-                  value.favorite ? "mdi-heart" : "mdi-heart-outline"
-                }}</v-icon>
-              </v-btn>
-              <v-btn
-                light
-                class="elevation-2"
-                @click.stop.prevent="bookmark"
-                icon
-                style="background: #fafafa"
-              >
-                <v-icon>{{
-                  value.bookmark !== null ? "mdi-bookmark-check" : "mdi-bookmark-outline"
-                }}</v-icon>
-              </v-btn>
-            </div>
-          </v-img>
-        </template>
+            </v-fade-transition>
+          </div>
+
+          <div class="corner-actions bottom-left" style="z-index: 6">
+            <v-btn
+              light
+              class="elevation-2 mr-1"
+              @click.stop.prevent="favorite"
+              icon
+              style="background: #fafafa"
+            >
+              <v-icon :color="value.favorite ? 'red' : undefined">{{
+                value.favorite ? "mdi-heart" : "mdi-heart-outline"
+              }}</v-icon>
+            </v-btn>
+            <v-btn
+              light
+              class="elevation-2"
+              @click.stop.prevent="bookmark"
+              icon
+              style="background: #fafafa"
+            >
+              <v-icon>{{ value.bookmark !== null ? "mdi-bookmark-check" : "mdi-bookmark-outline" }}</v-icon>
+            </v-btn>
+          </div>
+        </v-img>
       </v-hover>
     </a>
 
@@ -209,12 +205,6 @@ export default class SceneCard extends Mixins(SceneMixin) {
   right: 2px;
 }
 
-.corner-slot {
-  position: absolute;
-  right: 2px;
-  top: 2px;
-}
-
 .corner-actions {
   position: absolute;
 
@@ -223,8 +213,12 @@ export default class SceneCard extends Mixins(SceneMixin) {
     left: 2px;
   }
 
+  &.top-right {
+    right: 2px;
+    top: 2px;
+  }
+
   &.bottom-left {
-    position: absolute;
     bottom: 2px;
     left: 2px;
   }

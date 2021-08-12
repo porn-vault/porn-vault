@@ -85,7 +85,16 @@
     "createMissingLabels": false,
     "createMissingMovies": false,
     "createMissingStudios": false,
-    "events": {},
+    "events": {
+      "actorCreated": [],
+      "actorCustom": [],
+      "sceneCreated": [],
+      "sceneCustom": [],
+      "movieCreated": [],
+      "movieCustom": [],
+      "studioCreated": [],
+      "studioCustom": []
+    },
     "register": {},
     "markerDeduplicationThreshold": 5
   },

@@ -173,7 +173,7 @@ export default class Home extends Vue {
   labels = [] as ILabel[];
   fetchLoader = false;
 
-  selectedLabels = [] as number[];
+  selectedLabels: string[] = [];
 
   editLabelDialog = false;
   editLabelLoader = false;
@@ -207,10 +207,6 @@ export default class Home extends Vue {
     this.editLabelName = label.name;
     this.editLabelAliases = label.aliases;
     this.editColor = label.color ? label.color.replace("#", "") : "";
-  }
-
-  get selectedLabelsIDs() {
-    return this.selectedLabels.map((i) => this.labels[i]._id);
   }
 
   async sleep(ms: number) {
@@ -277,13 +273,11 @@ export default class Home extends Vue {
         }
       `,
       variables: {
-        ids: this.selectedLabelsIDs,
+        ids: this.selectedLabels,
       },
     })
       .then(() => {
-        for (const id of this.selectedLabelsIDs) {
-          this.labels = this.labels.filter((l) => l._id != id);
-        }
+        this.labels = this.labels.filter((l) => !this.selectedLabels.includes(l._id));
         this.selectedLabels = [];
       })
       .catch((error) => {
