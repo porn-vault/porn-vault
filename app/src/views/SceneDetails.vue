@@ -94,7 +94,7 @@
               <v-subheader>Release Date</v-subheader>
             </div>
             <div class="med--text pa-2">
-              {{ new Date(currentScene.releaseDate).toDateString(undefined, { timeZone: "UTC" }) }}
+              {{ renderTimestamp(currentScene.releaseDate) }}
             </div>
           </div>
           <div v-if="currentScene.addedOn">
@@ -103,7 +103,7 @@
               <v-subheader>Added to collection</v-subheader>
             </div>
             <div class="med--text pa-2">
-              {{ new Date(currentScene.addedOn).toDateString(undefined, { timeZone: "UTC" }) }}
+              {{ renderTimestamp(currentScene.addedOn) }}
             </div>
           </div>
 
@@ -620,6 +620,7 @@ import CustomFieldSelector from "@/components/CustomFieldSelector.vue";
 import ActorGrid from "@/components/ActorGrid.vue";
 import VideoPlayer from "@/components/VideoPlayer.vue";
 import { copy } from "@/util/object";
+import { formatTimestamp } from "@/util/formatting";
 import IScene, { SceneSource } from "@/types/scene";
 
 interface ICropCoordinates {
@@ -1005,6 +1006,10 @@ export default class SceneDetails extends Vue {
 
   formatTime(secs: number) {
     return moment().startOf("day").seconds(secs).format("H:mm:ss");
+  }
+  
+  renderTimestamp(timestamp: number) {
+    return formatTimestamp(timestamp);
   }
 
   currentTimeFormatted() {
