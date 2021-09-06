@@ -118,7 +118,7 @@ import { contextModule } from "@/store/context";
 import { ensureDarkColor } from "@/util/color";
 import Color from "color";
 import SceneMixin from "@/mixins/scene";
-import moment from "moment";
+import { formatTimestamp } from "@/util/formatting";
 
 @Component
 export default class SceneCard extends Mixins(SceneMixin) {
@@ -135,14 +135,14 @@ export default class SceneCard extends Mixins(SceneMixin) {
 
   get releaseDate(): string | null {
     if (this.value.releaseDate) {
-      return moment(this.value.releaseDate).format("YYYY.MM.DD");
+      return formatTimestamp(this.value.releaseDate);
     }
     return null;
   }
 
   get addedOn(): string | null {
     if (this.value.addedOn) {
-      return moment(this.value.addedOn).format("YYYY.MM.DD");
+      return formatTimestamp(this.value.addedOn);
     }
     return null;
   }
